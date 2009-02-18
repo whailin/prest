@@ -3,7 +3,6 @@ package parser.C;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.BufferedOutputStream;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,7 +12,6 @@ import parser.C.fileops.ConvertToDataContext;
 import parser.C.fileops.Module;
 import parser.C.fileops.Parser;
 import parser.C.fileops.SourceFile;
-import parser.Java.MetricsRelatedFiles.ClassContainer;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;
 
@@ -59,7 +57,7 @@ public class CParser implements IParser {
 							CConstants.FILE_METRICS_HEADER);
 			metrics.add(currentFile.getName(), fileMetrics);
 			Iterator<Module> itr2 = modules.iterator();
-			
+
 			DataContext currentFileDataContext = metrics.getNode(currentFile
 					.getName());
 			while (itr2.hasNext()) {
@@ -83,22 +81,10 @@ public class CParser implements IParser {
 		// added by ekrem
 		// the following function will make a csv file
 		// which will contain the function call matrix
-		//buildFunctionCallMatrix(CALLGRAPHFILE);
+		buildFunctionCallMatrix(CALLGRAPHFILE);
 
-		
-		/*try {
-			System.out.println("writing from container to csv files");
-			container.writeToFileAsXls(xmlFileName, packageCsvFileName,
-				    fileCsvFileName, classCsvFileName, methodCsvFileName); // converts the given xml to csv file
-			System.out.println("csv files written");
-		} catch (Exception e) {
-			System.out.println("writing to csv file failed");
-			e.printStackTrace();
-		}*/
-		
 		general.writeToFile(xmlFileName);
 		return general;
-		
 
 	}
 
@@ -113,7 +99,7 @@ public class CParser implements IParser {
 	/**
 	 * added as a patch to build a function call matrix
 	 * 
-	 * @author Ekrem Kocaguneli
+	 * @author Ekrem Kocag�neli
 	 */
 	public void buildFunctionCallMatrix(String fileName) {
 		int dimension;
@@ -126,13 +112,13 @@ public class CParser implements IParser {
 
 		// assign * to 0*0 position of the 2D array
 		functionCallMatrix[0][0] = "*";
-		// copy the names of the modules to the edges of the 2D array
+		// copy the names of the modues to the edges of the 2D array
 		for (int i = 1; i <= dimension; i++) {
 			functionCallMatrix[i][0] = allModulesItr.next().getName();
 			functionCallMatrix[0][i] = functionCallMatrix[i][0];
 		}
 
-		// FUNCTION CALL MATRIXI TARAYIPO 0 VE 1 LE DOLDURCAM
+		// FUNCT�ON CALL MATRIXI TARAYIPO 0 VE 1 LE DOLDURCAM
 		// SONRA DA ONU DOSYAYA YAZCAM
 		Iterator<Module> allModulesItr2 = allModules.iterator();
 
@@ -174,103 +160,4 @@ public class CParser implements IParser {
 
 	}
 
-	public void writeToFileAsXls(String xmlFileName,String fileCsvFileName, 
-		String methodCsvFileName) throws Exception {
-
-	BufferedOutputStream outF = null;
-	BufferedOutputStream outM = null;
-	
-	try {
-		outF = new BufferedOutputStream(new FileOutputStream(
-				fileCsvFileName));
-		
-		outM = new BufferedOutputStream(new FileOutputStream(
-				methodCsvFileName));
-		
-		outF.write("File Name,".getBytes());
-		outF.write("File Id,".getBytes());
-		outF.write("Cyclometric Density,".getBytes());
-		outF.write("Decision Density,".getBytes());
-		outF.write("Essential Density,".getBytes());
-		outF.write("Branch Count,".getBytes());
-		outF.write("Condition Count,".getBytes());
-		outF.write("Cyclometric Complexity,".getBytes());
-		outF.write("Decision Count,".getBytes());
-		outF.write("Essential Complexity,".getBytes());
-		outF.write("LOC,".getBytes());
-		outF.write("Total Operands,".getBytes());
-		outF.write("Total Operators,".getBytes());
-		outF.write("Unique Operands Count,".getBytes());
-		outF.write("Unique Operators Count,".getBytes());
-		outF.write("Halstead Difficulty,".getBytes());
-		outF.write("Halstead Length,".getBytes());
-		outF.write("Halstead Level,".getBytes());
-		outF.write("Halstead Programming Effort,".getBytes());
-		outF.write("Halstead Programming Time,".getBytes());
-		outF.write("Halstead Volume,".getBytes());
-		outF.write("Maintenance Severity,".getBytes());
-		outF.write("Defected?(false/true) \n".getBytes());
-		outF.flush();
-
-		outM.write("File Name,".getBytes());
-		outM.write("Method Name,".getBytes());
-		outM.write("Method Id,".getBytes());
-		outM.write("Cyclometric Density,".getBytes());
-		outM.write("Decision Density,".getBytes());
-		outM.write("Essential Density,".getBytes());
-		outM.write("Branch Count,".getBytes());
-		outM.write("Condition Count,".getBytes());
-		outM.write("Cyclometric Complexity,".getBytes());
-		outM.write("Decision Count,".getBytes());
-		outM.write("Essential Complexity,".getBytes());
-		outM.write("LOC,".getBytes());
-		outM.write("Total Operands,".getBytes());
-		outM.write("Total Operators,".getBytes());
-		outM.write("Unique Operands Count,".getBytes());
-		outM.write("Unique Operators Count,".getBytes());
-		outM.write("Halstead Difficulty,".getBytes());
-		outM.write("Halstead Length,".getBytes());
-		outM.write("Halstead Level,".getBytes());
-		outM.write("Halstead Programming Effort,".getBytes());
-		outM.write("Halstead Programming Time,".getBytes());
-		outM.write("Halstead Volume,".getBytes());
-		outM.write("Maintenance Severity,".getBytes());
-		outM.write("Formal Parameters,".getBytes());
-		outM.write("Call Pair Length,".getBytes());
-		outM.write("Defected?(false/true)\n".getBytes());
-		outM.flush();
-
-		int fileCount = 0;
-		int methodCount = 0;
-
-		
-		
-			
-			// file metrics level
-
-			for () {
-				
-				outF.write(",false\n".getBytes());
-				outF.flush();
-					// Method metrics level
-
-					for () {
-					
-							outM.write(",false\n".getBytes());
-				            outM.flush();
-							}
-
-		}
-
-		outF.close();
-		outM.close();
-
-	} catch (Exception e) {
-		outF.close();
-		outM.close();
-		e.printStackTrace();
-	}
-
-}
-	
 }
