@@ -70,11 +70,6 @@ import definitions.metrics.MetricTypeNames;
 import executor.ParserExecutor;
 import common.CsvToArff;
 
-/**
- * 
- * @author Gurhan
- * 
- */
 public class PackageExplorer {
 
 	private static final Object Object = null;
@@ -332,6 +327,22 @@ public class PackageExplorer {
 						JOptionPane.INFORMATION_MESSAGE);
 				lastParsedProjectPath = projectDirectory.getAbsolutePath();
 				displayAllMetrics();
+			}
+		} catch (Exception ex) {
+			Logger.error("Exception in parsing project: "
+					+ projectDirectory.getName() + " " + ex.getMessage());
+		}
+	}
+	
+	public void parseManualCmd(String projectDirectoryStr) {
+		int result;
+		try {
+			File projectDirectory = new File(projectDirectoryStr);
+			result = ParserExecutor.parseDirectoryCmd(projectDirectory);
+			if (result == ParserExecutor.PARSING_SUCCESSFUL) {
+				System.out.println("Project parsed successfully.");
+				lastParsedProjectPath = projectDirectory.getAbsolutePath();
+				//displayAllMetrics();
 			}
 		} catch (Exception ex) {
 			Logger.error("Exception in parsing project: "

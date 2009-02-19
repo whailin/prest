@@ -88,6 +88,31 @@ public class ParserExecutor {
             return PARSING_SUCCESSFUL;
         }
     }
+    
+    // same as the parseDirectory function, but altered for the command line execution
+    public static int parseDirectoryCmd(File projectDirectory) throws Exception {
+
+        List<ParserInterfaceAndFileList> parserList = new ArrayList<ParserInterfaceAndFileList>();
+
+        parserList = findAppropriateParsers(projectDirectory);
+
+        if (parserList == null) {
+            return PARSING_CANCELLED;
+        } else {
+            parserResultList.clear();
+            parserResultList = new ArrayList<ParseResult>();
+            for (ParserInterfaceAndFileList parserAndFiles : parserList) {
+                DataContext thisOne = parseProject(parserAndFiles.getParser(),
+                        parserAndFiles.getFileList(), projectDirectory.getName());
+                if (thisOne == null) {
+                    Logger.error("Error in parsing with: " + parserAndFiles.getParser().getLanguage().getLangName());
+                } else {
+                    parserResultList.add(new ParseResult(parserAndFiles.getParser().getLanguage(), thisOne));
+                }
+            }
+            return PARSING_SUCCESSFUL;
+        }
+    }
 
     public static void confirmParserWithUser(
             List<ParserInterfaceAndFileList> parserList) {

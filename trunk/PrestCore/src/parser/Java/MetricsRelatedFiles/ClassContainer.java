@@ -76,7 +76,7 @@ public class ClassContainer {
 
 	public List<String> getFileMetrics(FileMetrics fm) {
 		List<String> l = new ArrayList<String>();
-		//l.add(fm.getNameNode().getValue().toString());
+		// l.add(fm.getNameNode().getValue().toString());
 		l.add(fm.getNameNode().getValue().toString());
 		l.add(fm.getIdNode().getValue().toString());
 		l.add(fm.getCyclomaticComplexityNode().getValue().toString());
@@ -787,18 +787,18 @@ public class ClassContainer {
 		BufferedOutputStream outC = null;
 		BufferedOutputStream outF = null;
 		BufferedOutputStream outM = null;
-		
+
 		try {
-			outP = new BufferedOutputStream(new FileOutputStream(
-					packageCsvFileName));
-			outF = new BufferedOutputStream(new FileOutputStream(
-					fileCsvFileName));
-			outC = new BufferedOutputStream(new FileOutputStream(
-					classCsvFileName));
-			outM = new BufferedOutputStream(new FileOutputStream(
-					methodCsvFileName));
+			FileOutputStream fosP = new FileOutputStream(packageCsvFileName);
+			FileOutputStream fosC = new FileOutputStream(classCsvFileName);
+			FileOutputStream fosF = new FileOutputStream(fileCsvFileName);
+			FileOutputStream fosM = new FileOutputStream(methodCsvFileName);
 			
-			
+			outP = new BufferedOutputStream(fosP);
+			outF = new BufferedOutputStream(fosF);
+			outC = new BufferedOutputStream(fosC);
+			outM = new BufferedOutputStream(fosM);
+
 			outP.write("Package Name,".getBytes());
 			outP.write("Package Id,".getBytes());
 			outP.write("Cyclometric Density,".getBytes());
@@ -823,7 +823,7 @@ public class ClassContainer {
 			outP.write("Maintenance Severity,".getBytes());
 			outP.write("Defected?(false/true)\n".getBytes());
 			outP.flush();
-			
+
 			outF.write("File Name,".getBytes());
 			outF.write("File Id,".getBytes());
 			outF.write("Cyclometric Density,".getBytes());
@@ -849,7 +849,7 @@ public class ClassContainer {
 			outF.write("Defected?(false/true) \n".getBytes());
 
 			outF.flush();
-			
+
 			outC.write("Class Name,".getBytes());
 			outC.write("Class Id,".getBytes());
 			outC.write("Cyclometric Density,".getBytes());
@@ -879,7 +879,7 @@ public class ClassContainer {
 			outC.write("Response for Class,".getBytes());
 			outC.write("Weighted Methods,".getBytes());
 			outC.write("Defected?(false/true) \n".getBytes());
-			
+
 			outC.flush();
 			outM.write("File Name,".getBytes());
 			outM.write("File Id,".getBytes());
@@ -915,17 +915,16 @@ public class ClassContainer {
 			int classCount = 0;
 			int methodCount = 0;
 
-			
 			// package metrics level
 			for (Iterator<String> pk = getPackageNames(); pk.hasNext();) {
 				packageCount++;
 				String packageName = pk.next();
 				PackageMetrics pm = getPackage(packageName);
 				List<String> packageMetricList = getPackageMetrics(pm);
-				
+
 				// first 22 for package metrics
 				for (int j = 0; j < packageMetricList.size(); j++) {
-					if (j+1 < packageMetricList.size()) {
+					if (j + 1 < packageMetricList.size()) {
 						outP.write((packageMetricList.get(j) + ",").getBytes());
 					} else {
 						outP.write(packageMetricList.get(j).getBytes());
@@ -941,7 +940,7 @@ public class ClassContainer {
 					FileMetrics fm = pm.getFile(fileName);
 					List<String> fileMetricList = getFileMetrics(fm);
 					for (int k = 0; k < fileMetricList.size(); k++) {
-						if (k+1 < fileMetricList.size()) {
+						if (k + 1 < fileMetricList.size()) {
 							outF
 									.write((fileMetricList.get(k) + ",")
 											.getBytes());
@@ -952,7 +951,7 @@ public class ClassContainer {
 					outF.write(",false\n".getBytes());
 					outF.flush();
 					// class metrics level
-					
+
 					for (Iterator<String> ck = fm.getClassNames(); ck.hasNext();) {
 
 						classCount++;
@@ -964,7 +963,7 @@ public class ClassContainer {
 						List<String> classMetricList = getClassMetrics(cm);
 						for (int x = 0; x < classMetricList.size(); x++) {
 
-							if (x+1 < classMetricList.size()) {
+							if (x + 1 < classMetricList.size()) {
 								outC.write((classMetricList.get(x) + ",")
 										.getBytes());
 							} else {
@@ -985,15 +984,15 @@ public class ClassContainer {
 
 								methodCount++;
 								List<String> methodMetricList = getMethodMetrics(mm);
-							
+
 								outM.write((fileName.substring((fileName
 										.lastIndexOf("\\") + 1)) + ",")
 										.getBytes());
 								outM.write((fileMetricList.get(1) + ",")
-									.getBytes());
+										.getBytes());
 								for (int z = 0; z < methodMetricList.size(); z++) {
 
-									if (z+1 < methodMetricList.size()) {
+									if (z + 1 < methodMetricList.size()) {
 										outM
 												.write((methodMetricList.get(z) + ",")
 														.getBytes());
