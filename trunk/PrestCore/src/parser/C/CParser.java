@@ -31,7 +31,7 @@ public class CParser implements IParser {
 	}
 
 	// added by ekrem
-	// the following liked list will keep all the modules
+	// the following linked list will keep all the modules
 	// in all the source files
 	public LinkedList<Module> allModules = new LinkedList<Module>();
 	// added by ekrem
@@ -98,8 +98,6 @@ public class CParser implements IParser {
 
 	/**
 	 * added as a patch to build a function call matrix
-	 * 
-	 * @author Ekrem Kocag�neli
 	 */
 	public void buildFunctionCallMatrix(String fileName) {
 		int dimension;

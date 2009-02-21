@@ -16,7 +16,7 @@ public class CommandLineExplorer {
 
 	public void listCommandLineOptions() {
 		System.out.println("The command line options are:");
-		System.out.println("-add projectName projectDirectory");
+		System.out.println("-addProject projectDirectory");
 		System.out.println("-parse projectDirectory");
 	}
 

@@ -200,7 +200,7 @@ public class ParserExecutor {
 
             DataContext metrics = null;
             try {
-                String xmlFileName = ApplicationProperties.get("repositorylocation") + "\\" + projectName + "\\parseResult" + "_" + aParser.getLanguage().getLangName() + "_" + Calendar.getInstance().getTimeInMillis() + ".xml";
+                String xmlFileName = ApplicationProperties.get("repositorylocation") + "\\" + projectName + "\\parse_results\\parseResult" + "_" + aParser.getLanguage().getLangName() + "_" + Calendar.getInstance().getTimeInMillis() + ".xml";
                 String packageCsvFileName  = ApplicationProperties.get("repositorylocation") + "\\" + projectName + "\\parse_results\\parseResult" + "_" + aParser.getLanguage().getLangName() + "_" + Calendar.getInstance().getTimeInMillis() + "PACKAGE.csv";
     	    	String fileCsvFileName = ApplicationProperties.get("repositorylocation") + "\\" + projectName + "\\parse_results\\parseResult" + "_" + aParser.getLanguage().getLangName() + "_" + Calendar.getInstance().getTimeInMillis() + "FILE.csv";
 	    	String classCsvFileName = ApplicationProperties.get("repositorylocation") + "\\" + projectName + "\\parse_results\\parseResult" + "_" + aParser.getLanguage().getLangName() + "_" + Calendar.getInstance().getTimeInMillis() + "CLASS.csv"; 

@@ -26,10 +26,6 @@ import definitions.metrics.CommonMetricTypes;
  * DataContext is a generic tree based data structure for storing variables.
  * Node SiblingNode SiblingElement For instance if there are multiple occurrence
  * of the same element in the same node to
- * 
- * Creation date: (26.03.2008 23:45:32)
- * 
- * @author: Gurhan, Caner
  */
 public class DataContext implements Serializable {
 
