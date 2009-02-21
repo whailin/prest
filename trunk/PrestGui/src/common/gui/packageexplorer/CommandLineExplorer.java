@@ -26,8 +26,8 @@ public class CommandLineExplorer {
 
 		if (args[0].equalsIgnoreCase("-parse")) {
 			packageExplorer.parseManualCmd(args[1]);
-		} else if (args[0].equalsIgnoreCase("-parse")) {
-		} else if (args[0].equalsIgnoreCase("-parse")) {
+		} else if (args[0].equalsIgnoreCase("-addProject")) {
+			packageExplorer.addNewProjectCmd(args[1]);
 		} else {
 			listCommandLineOptions();
 		}

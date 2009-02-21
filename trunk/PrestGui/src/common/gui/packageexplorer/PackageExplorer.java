@@ -252,6 +252,25 @@ public class PackageExplorer {
 			}
 		}
 	}
+	
+	public void addNewProjectCmd(String projectDirectoryStr) {
+		File projectDirectory = new File(projectDirectoryStr);
+		if (projectDirectory != null) {
+			if (!searchRepository(projectDirectory)) {
+				generatePackageExplorerCmd(projectDirectory);
+				new File(ApplicationProperties.get("repositorylocation") + "\\"
+						+ projectDirectory.getName()).mkdirs();
+				new File(ApplicationProperties.get("repositorylocation") + "\\"
+						+ projectDirectory.getName() + "\\parse_results")
+						.mkdirs();
+				new File(ApplicationProperties.get("repositorylocation") + "\\"
+						+ projectDirectory.getName() + "\\arff_files").mkdirs();
+				createMetadataForProject(projectDirectory);
+			} else {
+				System.out.println("ERROR: The project you tried to add has already been added!");
+			}
+		}
+	}
 
 	public void generatePackageExplorer(File projectDirectory) {
 		ExtendedTreeNode projectNode = new ExtendedTreeNode(projectDirectory
@@ -270,6 +289,25 @@ public class PackageExplorer {
 		rootNode.add(projectNode);
 		projectNamesHashMap.put(projectDirectory.getName(), projectDirectory);
 		treeModel.reload();
+	}
+	
+	public void generatePackageExplorerCmd(File projectDirectory) {
+		ExtendedTreeNode projectNode = new ExtendedTreeNode(projectDirectory
+				.getName());
+		projectNode.setProjectPath(projectDirectory.getAbsolutePath());
+		common.DirectoryListing dl = new DirectoryListing();
+		dl.visitAllFiles(projectDirectory);
+		List<File> list = dl.getFileNames();
+		String[] fileNames = new String[list.size()];
+		projectNode = addNodes(projectNode, projectDirectory, projectDirectory
+				.getAbsolutePath(), true);
+
+		for (int index = 0; index < list.size(); index++) {
+			fileNames[index] = list.get(index).getPath();
+		}
+//		rootNode.add(projectNode);
+//		projectNamesHashMap.put(projectDirectory.getName(), projectDirectory);
+//		treeModel.reload();
 	}
 
 	private ExtendedTreeNode addNodes(ExtendedTreeNode curTop, File dir,
