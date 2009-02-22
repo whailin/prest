@@ -54,16 +54,15 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="tabPaneAnalysisResults" pref="824" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
                           <Component id="tabPaneAnalysisResults" pref="418" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -98,9 +97,7 @@
                                           <Component id="pnlDataCardLayout" pref="799" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
-                                          <Component id="btnOpenFile" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="118" max="-2" attributes="0"/>
                                           <Component id="pnlCategorizeButtons" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
@@ -112,11 +109,8 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="btnOpenFile" min="-2" max="-2" attributes="1"/>
-                                      <Component id="pnlCategorizeButtons" min="-2" pref="22" max="-2" attributes="1"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="pnlCategorizeButtons" min="-2" pref="22" max="-2" attributes="1"/>
+                                  <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                                   <Component id="pnlDataCardLayout" pref="339" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
@@ -124,15 +118,6 @@
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JButton" name="btnOpenFile">
-                          <Properties>
-                            <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                              <action class="prest.PrestView" id="openDataFile" methodName="openDataFile"/>
-                            </Property>
-                            <Property name="text" type="java.lang.String" resourceKey="btnOpenFile.text"/>
-                            <Property name="name" type="java.lang.String" value="btnOpenFile" noResource="true"/>
-                          </Properties>
-                        </Component>
                         <Container class="javax.swing.JPanel" name="pnlCategorizeButtons">
                           <Properties>
                             <Property name="name" type="java.lang.String" value="pnlCategorizeButtons" noResource="true"/>
@@ -645,312 +630,6 @@
                                 </Container>
                               </SubComponents>
                             </Container>
-                          </SubComponents>
-                        </Container>
-                      </SubComponents>
-                    </Container>
-                    <Container class="javax.swing.JPanel" name="pnlClassifyTab">
-                      <Properties>
-                        <Property name="name" type="java.lang.String" value="pnlClassifyTab" noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="tabPaneAnalysisResults.setSelectedIndex(0);"/>
-                      </AuxValues>
-                      <Constraints>
-                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                          <JTabbedPaneConstraints tabName="Classify">
-                            <Property name="tabTitle" type="java.lang.String" resourceKey="pnlClassifyTab.TabConstraints.tabTitle"/>
-                          </JTabbedPaneConstraints>
-                        </Constraint>
-                      </Constraints>
-
-                      <Layout>
-                        <DimensionLayout dim="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Group type="102" alignment="1" attributes="1">
-                                          <EmptySpace max="32767" attributes="0"/>
-                                          <Component id="classifyStartButton" min="-2" pref="82" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" pref="76" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="jScrollPane1" alignment="0" min="-2" pref="216" max="-2" attributes="0"/>
-                                              <Component id="testOptionsPanel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <Component id="classifierOutputPanel" max="32767" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                        </DimensionLayout>
-                        <DimensionLayout dim="1">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="classifierOutputPanel" alignment="0" max="32767" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="testOptionsPanel" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="classifyStartButton" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="jScrollPane1" pref="171" max="32767" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                        </DimensionLayout>
-                      </Layout>
-                      <SubComponents>
-                        <Container class="javax.swing.JPanel" name="testOptionsPanel">
-                          <Properties>
-                            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                              <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                                <TitledBorder title="Test Options">
-                                  <Property name="titleX" resourceKey="testOptionsPanel.border.title"/>
-                                </TitledBorder>
-                              </Border>
-                            </Property>
-                            <Property name="name" type="java.lang.String" value="testOptionsPanel" noResource="true"/>
-                          </Properties>
-
-                          <Layout>
-                            <DimensionLayout dim="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="lblCassifierName" alignment="0" pref="184" max="32767" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="rbtnSuppliedTestSet" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="rbtnCrossValidation" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="percentageSplitRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="1" attributes="0">
-                                                  <Component id="lblFolds" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="lblPercentage" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                  <Component id="txtPercentageSplit" alignment="0" max="32767" attributes="1"/>
-                                                  <Component id="txtCrossValidation" alignment="0" pref="25" max="32767" attributes="1"/>
-                                              </Group>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Component id="jButton1" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                            </DimensionLayout>
-                            <DimensionLayout dim="1">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="lblCassifierName" min="-2" pref="14" max="-2" attributes="0"/>
-                                      <EmptySpace pref="7" max="32767" attributes="0"/>
-                                      <Component id="rbtnSuppliedTestSet" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="rbtnCrossValidation" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="txtCrossValidation" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="lblFolds" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="percentageSplitRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="txtPercentageSplit" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="lblPercentage" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                            </DimensionLayout>
-                          </Layout>
-                          <SubComponents>
-                            <Component class="javax.swing.JRadioButton" name="rbtnSuppliedTestSet">
-                              <Properties>
-                                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                                  <ComponentRef name="testOptionsButtonGroup"/>
-                                </Property>
-                                <Property name="selected" type="boolean" value="true"/>
-                                <Property name="text" type="java.lang.String" resourceKey="rbtnSuppliedTestSet.text"/>
-                                <Property name="name" type="java.lang.String" value="rbtnSuppliedTestSet" noResource="true"/>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbtnSuppliedTestSetActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JRadioButton" name="rbtnCrossValidation">
-                              <Properties>
-                                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                                  <ComponentRef name="testOptionsButtonGroup"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" resourceKey="rbtnCrossValidation.text"/>
-                                <Property name="name" type="java.lang.String" value="rbtnCrossValidation" noResource="true"/>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbtnCrossValidationActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JRadioButton" name="percentageSplitRadioButton">
-                              <Properties>
-                                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                                  <ComponentRef name="testOptionsButtonGroup"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" resourceKey="percentageSplitRadioButton.text"/>
-                                <Property name="name" type="java.lang.String" value="percentageSplitRadioButton" noResource="true"/>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="percentageSplitRadioButtonActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="lblFolds">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" resourceKey="lblFolds.text"/>
-                                <Property name="enabled" type="boolean" value="false"/>
-                                <Property name="name" type="java.lang.String" value="lblFolds" noResource="true"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="lblPercentage">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" resourceKey="lblPercentage.text"/>
-                                <Property name="enabled" type="boolean" value="false"/>
-                                <Property name="name" type="java.lang.String" value="lblPercentage" noResource="true"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="txtCrossValidation">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" resourceKey="txtCrossValidation.text"/>
-                                <Property name="enabled" type="boolean" value="false"/>
-                                <Property name="name" type="java.lang.String" value="txtCrossValidation" noResource="true"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="txtPercentageSplit">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" resourceKey="txtPercentageSplit.text"/>
-                                <Property name="enabled" type="boolean" value="false"/>
-                                <Property name="name" type="java.lang.String" value="txtPercentageSplit" noResource="true"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="jLabel11">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" resourceKey="jLabel11.text"/>
-                                <Property name="name" type="java.lang.String" value="jLabel11" noResource="true"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JButton" name="jButton1">
-                              <Properties>
-                                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                                  <action class="prestgui.PrestGuiView" id="createClassifierWizard" methodName="createClassifierWizard"/>
-                                </Property>
-                                <Property name="name" type="java.lang.String" value="jButton1" noResource="true"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="lblCassifierName">
-                              <Properties>
-                                <Property name="text" type="java.lang.String" resourceKey="lblCassifierName.text"/>
-                                <Property name="name" type="java.lang.String" value="lblCassifierName" noResource="true"/>
-                              </Properties>
-                              <AuxValues>
-                                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="lblCassifierName.setText(&quot;&quot;);"/>
-                              </AuxValues>
-                            </Component>
-                          </SubComponents>
-                        </Container>
-                        <Container class="javax.swing.JPanel" name="classifierOutputPanel">
-                          <Properties>
-                            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                              <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                                <TitledBorder title="Classifier Output">
-                                  <Property name="titleX" resourceKey="classifierOutputPanel.border.title"/>
-                                </TitledBorder>
-                              </Border>
-                            </Property>
-                            <Property name="name" type="java.lang.String" value="classifierOutputPanel" noResource="true"/>
-                          </Properties>
-
-                          <Layout>
-                            <DimensionLayout dim="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="outputTextAreaScrollPane" alignment="0" pref="557" max="32767" attributes="0"/>
-                              </Group>
-                            </DimensionLayout>
-                            <DimensionLayout dim="1">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="outputTextAreaScrollPane" alignment="0" pref="338" max="32767" attributes="0"/>
-                              </Group>
-                            </DimensionLayout>
-                          </Layout>
-                          <SubComponents>
-                            <Container class="javax.swing.JScrollPane" name="outputTextAreaScrollPane">
-                              <Properties>
-                                <Property name="name" type="java.lang.String" value="outputTextAreaScrollPane" noResource="true"/>
-                              </Properties>
-                              <AuxValues>
-                                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-                              </AuxValues>
-
-                              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-                              <SubComponents>
-                                <Component class="javax.swing.JTextArea" name="outputTextArea">
-                                  <Properties>
-                                    <Property name="columns" type="int" value="20"/>
-                                    <Property name="font" type="java.awt.Font" resourceKey="outputTextArea.font"/>
-                                    <Property name="rows" type="int" value="5"/>
-                                    <Property name="name" type="java.lang.String" value="outputTextArea" noResource="true"/>
-                                  </Properties>
-                                </Component>
-                              </SubComponents>
-                            </Container>
-                          </SubComponents>
-                        </Container>
-                        <Component class="javax.swing.JButton" name="classifyStartButton">
-                          <Properties>
-                            <Property name="text" type="java.lang.String" resourceKey="classifyStartButton.text"/>
-                            <Property name="name" type="java.lang.String" value="classifyStartButton" noResource="true"/>
-                          </Properties>
-                          <Events>
-                            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="classifyStartButtonMouseClicked"/>
-                          </Events>
-                        </Component>
-                        <Container class="javax.swing.JScrollPane" name="jScrollPane1">
-                          <Properties>
-                            <Property name="name" type="java.lang.String" value="jScrollPane1" noResource="true"/>
-                          </Properties>
-                          <AuxValues>
-                            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-                          </AuxValues>
-
-                          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-                          <SubComponents>
-                            <Component class="javax.swing.JList" name="listCategorizers">
-                              <Properties>
-                                <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
-                                  <StringArray count="0"/>
-                                </Property>
-                                <Property name="selectionMode" type="int" value="0"/>
-                                <Property name="name" type="java.lang.String" value="listCategorizers" noResource="true"/>
-                              </Properties>
-                              <AuxValues>
-                                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="MouseListener listMouseListener = new CategorizerListMouseListener();&#xa;listCategorizers.addMouseListener(listMouseListener);"/>
-                              </AuxValues>
-                            </Component>
                           </SubComponents>
                         </Container>
                       </SubComponents>

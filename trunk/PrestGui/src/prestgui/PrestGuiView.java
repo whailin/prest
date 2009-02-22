@@ -172,7 +172,6 @@ public class PrestGuiView extends FrameView {
         analysisResultsPanel = new javax.swing.JPanel();
         tabPaneAnalysisResults = new javax.swing.JTabbedPane();
         pnlDataTab = new javax.swing.JPanel();
-        btnOpenFile = new javax.swing.JButton();
         pnlCategorizeButtons = new javax.swing.JPanel();
         btnLoadCategorizer = new javax.swing.JButton();
         btnCategorize = new javax.swing.JButton();
@@ -198,24 +197,6 @@ public class PrestGuiView extends FrameView {
         tabPaneDataFileAnalyze = new javax.swing.JTabbedPane();
         pnlDataFile = new javax.swing.JPanel();
         jLabel23 = new javax.swing.JLabel();
-        pnlClassifyTab = new javax.swing.JPanel();
-        testOptionsPanel = new javax.swing.JPanel();
-        rbtnSuppliedTestSet = new javax.swing.JRadioButton();
-        rbtnCrossValidation = new javax.swing.JRadioButton();
-        percentageSplitRadioButton = new javax.swing.JRadioButton();
-        lblFolds = new javax.swing.JLabel();
-        lblPercentage = new javax.swing.JLabel();
-        txtCrossValidation = new javax.swing.JTextField();
-        txtPercentageSplit = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        lblCassifierName = new javax.swing.JLabel();
-        classifierOutputPanel = new javax.swing.JPanel();
-        outputTextAreaScrollPane = new javax.swing.JScrollPane();
-        outputTextArea = new javax.swing.JTextArea();
-        classifyStartButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        listCategorizers = new javax.swing.JList();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         btnLoadTraining = new javax.swing.JButton();
@@ -340,15 +321,11 @@ public class PrestGuiView extends FrameView {
 
         pnlDataTab.setName("pnlDataTab"); // NOI18N
 
-        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class).getContext().getActionMap(PrestGuiView.class, this);
-        btnOpenFile.setAction(actionMap.get("openDataFile")); // NOI18N
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class).getContext().getResourceMap(PrestGuiView.class);
-        btnOpenFile.setText(resourceMap.getString("btnOpenFile.text")); // NOI18N
-        btnOpenFile.setName("btnOpenFile"); // NOI18N
-
         pnlCategorizeButtons.setName("pnlCategorizeButtons"); // NOI18N
 
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class).getContext().getActionMap(PrestGuiView.class, this);
         btnLoadCategorizer.setAction(actionMap.get("loadCategorizer")); // NOI18N
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class).getContext().getResourceMap(PrestGuiView.class);
         btnLoadCategorizer.setText(resourceMap.getString("btnLoadCategorizer.text")); // NOI18N
         btnLoadCategorizer.setName("btnLoadCategorizer"); // NOI18N
         btnLoadCategorizer.setVisible(false);
@@ -640,9 +617,7 @@ public class PrestGuiView extends FrameView {
                         .addContainerGap()
                         .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnlDataTabLayout.createSequentialGroup()
-                        .addGap(9, 9, 9)
-                        .addComponent(btnOpenFile)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(118, 118, 118)
                         .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -650,199 +625,13 @@ public class PrestGuiView extends FrameView {
             pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlDataTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnOpenFile)
-                    .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(7, 7, 7)
                 .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         tabPaneAnalysisResults.addTab(resourceMap.getString("pnlDataTab.TabConstraints.tabTitle"), pnlDataTab); // NOI18N
-
-        pnlClassifyTab.setName("pnlClassifyTab"); // NOI18N
-
-        testOptionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("testOptionsPanel.border.title"))); // NOI18N
-        testOptionsPanel.setName("testOptionsPanel"); // NOI18N
-
-        testOptionsButtonGroup.add(rbtnSuppliedTestSet);
-        rbtnSuppliedTestSet.setSelected(true);
-        rbtnSuppliedTestSet.setText(resourceMap.getString("rbtnSuppliedTestSet.text")); // NOI18N
-        rbtnSuppliedTestSet.setName("rbtnSuppliedTestSet"); // NOI18N
-        rbtnSuppliedTestSet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rbtnSuppliedTestSetActionPerformed(evt);
-            }
-        });
-
-        testOptionsButtonGroup.add(rbtnCrossValidation);
-        rbtnCrossValidation.setText(resourceMap.getString("rbtnCrossValidation.text")); // NOI18N
-        rbtnCrossValidation.setName("rbtnCrossValidation"); // NOI18N
-        rbtnCrossValidation.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rbtnCrossValidationActionPerformed(evt);
-            }
-        });
-
-        testOptionsButtonGroup.add(percentageSplitRadioButton);
-        percentageSplitRadioButton.setText(resourceMap.getString("percentageSplitRadioButton.text")); // NOI18N
-        percentageSplitRadioButton.setName("percentageSplitRadioButton"); // NOI18N
-        percentageSplitRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                percentageSplitRadioButtonActionPerformed(evt);
-            }
-        });
-
-        lblFolds.setText(resourceMap.getString("lblFolds.text")); // NOI18N
-        lblFolds.setEnabled(false);
-        lblFolds.setName("lblFolds"); // NOI18N
-
-        lblPercentage.setText(resourceMap.getString("lblPercentage.text")); // NOI18N
-        lblPercentage.setEnabled(false);
-        lblPercentage.setName("lblPercentage"); // NOI18N
-
-        txtCrossValidation.setText(resourceMap.getString("txtCrossValidation.text")); // NOI18N
-        txtCrossValidation.setEnabled(false);
-        txtCrossValidation.setName("txtCrossValidation"); // NOI18N
-
-        txtPercentageSplit.setText(resourceMap.getString("txtPercentageSplit.text")); // NOI18N
-        txtPercentageSplit.setEnabled(false);
-        txtPercentageSplit.setName("txtPercentageSplit"); // NOI18N
-
-        jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
-        jLabel11.setName("jLabel11"); // NOI18N
-
-        jButton1.setAction(actionMap.get("createClassifierWizard")); // NOI18N
-        jButton1.setName("jButton1"); // NOI18N
-
-        lblCassifierName.setText(resourceMap.getString("lblCassifierName.text")); // NOI18N
-        lblCassifierName.setName("lblCassifierName"); // NOI18N
-        lblCassifierName.setText("");
-
-        javax.swing.GroupLayout testOptionsPanelLayout = new javax.swing.GroupLayout(testOptionsPanel);
-        testOptionsPanel.setLayout(testOptionsPanelLayout);
-        testOptionsPanelLayout.setHorizontalGroup(
-            testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(testOptionsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblCassifierName, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-                    .addGroup(testOptionsPanelLayout.createSequentialGroup()
-                        .addGroup(testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rbtnSuppliedTestSet)
-                            .addComponent(rbtnCrossValidation)
-                            .addComponent(percentageSplitRadioButton))
-                        .addGap(15, 15, 15)
-                        .addGroup(testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(lblFolds)
-                            .addComponent(lblPercentage))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txtPercentageSplit)
-                            .addComponent(txtCrossValidation, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)))
-                    .addGroup(testOptionsPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel11)
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton1)))
-                .addContainerGap())
-        );
-        testOptionsPanelLayout.setVerticalGroup(
-            testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, testOptionsPanelLayout.createSequentialGroup()
-                .addGroup(testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(jButton1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblCassifierName, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
-                .addComponent(rbtnSuppliedTestSet)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(rbtnCrossValidation)
-                    .addComponent(txtCrossValidation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblFolds))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(testOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(percentageSplitRadioButton)
-                    .addComponent(txtPercentageSplit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblPercentage))
-                .addContainerGap())
-        );
-
-        classifierOutputPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("classifierOutputPanel.border.title"))); // NOI18N
-        classifierOutputPanel.setName("classifierOutputPanel"); // NOI18N
-
-        outputTextAreaScrollPane.setName("outputTextAreaScrollPane"); // NOI18N
-
-        outputTextArea.setColumns(20);
-        outputTextArea.setFont(resourceMap.getFont("outputTextArea.font")); // NOI18N
-        outputTextArea.setRows(5);
-        outputTextArea.setName("outputTextArea"); // NOI18N
-        outputTextAreaScrollPane.setViewportView(outputTextArea);
-
-        javax.swing.GroupLayout classifierOutputPanelLayout = new javax.swing.GroupLayout(classifierOutputPanel);
-        classifierOutputPanel.setLayout(classifierOutputPanelLayout);
-        classifierOutputPanelLayout.setHorizontalGroup(
-            classifierOutputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(outputTextAreaScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
-        );
-        classifierOutputPanelLayout.setVerticalGroup(
-            classifierOutputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(outputTextAreaScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
-        );
-
-        classifyStartButton.setText(resourceMap.getString("classifyStartButton.text")); // NOI18N
-        classifyStartButton.setName("classifyStartButton"); // NOI18N
-        classifyStartButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                classifyStartButtonMouseClicked(evt);
-            }
-        });
-
-        jScrollPane1.setName("jScrollPane1"); // NOI18N
-
-        listCategorizers.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        listCategorizers.setName("listCategorizers"); // NOI18N
-        MouseListener listMouseListener = new CategorizerListMouseListener();
-        listCategorizers.addMouseListener(listMouseListener);
-        jScrollPane1.setViewportView(listCategorizers);
-
-        javax.swing.GroupLayout pnlClassifyTabLayout = new javax.swing.GroupLayout(pnlClassifyTab);
-        pnlClassifyTab.setLayout(pnlClassifyTabLayout);
-        pnlClassifyTabLayout.setHorizontalGroup(
-            pnlClassifyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlClassifyTabLayout.createSequentialGroup()
-                .addGroup(pnlClassifyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlClassifyTabLayout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(classifyStartButton, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(76, 76, 76))
-                    .addGroup(pnlClassifyTabLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(pnlClassifyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(testOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                .addComponent(classifierOutputPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        pnlClassifyTabLayout.setVerticalGroup(
-            pnlClassifyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlClassifyTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlClassifyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(classifierOutputPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(pnlClassifyTabLayout.createSequentialGroup()
-                        .addComponent(testOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(classifyStartButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-
-        tabPaneAnalysisResults.addTab(resourceMap.getString("pnlClassifyTab.TabConstraints.tabTitle"), pnlClassifyTab); // NOI18N
-        tabPaneAnalysisResults.setSelectedIndex(0);
 
         jPanel1.setName("jPanel1"); // NOI18N
 
@@ -869,13 +658,10 @@ public class PrestGuiView extends FrameView {
 
         chkboxCrossValidate.setAction(actionMap.get("crossValidateAction")); // NOI18N
         chkboxCrossValidate.setName("chkboxCrossValidate"); // NOI18N
-        chkboxCrossValidate.setText(resourceMap.getString("jCheckBox1.text"));
-        
-        
+
         jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
         jLabel1.setName("jLabel1"); // NOI18N
-        
-        jCheckBoxNormalize.setAction(actionMap.get("normalizeDataAction"));
+
         jCheckBoxNormalize.setText(resourceMap.getString("jCheckBoxNormalize.text")); // NOI18N
         jCheckBoxNormalize.setName("jCheckBoxNormalize"); // NOI18N
 
@@ -981,14 +767,13 @@ public class PrestGuiView extends FrameView {
             .addGroup(analysisResultsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 824, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(4, 4, 4))
         );
         analysisResultsPanelLayout.setVerticalGroup(
             analysisResultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(analysisResultsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(22, 22, 22)
+                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE))
         );
 
         mainContentSplitPanel.setRightComponent(analysisResultsPanel);
@@ -1903,123 +1688,14 @@ public class PrestGuiView extends FrameView {
 		// btnTestSet.setEnabled(true);
 	}// GEN-LAST:event_rbtnSuppliedTestSetActionPerformed
 
-	private void rbtnCrossValidationActionPerformed(
-			java.awt.event.ActionEvent evt) {// GEN-FIRST:
-		// event_rbtnCrossValidationActionPerformed
-		disableAllUnnecessaryForCategorizer();
-		lblFolds.setEnabled(true);
-		txtCrossValidation.setEnabled(true);
-	}// GEN-LAST:event_rbtnCrossValidationActionPerformed
 
-	private void percentageSplitRadioButtonActionPerformed(
-			java.awt.event.ActionEvent evt) {// GEN-FIRST:
-		// event_percentageSplitRadioButtonActionPerformed
-		disableAllUnnecessaryForCategorizer();
-		lblPercentage.setEnabled(true);
-		txtPercentageSplit.setEnabled(true);
-	}// GEN-LAST:event_percentageSplitRadioButtonActionPerformed
 
-	private void classifyStartButtonMouseClicked(java.awt.event.MouseEvent evt) {// GEN
-		// -
-		// FIRST
-		// :
-		// event_classifyStartButtonMouseClicked
-		ConfusionMatrix collMatrix = null;
-		Option[] options = null;
-		categorizerExecutor = ParserExecutor.getCategorizerExecutor();
-		if (categorizerExecutor == null) {
-			JOptionPane.showMessageDialog(null,
-					"Please create a classifier first!",
-					"Classifier Not Found", JOptionPane.ERROR_MESSAGE);
-		} else {
-			lblCassifierName.setText(categorizerExecutor
-					.getcategorizerClassName());
-			categorizerExecutor.loadDataSet(arffDataSet);
-			if (rbtnSuppliedTestSet.isSelected()) {
-				DataSet testSet = openDataSetFile();
-				categorizerExecutor.setTestSet(testSet);
-				try {
-					collMatrix = categorizerExecutor.instanceValidate();
-				} catch (Exception ex) {
-					common.monitor.Logger.error(PrestGuiView.class.getName()
-							+ " " + ex.getMessage());
-				}
-			} else if (rbtnCrossValidation.isSelected()) {
-				boolean okay = true;
-				int foldValue = 0;
-				try {
-					foldValue = Integer.parseInt(txtCrossValidation.getText());
-					if (foldValue < 0) {
-						throw new Exception();
-					}
-				} catch (Exception e) {
-					okay = false;
-					JOptionPane.showMessageDialog(null,
-							"Percentage value must be a positive integer.",
-							"Wrong Input", JOptionPane.ERROR_MESSAGE);
-				}
-				if (okay) {
-					try {
-						categorizerExecutor.crossValidate(foldValue);
-					} catch (Exception ex) {
-						Logger.getLogger(PrestGuiView.class.getName()).log(
-								Level.SEVERE, null, ex);
-					}
-				}
-			} else {
-				boolean okay = true;
-				String strPercentageValue = txtPercentageSplit.getText();
-				double percentageValue = 0;
-				try {
-					int percentage = Integer.parseInt(strPercentageValue);
-					if (percentage < 0 || percentage > 100) {
-						throw new Exception();
-					} else {
-						percentageValue = percentage / 100;
-					}
 
-				} catch (Exception e) {
-					okay = false;
-					JOptionPane
-							.showMessageDialog(
-									null,
-									"Percentage value must be an integer in between 0-100",
-									"Wrong Input", JOptionPane.ERROR_MESSAGE);
-				}
-				if (okay) {
-					options = new Option[2];
-					options[0] = new Option();
-					options[0].setLabel("Sampling");
-					options[0].setValue("equalDistribution");
-					options[1] = new Option();
-					options[1].setLabel("TrainDataPercentage");
-					options[1].setValue(String.valueOf(percentageValue));
 
-					categorizerExecutor.setOptions(options);
-					try {
-						collMatrix = categorizerExecutor
-								.portionValidate(options);
-					} catch (Exception ex) {
-						common.monitor.Logger.error(PrestGuiView.class
-								.getName()
-								+ " " + ex.getMessage());
-					}
-
-				}
-			}
-			if (collMatrix != null) {
-				outputTextArea.setText(collMatrix.toString());
-			}
-
-			updateCategorizerList();
-			ParserExecutor.setCategorizerExecutor(categorizerExecutor);
-		}
-
-	}// GEN-LAST:event_classifyStartButtonMouseClicked
 
 	private void updateCategorizerList() {
 
-		listCategorizers.removeAll();
+		//listCategorizers.removeAll();
 
 		Vector<Categorizer> catList = categorizerExecutor.getCategorizers();
 		List<String> itemList = new ArrayList<String>();
@@ -2031,7 +1707,7 @@ public class PrestGuiView extends FrameView {
 				itemList.add("Categorizer_" + (i + 1));
 			}
 
-			listCategorizers.setListData(itemList.toArray());
+			//listCategorizers.setListData(itemList.toArray());
 		}
 	}
 
@@ -2336,10 +2012,6 @@ public class PrestGuiView extends FrameView {
 	private void disableAllUnnecessaryForCategorizer() {
 		List<JComponent> componentList = new ArrayList<JComponent>();
 
-		componentList.add(lblFolds);
-		componentList.add(txtCrossValidation);
-		componentList.add(lblPercentage);
-		componentList.add(txtPercentageSplit);
 
 		ComponentState.setEnabledDisabled(componentList, false);
 	}
@@ -2351,7 +2023,6 @@ public class PrestGuiView extends FrameView {
 		Components.classMetricsDataSetPanel = this.classMetricsDataSetPanel;
 		Components.methodMetricsDataSetPanel = this.methodMetricsDataSetPanel;
 		Components.cmbMetricGroups = this.cmbMetricGroups;
-		Components.confuseMatrixDisplayArea = this.outputTextArea;
 		Components.languageRadioButtonGroupPanel = this.pnlLanguageRadioPanel;
 		Components.languageButtonGroup = this.btngLanguageGroup;
 		Components.classMetricsThresholdPanel = this.classMetricsThresholdPanel;
@@ -3348,7 +3019,6 @@ public class PrestGuiView extends FrameView {
     private javax.swing.JButton btnLoadCategorizer;
     private javax.swing.JButton btnLoadTest;
     private javax.swing.JButton btnLoadTraining;
-    private javax.swing.JButton btnOpenFile;
     private javax.swing.JButton btnStartWeka;
     private javax.swing.JButton btnStoreCategorizer;
     private javax.swing.JButton btnThresholdWizardBack;
@@ -3371,8 +3041,6 @@ public class PrestGuiView extends FrameView {
     private javax.swing.JPanel classMetricsDataSetPanel;
     private javax.swing.JTabbedPane classMetricsTabbedPane;
     private javax.swing.JPanel classMetricsThresholdPanel;
-    private javax.swing.JPanel classifierOutputPanel;
-    private javax.swing.JButton classifyStartButton;
     private javax.swing.JComboBox cmbMetricGroups;
     private javax.swing.JComboBox cmbRiskLevels;
     private javax.swing.JComboBox cmbThresholdMetricList;
@@ -3387,12 +3055,10 @@ public class PrestGuiView extends FrameView {
     private javax.swing.JPanel fileMetricsThresholdPanel;
     private javax.swing.JMenuItem filterMenuItem;
     private javax.swing.JDialog filterWizardDialog;
-    private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBoxNormalize;
     private javax.swing.JComboBox jComboBoxChooseAlgorithm;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
@@ -3411,14 +3077,10 @@ public class PrestGuiView extends FrameView {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JLabel lblCassifierName;
-    private javax.swing.JLabel lblFolds;
-    private javax.swing.JLabel lblPercentage;
     private javax.swing.JLabel lblThresholdExpression;
     private javax.swing.JLabel lblThresholdOperand2;
     private javax.swing.JLabel lblThresholdRiskLevel;
@@ -3426,7 +3088,6 @@ public class PrestGuiView extends FrameView {
     private javax.swing.JLabel lblVirtualMetricName;
     private javax.swing.JLabel lblVmOperand2;
     private javax.swing.JList listAllMetrics;
-    private javax.swing.JList listCategorizers;
     private javax.swing.JList listFilterMetrics;
     private javax.swing.JSplitPane mainContentSplitPanel;
     private javax.swing.JPanel mainPanel;
@@ -3435,14 +3096,10 @@ public class PrestGuiView extends FrameView {
     private javax.swing.JTabbedPane methodMetricsTabbedPane;
     private javax.swing.JPanel methodMetricsThresholdPanel;
     private javax.swing.JPanel metricsCardLayoutPanel;
-    private javax.swing.JTextArea outputTextArea;
-    private javax.swing.JScrollPane outputTextAreaScrollPane;
     private javax.swing.JPanel packageMetricsDataSetPanel;
     private javax.swing.JTabbedPane packageMetricsTabbedPane;
     private javax.swing.JPanel packageMetricsThresholdPanel;
-    private javax.swing.JRadioButton percentageSplitRadioButton;
     private javax.swing.JPanel pnlCategorizeButtons;
-    private javax.swing.JPanel pnlClassifyTab;
     private javax.swing.JPanel pnlDataCardLayout;
     private javax.swing.JPanel pnlDataFile;
     private javax.swing.JPanel pnlDataFileAnalyze;
@@ -3464,8 +3121,6 @@ public class PrestGuiView extends FrameView {
     private javax.swing.JPanel pnlVmSettings;
     private javax.swing.JPanel pnlthresholdWizardMain;
     private javax.swing.JProgressBar progressBar;
-    private javax.swing.JRadioButton rbtnCrossValidation;
-    private javax.swing.JRadioButton rbtnSuppliedTestSet;
     private javax.swing.JRadioButton rbtnThresholdOperator1Cmb;
     private javax.swing.JRadioButton rbtnThresholdOperator2Cmb;
     private javax.swing.JRadioButton rbtnThresholdOperator2Txt;
@@ -3481,11 +3136,8 @@ public class PrestGuiView extends FrameView {
     private javax.swing.JTabbedPane tabPaneAnalysisResults;
     private javax.swing.JTabbedPane tabPaneDataFileAnalyze;
     private javax.swing.ButtonGroup testOptionsButtonGroup;
-    private javax.swing.JPanel testOptionsPanel;
     private javax.swing.JMenuItem thresholdMenuItem;
     private javax.swing.JDialog thresholdWizardDialog;
-    private javax.swing.JTextField txtCrossValidation;
-    private javax.swing.JTextField txtPercentageSplit;
     private javax.swing.JTextField txtThresholdOperator1;
     private javax.swing.JTextField txtThresholdOperator2;
     private javax.swing.JTextField txtVmMetricName;
