@@ -252,7 +252,7 @@ public class PackageExplorer {
 			}
 		}
 	}
-	
+
 	public void addNewProjectCmd(String projectDirectoryStr) {
 		File projectDirectory = new File(projectDirectoryStr);
 		if (projectDirectory != null) {
@@ -267,7 +267,8 @@ public class PackageExplorer {
 						+ projectDirectory.getName() + "\\arff_files").mkdirs();
 				createMetadataForProject(projectDirectory);
 			} else {
-				System.out.println("ERROR: The project you tried to add has already been added!");
+				System.out
+						.println("ERROR: The project you tried to add has already been added!");
 			}
 		}
 	}
@@ -290,7 +291,7 @@ public class PackageExplorer {
 		projectNamesHashMap.put(projectDirectory.getName(), projectDirectory);
 		treeModel.reload();
 	}
-	
+
 	public void generatePackageExplorerCmd(File projectDirectory) {
 		ExtendedTreeNode projectNode = new ExtendedTreeNode(projectDirectory
 				.getName());
@@ -305,9 +306,6 @@ public class PackageExplorer {
 		for (int index = 0; index < list.size(); index++) {
 			fileNames[index] = list.get(index).getPath();
 		}
-//		rootNode.add(projectNode);
-//		projectNamesHashMap.put(projectDirectory.getName(), projectDirectory);
-//		treeModel.reload();
 	}
 
 	private ExtendedTreeNode addNodes(ExtendedTreeNode curTop, File dir,
@@ -365,13 +363,17 @@ public class PackageExplorer {
 						JOptionPane.INFORMATION_MESSAGE);
 				lastParsedProjectPath = projectDirectory.getAbsolutePath();
 				displayAllMetrics();
+			} else {
+				JOptionPane.showMessageDialog(null,
+						"There was an error while parsing the project.",
+						"Parse Result", JOptionPane.ERROR_MESSAGE);
 			}
 		} catch (Exception ex) {
 			Logger.error("Exception in parsing project: "
 					+ projectDirectory.getName() + " " + ex.getMessage());
 		}
 	}
-	
+
 	public void parseManualCmd(String projectDirectoryStr) {
 		int result;
 		try {
@@ -380,7 +382,9 @@ public class PackageExplorer {
 			if (result == ParserExecutor.PARSING_SUCCESSFUL) {
 				System.out.println("Project parsed successfully.");
 				lastParsedProjectPath = projectDirectory.getAbsolutePath();
-				//displayAllMetrics();
+			} else {
+				System.out
+						.println("There was an error while parsing the project.");
 			}
 		} catch (Exception ex) {
 			Logger.error("Exception in parsing project: "
@@ -500,20 +504,20 @@ public class PackageExplorer {
 				TableColumn column = null;
 				column = table.getColumnModel().getColumn(0);
 				int maxSize = (((String) column.getHeaderValue()).length() * 7);
-//				for (int j = 0; j < table.getRowCount(); j++) {
-//					int cellSize = ((String.valueOf(table.getValueAt(j, 0)))
-//							.length() * 7);
-//					if (cellSize > maxSize) {
-//						maxSize = cellSize;
-//					}
-//				}
-//				column.setPreferredWidth(maxSize);
+				// for (int j = 0; j < table.getRowCount(); j++) {
+				// int cellSize = ((String.valueOf(table.getValueAt(j, 0)))
+				// .length() * 7);
+				// if (cellSize > maxSize) {
+				// maxSize = cellSize;
+				// }
+				// }
+				// column.setPreferredWidth(maxSize);
 
 				for (int i = 1; i < table.getColumnModel().getColumnCount(); i++) {
 					column = table.getColumnModel().getColumn(i);
 					maxSize = (((String) column.getHeaderValue()).length() * 7);
 
-					int rowCounter = table.getRowCount()-1;
+					int rowCounter = table.getRowCount() - 1;
 					for (int j = 0; j < rowCounter; j++) {
 
 						int cellSize = ((String.valueOf(table.getValueAt(j, i)))
@@ -524,7 +528,7 @@ public class PackageExplorer {
 					}
 					column.setPreferredWidth(maxSize);
 				}
-				
+
 				MouseListener popupListener = new TableMouseListener(table);
 				table.getTableHeader().addMouseListener(popupListener);
 				JScrollPane scrollPane = new JScrollPane();
