@@ -892,7 +892,7 @@ public class Module {
 	 * This method can be used to set the number of occurences of the
 	 * 'for' keyword in this module
 	 * 
-	 * @param forCount number of occurences of the 'for' keyword
+	 * @param forCount number of occurrences of the 'for' keyword
 	 */
 	public void setForCount(int forCount) {
 		this.forCount = forCount;

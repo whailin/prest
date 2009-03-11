@@ -8,7 +8,8 @@ public enum Language {
     JAVA ("Java", "Java", ".java"),
     C ("C", "C", ".c"),
     CPP ("Cpp", "C++", ".cpp"),
-    JSP ("Jsp", "Jsp", ".jsp")
+    JSP ("Jsp", "Jsp", ".jsp"),
+    PLSQL("PlSql","PL/SQL",".pkb")
     //CSHARP ("CSharp", "C#", ".cs")
     ;
 
@@ -28,6 +29,7 @@ public enum Language {
             LIST.add(C);
             LIST.add(CPP);
             LIST.add(JSP);
+            LIST.add(PLSQL);
             //LIST.add(CSHARP);
     }
 
