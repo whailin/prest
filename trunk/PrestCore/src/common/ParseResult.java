@@ -4,8 +4,6 @@
  */
 package common;
 
-import java.util.List;
-
 import categorizer.core.DataSet;
 import parser.enumeration.Language;
 
@@ -28,25 +26,13 @@ public class ParseResult {
             parseMetricGroups = null;
             parseDataSets = null;
             parseMetricGroups = new ParseMetricGroups(collectedMetrics);
-            
-            if (parserLanguage == parser.enumeration.Language.PLSQL) {
-				//if language is PLSQL then replace package and file metrics
-				replace(parseMetricGroups);
-			}
-			collectedMetrics = null;
+            collectedMetrics = null;
             parseDataSets = new ParseDataSets(parseMetricGroups);
             parseMetricGroups = null;
         }
     }
 
-    private void replace(ParseMetricGroups parseMetricGroups2) {
-    	List<MetricGroup> tempGroup = parseMetricGroups2.getFileMetrics();
-    	parseMetricGroups2.setFileMetrics(parseMetricGroups2.getPackageMetrics());
-    	parseMetricGroups2.setPackageMetrics(tempGroup);
-		
-	}
-
-	public ParseDataSets getParseDataSets() {
+    public ParseDataSets getParseDataSets() {
         return this.parseDataSets;
     }
 
