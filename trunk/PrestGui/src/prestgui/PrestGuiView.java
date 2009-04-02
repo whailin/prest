@@ -11,6 +11,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.directory.InvalidSearchControlsException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
@@ -45,6 +48,8 @@ import org.jdesktop.application.FrameView;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.TaskMonitor;
+
+import com.sd.dev.lib.ISDContext;
 
 import parser.enumeration.Language;
 import wizards.dynamiccategorizer.DynamicCategorizerWizard;
@@ -82,10 +87,27 @@ import executor.ParserExecutor;
 /**
  * The application's main frame.
  */
-public class PrestGuiView extends FrameView {
-	public PrestGuiView(SingleFrameApplication app) {
-		super(app);
 
+// SciDesktop Modification TA_R001	--- class implements WindowListener
+public class PrestGuiView extends FrameView implements WindowListener {
+	
+	// SciDesktop Modification TA_R001	--- additional variables are needed for the created instance
+	private ISDContext sdContext;
+	
+	// SciDesktop Modification TA_R001	--- constructor is modified to allow initialization and handling of context
+	public PrestGuiView(SingleFrameApplication app, ISDContext ctx) {
+		super(app);
+		
+		// SciDesktop Modification TA_R001	--- context initialization and modification of JFrame instance
+		sdContext = ctx;
+		
+		JFrame frame = getFrame();
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frame.addWindowListener(this);
+		
+		if (sdContext != null && sdContext.getMode() == ISDContext.MODE_NATIVE && sdContext.getApplicationIcon() != null)
+			frame.setIconImage(sdContext.getApplicationIcon().getImage());
+		
 		initComponents();
 
 		// status bar initialization - message timeout, idle icon and busy
@@ -811,7 +833,10 @@ public class PrestGuiView extends FrameView {
         switchWorkspaceMenuItem.setName("switchWorkspaceMenuItem"); // NOI18N
         fileMenu.add(switchWorkspaceMenuItem);
 
-        exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
+		// SciDesktop Modification TA_R001	--- exit item is modified to redirect the action to application's terminate method
+		// note that PrestGuiView.properties file is also modified for redefinition of this menu item
+        exitMenuItem.setAction(actionMap.get("terminate")); // NOI18N
+        exitMenuItem.setText(resourceMap.getString("exitMenuItem.text")); // NOI18N
         exitMenuItem.setName("exitMenuItem"); // NOI18N
         fileMenu.add(exitMenuItem);
 
@@ -1659,6 +1684,13 @@ public class PrestGuiView extends FrameView {
 
 	// <editor-fold defaultstate="collapsed" desc="Actions">
 
+	// SciDesktop Modification TA_R001	--- terminate action (for the frame menu) is introduced here 
+	@Action
+	public void terminate() {
+		PrestGuiApp app = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class);
+		app.terminate();
+	}
+	
 	@Action
 	public void switchWorkspace() {
 		File repositoryFile = PrestGuiApp.getProjectDirectoryFromUser();
@@ -1687,10 +1719,6 @@ public class PrestGuiView extends FrameView {
 		disableAllUnnecessaryForCategorizer();
 		// btnTestSet.setEnabled(true);
 	}// GEN-LAST:event_rbtnSuppliedTestSetActionPerformed
-
-
-
-
 
 
 	private void updateCategorizerList() {
@@ -3185,4 +3213,34 @@ public class PrestGuiView extends FrameView {
 	private int busyIconIndex = 0;
 	private JDialog aboutBox;
 	// </editor-fold>
+
+	// SciDesktop Modification TA_R001	--- window listener methods start here 
+	public void windowActivated(WindowEvent arg0)
+	{
+	}
+
+	public void windowClosed(WindowEvent arg0)
+	{
+	}
+
+	public void windowClosing(WindowEvent arg0)
+	{
+		terminate();
+	}
+
+	public void windowDeactivated(WindowEvent arg0)
+	{
+	}
+
+	public void windowDeiconified(WindowEvent arg0)
+	{
+	}
+
+	public void windowIconified(WindowEvent arg0)
+	{
+	}
+
+	public void windowOpened(WindowEvent arg0)
+	{
+	}
 }

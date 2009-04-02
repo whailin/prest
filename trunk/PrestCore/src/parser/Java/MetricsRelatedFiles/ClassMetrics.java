@@ -154,6 +154,20 @@ public class ClassMetrics {
 		Data++;
 	}
 
+	// SciDesktop Modification TA_R001	--- getNormalized (double) introduced to fix a localization bug when localization mandates a different decimal separator 
+	public final float getNormalized(float d)
+	{
+		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
+		return Float.parseFloat(df.format(d).replace((char) 8734, '0').replace((char) 65553,'0').replace(dp, '.'));
+	}
+
+	// SciDesktop Modification TA_R001	--- getNormalized (float) introduced to fix a localization bug when localization mandates a different decimal separator 
+	public final double getNormalized(double d)
+	{
+		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
+		return Double.parseDouble(df.format(d).replace((char) 8734, '0').replace((char) 65553,'0').replace(dp, '.'));
+	}
+	
 	// returns the percentage of pub-data among data
 	public float getPercentageOfPubData() {
 		if (Data == 0)
@@ -162,7 +176,8 @@ public class ClassMetrics {
 		else{
 			float temp;
 			temp = (((float) pubData) / Data) * 100;
-			return Float.parseFloat(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalized(temp);
 		}
 	}
 
@@ -504,7 +519,8 @@ public class ClassMetrics {
 		else{
 			double temp;
 			temp = 1 / getHalsteadLevel();
-			return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalized(temp);
 		}
 	}
 
@@ -537,7 +553,8 @@ public class ClassMetrics {
 			Level /= getTotalOperands();
 			double temp;
 			temp = Level;
-			return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalized(temp);
 		}
 	}
 
@@ -549,7 +566,8 @@ public class ClassMetrics {
 	public final double getHalsteadProgrammingEffort() {
 		double temp;
 		temp = getHalsteadDifficulty() * getHalsteadVolume();
-		return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalized(temp);
 	}
 
 	public NodePair getHalsteadProgrammingEffortNode() {
@@ -560,7 +578,8 @@ public class ClassMetrics {
 	public final double getHalsteadProgrammingTime() {
 		double temp;
 		temp = getHalsteadProgrammingEffort() / 18;
-		return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalized(temp);
 	}
 
 	public NodePair getHalsteadProgrammingTimeNode() {
@@ -576,7 +595,8 @@ public class ClassMetrics {
 		
 		double temp;
 		temp = java.lang.Math.log10(n) * N;
-		return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalized(temp);
 	}
 
 	public NodePair getHalsteadVolumeNode() {
@@ -591,7 +611,8 @@ public class ClassMetrics {
 		else{
 			double temp;
 			temp = ((double) getConditionCount()) / getDecisionCount();
-			return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalized(temp);
 			
 		}
 	}
@@ -609,7 +630,8 @@ public class ClassMetrics {
 			double temp;
 			temp = ((double) getEssentialComplexity() - 1)
 			/ (getCyclomaticComplexity() - 1);
-			return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalized(temp);
 			
 		}
 	}
@@ -622,7 +644,8 @@ public class ClassMetrics {
 	public final double getCylomaticDensity() {
 		double temp;
 		temp = ((double) getLOC()) / (getCyclomaticComplexity());
-		return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65533,'0'));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalized(temp);
 	}
 
 	public NodePair getCylomaticDensityNode() {
@@ -637,7 +660,8 @@ public class ClassMetrics {
 		
 		double temp;
 		temp = ((double) getEssentialComplexity()) / (cc);
-		return Double.parseDouble(df.format(temp).replace((char) 8734, '0'));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalized(temp);
 	}
 
 	public NodePair getMaintenanceSeverityNode() {

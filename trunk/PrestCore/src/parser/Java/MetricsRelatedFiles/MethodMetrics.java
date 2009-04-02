@@ -333,6 +333,21 @@ public class MethodMetrics {
 
 	// below are the calculation and get functions of more complex metrics that
 	// will be common to methods, classes and packages
+	
+	// SciDesktop Modification TA_R001	--- getNormalized introduced to fix a localization bug when localization mandates a different decimal separator 
+	public final double getNormalized(double d)
+	{
+		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
+		return Double.parseDouble(df.format(d).replace((char) 8734, '0').replace((char) 65553,'0').replace(dp, '.'));
+	}
+	
+	// SciDesktop Modification TA_R001	--- getNormalizedRV introduced to fix a localization bug when localization mandates a different decimal separator 
+	public final double getNormalizedRV(double d)
+	{
+		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
+		return Double.parseDouble(df.format(d).replace("?","0").replace(dp, '.'));
+	}
+
 	public final double getHalsteadDifficulty() {
 		if (getHalsteadLevel() == 0)
 			return 0; // zero is returned instead of positive infinity
@@ -340,7 +355,8 @@ public class MethodMetrics {
 		else {
 			double temp;
 			temp = 1 / getHalsteadLevel();
-			return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalized(temp);
 		}
 	}
 
@@ -369,7 +385,8 @@ public class MethodMetrics {
 			
 			double temp;
 			temp = Level;
-			return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalized(temp);
 			
 		}
 	}
@@ -383,7 +400,8 @@ public class MethodMetrics {
 		
 		double temp;
 		temp = getHalsteadDifficulty() * getHalsteadVolume();
-		return Double.parseDouble(df.format(temp).replace((char) 8734, '0').replace((char) 65553,'0'));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalized(temp);
 		
 	}
 
@@ -395,7 +413,8 @@ public class MethodMetrics {
 	public final double getHalsteadProgrammingTime() {
 		double temp;
 		temp = getHalsteadProgrammingEffort() / 18;
-		return Double.parseDouble(df.format(temp).replace("?","0"));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalizedRV(temp);
 		
 	}
 
@@ -412,7 +431,8 @@ public class MethodMetrics {
 		
 		double temp;
 		temp = java.lang.Math.log10(n) * N;
-		return Double.parseDouble(df.format(temp).replace("?","0"));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalizedRV(temp);
 	}
 
 	public NodePair getHalsteadVolumeNode() {
@@ -427,7 +447,8 @@ public class MethodMetrics {
 		else{
 			double temp;
 			temp = ((double) getConditionCount()) / getDecisionCount();
-			return Double.parseDouble(df.format(temp).replace("?","0"));
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalizedRV(temp);
 		}
 	}
 
@@ -442,9 +463,9 @@ public class MethodMetrics {
 		// return Double.NaN;
 		else{
 			double temp;
-			temp = ((double) getEssentialComplexity() - 1)
-			/ (getCyclomaticComplexity() - 1);
-			return Double.parseDouble(df.format(temp).replace("?","0"));
+			temp = ((double) getEssentialComplexity() - 1)	/ (getCyclomaticComplexity() - 1);
+			// SciDesktop Modification TA_R001	--- calls getnormalization 
+			return getNormalizedRV(temp);
 			
 		}
 	}
@@ -457,7 +478,8 @@ public class MethodMetrics {
 	public final double getCylomaticDensity() {
 		double temp;
 		temp = ((double) getLOC()) / (getCyclomaticComplexity());
-		return Double.parseDouble(df.format(temp).replace("?","0"));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalizedRV(temp);
 	}
 
 	public NodePair getCylomaticDensityNode() {
@@ -472,7 +494,8 @@ public class MethodMetrics {
 		
 		double temp;
 		temp = ((double) getEssentialComplexity()) / (cc);
-		return Double.parseDouble(df.format(temp).replace("?","0"));
+		// SciDesktop Modification TA_R001	--- calls getnormalization 
+		return getNormalizedRV(temp);
 	}
 
 	public NodePair getMaintenanceSeverityNode() {

@@ -10,10 +10,6 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Properties;
 
-/**
- * 
- * @author Gürhan
- */
 public class ApplicationProperties {
 
     private static final String propertiesFileName = "application.properties";
@@ -26,6 +22,12 @@ public class ApplicationProperties {
         initiate(propertiesFileName);
     }
 
+	// SciDesktop Modification TA_R001	--- getPropertiesFileName introduced to allow retrieval of properties file name 
+    public static String getPropertiesFileName()
+    {
+    	return propertiesFileName;
+    }
+    
     public static synchronized void initiateManual(String propertiesFileFullPath) {
         initiate(propertiesFileFullPath);
 
@@ -95,13 +97,14 @@ public class ApplicationProperties {
         return (prop.getProperty(key, defaultValue));
     }
     
-    public static void setRepositoryLocation(String fullPath) {
+	// SciDesktop Modification TA_R001	--- setRepositoryLocation modified to allow specification of properties file path externally
+    public static void setRepositoryLocation(String propFilePath, String fullPath) {
         Writer output = null;
         try {
             //FileWriter always assumes default encoding is OK!
             output = new BufferedWriter(
                     new FileWriter(
-                    new File(propertiesFileName)));
+                    new File(propFilePath != null ? propFilePath : propertiesFileName)));
             output.write("repositorylocation = " + fullPath);
         } catch (Exception ex) {
             Logger.error(ApplicationProperties.class.getName() + 
