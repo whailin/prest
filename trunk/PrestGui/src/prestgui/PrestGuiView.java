@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -23,7 +22,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.naming.directory.InvalidSearchControlsException;
+import javax.swing.DebugGraphics;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
@@ -53,7 +52,6 @@ import com.sd.dev.lib.ISDContext;
 
 import parser.enumeration.Language;
 import wizards.dynamiccategorizer.DynamicCategorizerWizard;
-import categorizer.aiCategorizer.core.ConfusionMatrix;
 import categorizer.core.Categorizer;
 import categorizer.core.CategorizerExecutor;
 import categorizer.core.DataHeader;
@@ -331,11 +329,11 @@ public class PrestGuiView extends FrameView implements WindowListener {
         btnTransferAllToLeft = new javax.swing.JButton();
 
         mainPanel.setName("mainPanel"); // NOI18N
-
-        mainContentSplitPanel.setDividerLocation(100);
-        mainContentSplitPanel.setMinimumSize(new java.awt.Dimension(90, 80));
+        mainContentSplitPanel.setDividerLocation(150);
+        mainContentSplitPanel.setDebugGraphicsOptions(DebugGraphics.LOG_OPTION );
+        mainContentSplitPanel.setMinimumSize(new java.awt.Dimension(150, 80));
         mainContentSplitPanel.setName("mainContentSplitPanel"); // NOI18N
-        mainContentSplitPanel.setPreferredSize(new java.awt.Dimension(90, 80));
+        mainContentSplitPanel.setPreferredSize(new java.awt.Dimension(150, 80));
 
         analysisResultsPanel.setName("analysisResultsPanel"); // NOI18N
 
@@ -804,7 +802,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainContentSplitPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 944, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(mainContentSplitPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 750, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -887,11 +885,11 @@ public class PrestGuiView extends FrameView implements WindowListener {
         statusPanel.setLayout(statusPanelLayout);
         statusPanelLayout.setHorizontalGroup(
             statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 944, Short.MAX_VALUE)
+            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
             .addGroup(statusPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 774, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 750, Short.MAX_VALUE)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statusAnimationLabel)
@@ -1198,7 +1196,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
             virtualMetricWizardDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(virtualMetricWizardDialogLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pnlVmHeader, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pnlVmHeader, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pnlVmCardLayout, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1791,27 +1789,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		// event_cmbVmMetricOperatorItemStateChanged
 		virtualMetricOperand2Visibility();
 
-		// if(evt.getStateChange() == ItemEvent.SELECTED) {
-		// switch(cmbVmMetricOperator.getSelectedIndex()) {
-		// case 0: metricOperator = categorizer.core.MetricOperator.ADD;
-		// secondOperandPanel.setEnabled(true);
-		// case 1: metricOperator = categorizer.core.MetricOperator.SUB;
-		// secondOperandPanel.setEnabled(true);
-		// case 2: metricOperator = categorizer.core.MetricOperator.MUL;
-		// secondOperandPanel.setEnabled(true);
-		// case 3: metricOperator = categorizer.core.MetricOperator.DIV;
-		// secondOperandPanel.setEnabled(true);
-		// case 4: metricOperator = categorizer.core.MetricOperator.POW;
-		// secondOperandPanel.setEnabled(true);
-		// case 5: metricOperator = categorizer.core.MetricOperator.EXP;
-		// secondOperandPanel.setEnabled(false);
-		// case 6: metricOperator = categorizer.core.MetricOperator.LOG;
-		// secondOperandPanel.setEnabled(false);
-		// case 7: metricOperator = categorizer.core.MetricOperator.NOT;
-		// secondOperandPanel.setEnabled(false);
-		// }
-		// }
-	}// GEN-LAST:event_cmbVmMetricOperatorItemStateChanged
+			}// GEN-LAST:event_cmbVmMetricOperatorItemStateChanged
 
 	private void rbtnThresholdOperatorOneTxtStateChanged(
 			javax.swing.event.ChangeEvent evt) {// GEN-FIRST:
@@ -2500,7 +2478,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
 				table);
 		table.addMouseListener(mouseListener);
 
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    	table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		table.setAutoCreateRowSorter(false);
 		table.setColumnSelectionAllowed(false);
 		table.setRowSelectionAllowed(true);
