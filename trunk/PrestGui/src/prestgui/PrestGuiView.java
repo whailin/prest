@@ -217,6 +217,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         tabPaneDataFileAnalyze = new javax.swing.JTabbedPane();
         pnlDataFile = new javax.swing.JPanel();
         jLabel23 = new javax.swing.JLabel();
+        javax.swing.JLabel imageLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         btnLoadTraining = new javax.swing.JButton();
@@ -409,7 +410,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         packageMetricsDataSetPanelLayout.setVerticalGroup(
             packageMetricsDataSetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         packageMetricsTabbedPane.addTab(resourceMap.getString("packageMetricsDataSetPanel.TabConstraints.tabTitle"), packageMetricsDataSetPanel); // NOI18N
@@ -424,7 +425,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         packageMetricsThresholdPanelLayout.setVerticalGroup(
             packageMetricsThresholdPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         packageMetricsTabbedPane.addTab(resourceMap.getString("packageMetricsThresholdPanel.TabConstraints.tabTitle"), packageMetricsThresholdPanel); // NOI18N
@@ -445,7 +446,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         fileMetricsDataSetPanelLayout.setVerticalGroup(
             fileMetricsDataSetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         fileMetricsTabbedPane.addTab(resourceMap.getString("fileMetricsDataSetPanel.TabConstraints.tabTitle"), fileMetricsDataSetPanel); // NOI18N
@@ -460,7 +461,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         fileMetricsThresholdPanelLayout.setVerticalGroup(
             fileMetricsThresholdPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         fileMetricsTabbedPane.addTab(resourceMap.getString("fileMetricsThresholdPanel.TabConstraints.tabTitle"), fileMetricsThresholdPanel); // NOI18N
@@ -481,7 +482,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         classMetricsDataSetPanelLayout.setVerticalGroup(
             classMetricsDataSetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         classMetricsTabbedPane.addTab(resourceMap.getString("classMetricsDataSetPanel.TabConstraints.tabTitle"), classMetricsDataSetPanel); // NOI18N
@@ -496,7 +497,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         classMetricsThresholdPanelLayout.setVerticalGroup(
             classMetricsThresholdPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         classMetricsTabbedPane.addTab(resourceMap.getString("classMetricsThresholdPanel.TabConstraints.tabTitle"), classMetricsThresholdPanel); // NOI18N
@@ -517,7 +518,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         methodMetricsDataSetPanelLayout.setVerticalGroup(
             methodMetricsDataSetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         methodMetricsTabbedPane.addTab(resourceMap.getString("methodMetricsDataSetPanel.TabConstraints.tabTitle"), methodMetricsDataSetPanel); // NOI18N
@@ -532,7 +533,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         methodMetricsThresholdPanelLayout.setVerticalGroup(
             methodMetricsThresholdPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         methodMetricsTabbedPane.addTab(resourceMap.getString("methodMetricsThresholdPanel.TabConstraints.tabTitle"), methodMetricsThresholdPanel); // NOI18N
@@ -577,7 +578,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
                     .addComponent(cmbMetricGroups, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(pnlLanguageRadioPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(metricsCardLayoutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
+                .addComponent(metricsCardLayoutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
         );
 
         pnlDataCardLayout.add(pnlParseResultsAnalyze, "card4");
@@ -605,7 +606,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
             .addGroup(pnlDataFileLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel23)
-                .addContainerGap(263, Short.MAX_VALUE))
+                .addContainerGap(302, Short.MAX_VALUE))
         );
 
         tabPaneDataFileAnalyze.addTab(resourceMap.getString("pnlDataFile.TabConstraints.tabTitle"), pnlDataFile); // NOI18N
@@ -618,10 +619,18 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         pnlDataFileAnalyzeLayout.setVerticalGroup(
             pnlDataFileAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabPaneDataFileAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+            .addComponent(tabPaneDataFileAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
         );
 
         pnlDataCardLayout.add(pnlDataFileAnalyze, "card3");
+
+        imageLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        imageLabel.setIcon(resourceMap.getIcon("imageLabel.icon")); // NOI18N
+        imageLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        imageLabel.setMaximumSize(new java.awt.Dimension(50, 50));
+        imageLabel.setMinimumSize(new java.awt.Dimension(50, 50));
+        imageLabel.setName("imageLabel"); // NOI18N
+        imageLabel.setPreferredSize(new java.awt.Dimension(50, 50));
 
         javax.swing.GroupLayout pnlDataTabLayout = new javax.swing.GroupLayout(pnlDataTab);
         pnlDataTab.setLayout(pnlDataTabLayout);
@@ -629,21 +638,25 @@ public class PrestGuiView extends FrameView implements WindowListener {
             pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlDataTabLayout.createSequentialGroup()
                 .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDataTabLayout.createSequentialGroup()
+                    .addGroup(pnlDataTabLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE))
                     .addGroup(pnlDataTabLayout.createSequentialGroup()
-                        .addGap(118, 118, 118)
-                        .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(128, 128, 128)
+                        .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 351, Short.MAX_VALUE)
+                        .addComponent(imageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         pnlDataTabLayout.setVerticalGroup(
             pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlDataTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(imageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(7, 7, 7)
-                .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -725,7 +738,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jComboBoxChooseAlgorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 91, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 130, Short.MAX_VALUE)
                 .addComponent(btnStartWeka)
                 .addContainerGap())
         );
@@ -753,7 +766,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -788,9 +801,9 @@ public class PrestGuiView extends FrameView implements WindowListener {
         );
         analysisResultsPanelLayout.setVerticalGroup(
             analysisResultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(analysisResultsPanelLayout.createSequentialGroup()
-                .addGap(50, 50, 50)
-                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, analysisResultsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
         );
 
         mainContentSplitPanel.setRightComponent(analysisResultsPanel);

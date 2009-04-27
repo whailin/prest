@@ -55,15 +55,15 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="tabPaneAnalysisResults" pref="945" max="32767" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>
-                          <Component id="tabPaneAnalysisResults" pref="407" max="32767" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="tabPaneAnalysisResults" pref="446" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -93,13 +93,15 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="1" attributes="0">
+                                      <Group type="102" attributes="0">
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="pnlDataCardLayout" pref="920" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace min="-2" pref="118" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="128" max="-2" attributes="0"/>
                                           <Component id="pnlCategorizeButtons" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace pref="351" max="32767" attributes="0"/>
+                                          <Component id="imageLabel" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -110,9 +112,12 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="pnlCategorizeButtons" min="-2" max="-2" attributes="1"/>
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Component id="pnlCategorizeButtons" min="-2" max="-2" attributes="1"/>
+                                      <Component id="imageLabel" min="-2" pref="27" max="-2" attributes="1"/>
+                                  </Group>
                                   <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                                  <Component id="pnlDataCardLayout" pref="316" max="32767" attributes="0"/>
+                                  <Component id="pnlDataCardLayout" pref="355" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -233,7 +238,7 @@
                                               <Component id="pnlLanguageRadioPanel" min="-2" max="-2" attributes="1"/>
                                           </Group>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="metricsCardLayoutPanel" pref="279" max="32767" attributes="0"/>
+                                          <Component id="metricsCardLayoutPanel" pref="318" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                                 </DimensionLayout>
@@ -300,7 +305,7 @@
                                             </DimensionLayout>
                                             <DimensionLayout dim="1">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
+                                                  <EmptySpace min="0" pref="290" max="32767" attributes="0"/>
                                               </Group>
                                             </DimensionLayout>
                                           </Layout>
@@ -325,7 +330,7 @@
                                             </DimensionLayout>
                                             <DimensionLayout dim="1">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
+                                                  <EmptySpace min="0" pref="290" max="32767" attributes="0"/>
                                               </Group>
                                             </DimensionLayout>
                                           </Layout>
@@ -367,7 +372,7 @@
                                             </DimensionLayout>
                                             <DimensionLayout dim="1">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
+                                                  <EmptySpace min="0" pref="290" max="32767" attributes="0"/>
                                               </Group>
                                             </DimensionLayout>
                                           </Layout>
@@ -392,7 +397,7 @@
                                             </DimensionLayout>
                                             <DimensionLayout dim="1">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
+                                                  <EmptySpace min="0" pref="290" max="32767" attributes="0"/>
                                               </Group>
                                             </DimensionLayout>
                                           </Layout>
@@ -434,7 +439,7 @@
                                             </DimensionLayout>
                                             <DimensionLayout dim="1">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
+                                                  <EmptySpace min="0" pref="290" max="32767" attributes="0"/>
                                               </Group>
                                             </DimensionLayout>
                                           </Layout>
@@ -459,7 +464,7 @@
                                             </DimensionLayout>
                                             <DimensionLayout dim="1">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
+                                                  <EmptySpace min="0" pref="290" max="32767" attributes="0"/>
                                               </Group>
                                             </DimensionLayout>
                                           </Layout>
@@ -501,7 +506,7 @@
                                             </DimensionLayout>
                                             <DimensionLayout dim="1">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
+                                                  <EmptySpace min="0" pref="290" max="32767" attributes="0"/>
                                               </Group>
                                             </DimensionLayout>
                                           </Layout>
@@ -526,7 +531,7 @@
                                             </DimensionLayout>
                                             <DimensionLayout dim="1">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
+                                                  <EmptySpace min="0" pref="290" max="32767" attributes="0"/>
                                               </Group>
                                             </DimensionLayout>
                                           </Layout>
@@ -574,7 +579,7 @@
                                 </DimensionLayout>
                                 <DimensionLayout dim="1">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="tabPaneDataFileAnalyze" alignment="0" pref="316" max="32767" attributes="0"/>
+                                      <Component id="tabPaneDataFileAnalyze" alignment="0" pref="355" max="32767" attributes="0"/>
                                   </Group>
                                 </DimensionLayout>
                               </Layout>
@@ -613,7 +618,7 @@
                                               <Group type="102" alignment="0" attributes="0">
                                                   <EmptySpace max="-2" attributes="0"/>
                                                   <Component id="jLabel23" min="-2" max="-2" attributes="0"/>
-                                                  <EmptySpace pref="263" max="32767" attributes="0"/>
+                                                  <EmptySpace pref="302" max="32767" attributes="0"/>
                                               </Group>
                                           </Group>
                                         </DimensionLayout>
@@ -633,6 +638,27 @@
                             </Container>
                           </SubComponents>
                         </Container>
+                        <Component class="javax.swing.JLabel" name="imageLabel">
+                          <Properties>
+                            <Property name="horizontalAlignment" type="int" value="2"/>
+                            <Property name="icon" type="javax.swing.Icon" resourceKey="imageLabel.icon"/>
+                            <Property name="verticalAlignment" type="int" value="1"/>
+                            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[50, 50]"/>
+                            </Property>
+                            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[50, 50]"/>
+                            </Property>
+                            <Property name="name" type="java.lang.String" value="imageLabel" noResource="true"/>
+                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                              <Dimension value="[50, 50]"/>
+                            </Property>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+                          </AuxValues>
+                        </Component>
                       </SubComponents>
                     </Container>
                     <Container class="javax.swing.JPanel" name="jPanel1">
@@ -730,7 +756,7 @@
                                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jComboBoxChooseAlgorithm" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="91" max="32767" attributes="0"/>
+                                      <EmptySpace pref="130" max="32767" attributes="0"/>
                                       <Component id="btnStartWeka" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
@@ -817,7 +843,7 @@
                             </DimensionLayout>
                             <DimensionLayout dim="1">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane4" alignment="1" pref="368" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane4" alignment="1" pref="407" max="32767" attributes="0"/>
                               </Group>
                             </DimensionLayout>
                           </Layout>
