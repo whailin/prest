@@ -2,48 +2,21 @@
 <classpath>
 	<classpathentry kind="src" path="PrestCore/src"/>
 	<classpathentry kind="src" path="PrestGui/src"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/jcommon-1.0.0.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/jericho-html-2.6.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/jfreechart-1.0.1.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/log4j-1.2.11.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/MetricCollectorJavaParser.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/poi-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/poi-contrib-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/poi-scratchpad-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/weka.jar"/>
-	<classpathentry kind="lib" path="bin/PrestCore/lib/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/appframework-1.0.3.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/jcommon-1.0.0.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/jfreechart-1.0.1.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/log4j-1.2.11.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/MetricCollectorJavaParser.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/poi-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/poi-contrib-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/poi-scratchpad-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/swing-worker-1.1.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/swingx.jar"/>
-	<classpathentry kind="lib" path="bin/PrestGui/lib/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/jcommon-1.0.0.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/jericho-html-2.6.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/jfreechart-1.0.1.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/log4j-1.2.11.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/MetricCollectorJavaParser.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/poi-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/poi-contrib-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/poi-scratchpad-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/weka.jar"/>
-	<classpathentry kind="lib" path="PrestCore/lib/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/appframework-1.0.3.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/jcommon-1.0.0.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/jfreechart-1.0.1.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/log4j-1.2.11.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/MetricCollectorJavaParser.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/poi-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/poi-contrib-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/poi-scratchpad-3.0.2-FINAL-20080204.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/swing-worker-1.1.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/swingx.jar"/>
-	<classpathentry kind="lib" path="PrestGui/lib/xercesImpl.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/antlr-2.7.5.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/appframework-1.0.3.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/jcommon-1.0.0.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/jericho-html-2.6.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/jfreechart-1.0.1.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/log4j-1.2.11.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/MetricCollectorJavaParser.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/poi-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/poi-contrib-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/poi-scratchpad-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/SDToolDev.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/swing-worker-1.1.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/swingx.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/weka.jar"/>
 	<classpathentry kind="output" path="build/classes/weka"/>
 </classpath>
