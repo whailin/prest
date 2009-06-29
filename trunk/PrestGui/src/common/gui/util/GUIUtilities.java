@@ -18,9 +18,9 @@ import javax.swing.text.StyleContext;
  * Softlab 2009  
  * @author TurgayA   
  */
-
+ 
 public class GUIUtilities
-{
+{ 
 	public static int strToInt(String s)
 	{
 		return strToInt(s, 0);
