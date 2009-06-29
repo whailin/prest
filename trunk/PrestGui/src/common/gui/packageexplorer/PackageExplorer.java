@@ -554,7 +554,10 @@ public class PackageExplorer {
 				dataSetLoaded = true;
 			}
 		}
-		Components.btnLoadCategorizer.setVisible(true);
+		
+		Components.categorizerActive = true;
+		Components.analysisToolBar.checkControls();
+//		Components.btnLoadCategorizer.setVisible(true);
 		panel.repaint();
 	}
 
@@ -653,157 +656,181 @@ public class PackageExplorer {
 
 		public TreePath selPath;
 
-		public ExtendedTreeNode node;
 
 		public DeleteProjectAdapter(TreePath selPath) {
 			this.selPath = selPath;
-			this.node = (ExtendedTreeNode) selPath.getLastPathComponent();
+			
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			Object[] options = { "YES", "CANCEL" };
-			int decision;
+			deleteProject(selPath);
+		}
+	}
 
-			decision = JOptionPane
-					.showOptionDialog(
-							null,
-							"Do you want to delete this project and all related data from your repository?",
-							"Delete From Repository",
-							JOptionPane.YES_NO_OPTION,
-							JOptionPane.QUESTION_MESSAGE, null, options,
-							options[0]);
+	public void deleteProject()
+	{
+		ExtendedTreeNode node = (ExtendedTreeNode) repositoryTree.getLastSelectedPathComponent();
+		if (node != null)
+			deleteProject(node);
+	}
+	
+	public void deleteProject(TreePath selPath)
+	{
+		ExtendedTreeNode node = (ExtendedTreeNode) selPath.getLastPathComponent(); 
+		if (node != null)
+			deleteProject(node);
+	}
+	
+	public void deleteProject(ExtendedTreeNode node)
+	{
+		Object[] options = { "YES", "CANCEL" };
+		int decision;
 
-			if (decision == 0) {
-				String projectPath = ApplicationProperties
-						.get("repositorylocation")
-						+ "\\" + (String) node.getUserObject();
-				if (projectPath == null || projectPath.equals("")) {
+		decision = JOptionPane
+				.showOptionDialog(
+						null,
+						"Do you want to delete this project and all related data from your repository?",
+						"Delete From Repository",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE, null, options,
+						options[0]);
+
+		if (decision == 0) {
+			String projectPath = ApplicationProperties
+					.get("repositorylocation")
+					+ "\\" + (String) node.getUserObject();
+			if (projectPath == null || projectPath.equals("")) {
+				JOptionPane
+						.showMessageDialog(
+								null,
+								"An error occured during the removal of project from repository.",
+								"Delete Error", JOptionPane.ERROR_MESSAGE);
+			} else {
+				try {
+					File folderToDelete = new File(projectPath);
+					deleteDir(folderToDelete);
+					ExtendedTreeNode parentNode = (ExtendedTreeNode) (node
+							.getParent());
+					if (parentNode == null)
+						return;
+					parentNode.remove(node);
+					((DefaultTreeModel) repositoryTree.getModel())
+							.reload(parentNode);
+					// traverseRepository();
+					System.out.println("test repaint");
+					Components.fileMetricsDataSetPanel.removeAll();
+					Components.classMetricsDataSetPanel.removeAll();
+					Components.methodMetricsDataSetPanel.removeAll();
+					Components.packageMetricsDataSetPanel.removeAll();
+					Components.resultsDataPanel.repaint();
+
+				} catch (Exception e1) {
 					JOptionPane
 							.showMessageDialog(
 									null,
 									"An error occured during the removal of project from repository.",
-									"Delete Error", JOptionPane.ERROR_MESSAGE);
-				} else {
-					try {
-						File folderToDelete = new File(projectPath);
-						deleteDir(folderToDelete);
-						ExtendedTreeNode parentNode = (ExtendedTreeNode) (node
-								.getParent());
-						if (parentNode == null)
-							return;
-						parentNode.remove(node);
-						((DefaultTreeModel) repositoryTree.getModel())
-								.reload(parentNode);
-						// traverseRepository();
-						System.out.println("test repaint");
-						Components.fileMetricsDataSetPanel.removeAll();
-						Components.classMetricsDataSetPanel.removeAll();
-						Components.methodMetricsDataSetPanel.removeAll();
-						Components.packageMetricsDataSetPanel.removeAll();
-						Components.pnlDataCardLayout.repaint();
-
-					} catch (Exception e1) {
-						JOptionPane
-								.showMessageDialog(
-										null,
-										"An error occured during the removal of project from repository.",
-										"Delete Error",
-										JOptionPane.ERROR_MESSAGE);
-					}
-				}
-			} else if (decision == 1) {
-			}
-		}
-
-		public boolean deleteDir(File dir) {
-			if (dir.isDirectory()) {
-				String[] children = dir.list();
-				for (int i = 0; i < children.length; i++) {
-					boolean success = deleteDir(new File(dir, children[i]));
-					if (!success) {
-						return false;
-					}
+									"Delete Error",
+									JOptionPane.ERROR_MESSAGE);
 				}
 			}
-			// The directory is now empty so delete it
-			return dir.delete();
+		} else if (decision == 1) {
 		}
 	}
-
+	
+	public boolean deleteDir(File dir) {
+		if (dir.isDirectory()) {
+			String[] children = dir.list();
+			for (int i = 0; i < children.length; i++) {
+				boolean success = deleteDir(new File(dir, children[i]));
+				if (!success) {
+					return false;
+				}
+			}
+		}
+		// The directory is now empty so delete it
+		return dir.delete();
+	}
+	
 	public class ParseProjectAdapter implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-			Components.pnlDataCardLayout.setCursor(Cursor
-					.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			parseManual();
-			displayAllMetrics();
-			Components.pnlDataCardLayout.setCursor(Cursor
-					.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			generateCallGraph();
+			parseProject();
 		}
 
-		public void generateCallGraph() {
-			ExtendedTreeNode node = (ExtendedTreeNode) repositoryTree
-					.getLastSelectedPathComponent();
+	}
 
-			if (node == null) {
-				return;
-			} else {
-				common.DirectoryListing dlx = new DirectoryListing();
-				dlx.visitAllFiles_Filtered(new File(ApplicationProperties
-						.get("repositorylocation")
-						+ "\\" + projectDirectory.getName() + "\\"), ".csv");
-				List<ExcelSheet> excelSheets = new ArrayList<ExcelSheet>();
-				List<File> tempFileList = dlx.getFilteredFileNames();
-				if (tempFileList != null) {
-					for (File csvfile : tempFileList) {
-						ExcelSheet newSheet = null;
-						if (csvfile.getName().contains("_C.csv")) { // if it is
-							// a C
-							// project
-							newSheet = new ExcelSheet(csvfile, // add a sheet
-									ExcelSheet.C_CSV_FILE);
+	public void parseProject()
+	{
+		Components.resultsDataPanel.setCursor(Cursor
+				.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		parseManual();
+		displayAllMetrics();
+		Components.resultsDataPanel.setCursor(Cursor
+				.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		generateCallGraph();
+	}
+	
+	public void generateCallGraph() {
+		ExtendedTreeNode node = (ExtendedTreeNode) repositoryTree
+				.getLastSelectedPathComponent();
 
-							excelSheets.add(newSheet);
+		if (node == null) {
+			return;
+		} else {
+			common.DirectoryListing dlx = new DirectoryListing();
+			dlx.visitAllFiles_Filtered(new File(ApplicationProperties
+					.get("repositorylocation")
+					+ "\\" + projectDirectory.getName() + "\\"), ".csv");
+			List<ExcelSheet> excelSheets = new ArrayList<ExcelSheet>();
+			List<File> tempFileList = dlx.getFilteredFileNames();
+			if (tempFileList != null) {
+				for (File csvfile : tempFileList) {
+					ExcelSheet newSheet = null;
+					if (csvfile.getName().contains("_C.csv")) { // if it is
+						// a C
+						// project
+						newSheet = new ExcelSheet(csvfile, // add a sheet
+								ExcelSheet.C_CSV_FILE);
 
-							csvfile.delete();
-						} else if (csvfile.getName().contains("_Java.csv")) { // if
-							// it
-							// is a
-							// Java
-							// Project
-							newSheet = new ExcelSheet(csvfile, // add a sheet
-									ExcelSheet.JAVA_CSV_FILE);
+						excelSheets.add(newSheet);
 
-							excelSheets.add(newSheet);
-							csvfile.delete();
-						}
+						csvfile.delete();
+					} else if (csvfile.getName().contains("_Java.csv")) { // if
+						// it
+						// is a
+						// Java
+						// Project
+						newSheet = new ExcelSheet(csvfile, // add a sheet
+								ExcelSheet.JAVA_CSV_FILE);
 
-					}
-
-					if (excelSheets.size() > 0) {
-						String callGraphFileName = ApplicationProperties
-								.get("repositorylocation")
-								+ "\\"
-								+ projectDirectory.getName()
-								+ "\\functionCallGraph.xls";
-						ExcelOutput.generateCallGraphExcelWithIds(
-								callGraphFileName, excelSheets);
+						excelSheets.add(newSheet);
+						csvfile.delete();
 					}
 
 				}
 
+				if (excelSheets.size() > 0) {
+					String callGraphFileName = ApplicationProperties
+							.get("repositorylocation")
+							+ "\\"
+							+ projectDirectory.getName()
+							+ "\\functionCallGraph.xls";
+					ExcelOutput.generateCallGraphExcelWithIds(
+							callGraphFileName, excelSheets);
+				}
+
 			}
+
 		}
 	}
-
+	
 	public class CsvToArffAdapter implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-			Components.pnlDataCardLayout.setCursor(Cursor
+			Components.resultsDataPanel.setCursor(Cursor
 					.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			convertCsvToArff();
-			Components.pnlDataCardLayout.setCursor(Cursor
+			Components.resultsDataPanel.setCursor(Cursor
 					.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 
@@ -814,194 +841,235 @@ public class PackageExplorer {
 		public void actionPerformed(ActionEvent e) {
 			transferResults();
 		}
+	}
 
-		public void transferResults() {
-			ExtendedTreeNode node = (ExtendedTreeNode) repositoryTree
-					.getLastSelectedPathComponent();
+	public void transferResults() {
+		ExtendedTreeNode node = (ExtendedTreeNode) repositoryTree
+				.getLastSelectedPathComponent();
 
-			if (node == null) {
-				return;
+		if (node == null) {
+			return;
+		} else {
+			// if(lastParsedProjectPath != null &&
+			// lastParsedProjectPath.equals(node.getProjectPath())){
+			// displayAllMetrics();
+			// } else {
+			boolean hasOldResults = false;
+			List<Calendar> lastParseDateList = new ArrayList<Calendar>();
+			List<Language> parsedLanguageList = new ArrayList<Language>();
+			for (Language lang : Language.LIST) {
+				Calendar lastParseDate = checkParseResult(lang,
+						projectDirectory);
+				if (lastParseDate != null) {
+					hasOldResults = true;
+					lastParseDateList.add(lastParseDate);
+					parsedLanguageList.add(lang);
+				}
+			}
+			if (hasOldResults) {
+				// uc option
+				Object[] options = { "Use old results", "Parse Now",
+						"Cancel" };
+				int decision;
+				SimpleDateFormat formatter = new SimpleDateFormat(
+						"dd.MM.yyyy HH:mm");
+				decision = JOptionPane
+						.showOptionDialog(
+								null,
+								"An old parse result from "
+										+ formatter
+												.format(lastParseDateList
+														.get(0).getTime())
+										+ " exists for this project.\nDo you want to use it or re-parse the project?",
+								"Parser Result Selection",
+								JOptionPane.YES_NO_CANCEL_OPTION,
+								JOptionPane.QUESTION_MESSAGE, null,
+								options, options[0]);
+
+				if (decision == 0) {
+					List<String> fileList = new ArrayList<String>();
+					for (int i = 0; i < parsedLanguageList.size(); i++) {
+						String fileName = ApplicationProperties
+								.get("repositorylocation")
+								+ "\\"
+								+ projectDirectory.getName()
+								+ "\\parseResult_"
+								+ parsedLanguageList.get(i).getLangName()
+								+ "_"
+								+ lastParseDateList.get(i)
+										.getTimeInMillis() + ".xml";
+						fileList.add(fileName);
+					}
+					ParserExecutor.fillWithOldResults(fileList,
+							parsedLanguageList);
+					displayAllMetrics();
+				} else if (decision == 1) {
+					parseManual();
+					displayAllMetrics();
+				}
 			} else {
-				// if(lastParsedProjectPath != null &&
-				// lastParsedProjectPath.equals(node.getProjectPath())){
-				// displayAllMetrics();
-				// } else {
-				boolean hasOldResults = false;
-				List<Calendar> lastParseDateList = new ArrayList<Calendar>();
-				List<Language> parsedLanguageList = new ArrayList<Language>();
-				for (Language lang : Language.LIST) {
-					Calendar lastParseDate = checkParseResult(lang,
-							projectDirectory);
-					if (lastParseDate != null) {
-						hasOldResults = true;
-						lastParseDateList.add(lastParseDate);
-						parsedLanguageList.add(lang);
-					}
+				Object[] options = { "Parse Now", "Cancel" };
+				int decision;
+
+				decision = JOptionPane
+						.showOptionDialog(
+								null,
+								"No parse result exists for this project.\nDo you want to parse the project now?",
+								"Parser Result Selection",
+								JOptionPane.OK_CANCEL_OPTION,
+								JOptionPane.QUESTION_MESSAGE, null,
+								options, options[0]);
+
+				if (decision == 0) {
+					parseManual();
+					displayAllMetrics();
 				}
-				if (hasOldResults) {
-					// uc option
-					Object[] options = { "Use old results", "Parse Now",
-							"Cancel" };
-					int decision;
-					SimpleDateFormat formatter = new SimpleDateFormat(
-							"dd.MM.yyyy HH:mm");
-					decision = JOptionPane
-							.showOptionDialog(
-									null,
-									"An old parse result from "
-											+ formatter
-													.format(lastParseDateList
-															.get(0).getTime())
-											+ " exists for this project.\nDo you want to use it or re-parse the project?",
-									"Parser Result Selection",
-									JOptionPane.YES_NO_CANCEL_OPTION,
-									JOptionPane.QUESTION_MESSAGE, null,
-									options, options[0]);
-
-					if (decision == 0) {
-						List<String> fileList = new ArrayList<String>();
-						for (int i = 0; i < parsedLanguageList.size(); i++) {
-							String fileName = ApplicationProperties
-									.get("repositorylocation")
-									+ "\\"
-									+ projectDirectory.getName()
-									+ "\\parseResult_"
-									+ parsedLanguageList.get(i).getLangName()
-									+ "_"
-									+ lastParseDateList.get(i)
-											.getTimeInMillis() + ".xml";
-							fileList.add(fileName);
-						}
-						ParserExecutor.fillWithOldResults(fileList,
-								parsedLanguageList);
-						displayAllMetrics();
-					} else if (decision == 1) {
-						parseManual();
-						displayAllMetrics();
-					}
-				} else {
-					Object[] options = { "Parse Now", "Cancel" };
-					int decision;
-
-					decision = JOptionPane
-							.showOptionDialog(
-									null,
-									"No parse result exists for this project.\nDo you want to parse the project now?",
-									"Parser Result Selection",
-									JOptionPane.OK_CANCEL_OPTION,
-									JOptionPane.QUESTION_MESSAGE, null,
-									options, options[0]);
-
-					if (decision == 0) {
-						parseManual();
-						displayAllMetrics();
-					}
-				}
-				// }
 			}
-			resultsTransferred = true;
-			Components.dataFileActive = false;
+			// }
 		}
+		resultsTransferred = true;
+		Components.dataFileActive = false;
+	}
 
-		private Calendar checkParseResult(Language lang, File projectDirectory) {
-			common.DirectoryListing dlx = new DirectoryListing();
-			dlx.visitAllFiles_Filtered(new File(ApplicationProperties
-					.get("repositorylocation")
-					+ "\\" + projectDirectory.getName() + "\\"), ".xml");
-			List<File> tempResultList = dlx.getFilteredFileNames();
-			List<File> parserResultList = new ArrayList<File>();
-			for (File file : tempResultList) {
-				if (file.getName().contains("_" + lang.getLangName() + "_")) {
-					parserResultList.add(file);
-				}
+	private Calendar checkParseResult(Language lang, File projectDirectory) {
+		common.DirectoryListing dlx = new DirectoryListing();
+		dlx.visitAllFiles_Filtered(new File(ApplicationProperties
+				.get("repositorylocation")
+				+ "\\" + projectDirectory.getName() + "\\"), ".xml");
+		List<File> tempResultList = dlx.getFilteredFileNames();
+		List<File> parserResultList = new ArrayList<File>();
+		for (File file : tempResultList) {
+			if (file.getName().contains("_" + lang.getLangName() + "_")) {
+				parserResultList.add(file);
 			}
-			if (parserResultList != null) {
-				if (parserResultList.size() > 0) {
-					File aResult = parserResultList.get(0);
-					String name = aResult.getName();
-					String strDateInLong = null;
-					StringTokenizer st = new StringTokenizer(name, "_");
-					int count = 0;
-					while (st.hasMoreTokens()) {
-						strDateInLong = st.nextToken();
-						if (count == 2) {
+		}
+		if (parserResultList != null) {
+			if (parserResultList.size() > 0) {
+				File aResult = parserResultList.get(0);
+				String name = aResult.getName();
+				String strDateInLong = null;
+				StringTokenizer st = new StringTokenizer(name, "_");
+				int count = 0;
+				while (st.hasMoreTokens()) {
+					strDateInLong = st.nextToken();
+					if (count == 2) {
+						break;
+					}
+					count++;
+				}
+				strDateInLong = strDateInLong.replaceAll(".xml", "");
+				long max = Long.parseLong(strDateInLong);
+				for (int i = 1; i < parserResultList.size(); i++) {
+					File anotherResult = parserResultList.get(i);
+					String anotherName = anotherResult.getName();
+					String strDateInLong2 = null;
+					StringTokenizer st2 = new StringTokenizer(anotherName,
+							"_");
+					int count2 = 0;
+					while (st2.hasMoreTokens()) {
+						strDateInLong2 = st2.nextToken();
+						if (count2 == 2) {
 							break;
 						}
-						count++;
+						count2++;
 					}
-					strDateInLong = strDateInLong.replaceAll(".xml", "");
-					long max = Long.parseLong(strDateInLong);
-					for (int i = 1; i < parserResultList.size(); i++) {
-						File anotherResult = parserResultList.get(i);
-						String anotherName = anotherResult.getName();
-						String strDateInLong2 = null;
-						StringTokenizer st2 = new StringTokenizer(anotherName,
-								"_");
-						int count2 = 0;
-						while (st2.hasMoreTokens()) {
-							strDateInLong2 = st2.nextToken();
-							if (count2 == 2) {
-								break;
-							}
-							count2++;
-						}
-						strDateInLong2 = strDateInLong2.replaceAll(".xml", "");
-						long max2 = Long.parseLong(strDateInLong2);
-						if (max2 > max) {
-							max = max2;
-						}
+					strDateInLong2 = strDateInLong2.replaceAll(".xml", "");
+					long max2 = Long.parseLong(strDateInLong2);
+					if (max2 > max) {
+						max = max2;
 					}
-					Calendar lastDate = Calendar.getInstance();
-					lastDate.setTimeInMillis(max);
-					return lastDate;
 				}
+				Calendar lastDate = Calendar.getInstance();
+				lastDate.setTimeInMillis(max);
+				return lastDate;
 			}
-			return null;
 		}
+		return null;
 	}
-
-	public void updateLanguagePanel() {
-		JPanel panel = Components.languageRadioButtonGroupPanel;
-		Components.languageButtonGroup = new ButtonGroup();
-		panel.removeAll();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	
+	public void updateLanguageSet() {
+		List resList = ParserExecutor.getParserResultList();
+		Components.languageSet = resList != null ? new int[resList.size()] : null;
 		int counter = 0;
-		for (ParseResult parseResult : ParserExecutor.getParserResultList()) {
-			JRadioButton rButton = new JRadioButton(parseResult
-					.getParserLanguage().getDisplayName());
-			if (counter == 0) {
-				rButton.setSelected(true);
-				ParserExecutor.setCurrentLanguage(parseResult
-						.getParserLanguage());
-				counter++;
-			}
-			rButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					rButtonPressed(e);
-				}
-			});
-			Components.languageButtonGroup.add(rButton);
-			panel.add(rButton);
-		}
-		panel.repaint();
-	}
-
-	private void rButtonPressed(ActionEvent evt) {
-		JRadioButton rbtn = (JRadioButton) evt.getSource();
-		if (rbtn != null) {
-			for (Language lang : Language.LIST) {
-				if (rbtn.getText().equals(lang.getDisplayName())) {
-					displayAllMetrics(lang);
-					ParserExecutor.setCurrentLanguage(lang);
+		for (ParseResult parseResult : ParserExecutor.getParserResultList()) 
+		{
+			String langName = parseResult.getParserLanguage().getDisplayName();
+			int langIndex = -1;
+			for (int i = 0; i< Language.LIST.size(); i++) 
+				if (langName.equals(Language.LIST.get(i).getDisplayName())) 
+				{
+					langIndex = i;
 					break;
 				}
+			
+			if (langIndex > 0)
+			{
+				Components.languageSet[counter] = langIndex;
+				if (counter == 0) 
+				{
+					ParserExecutor.setCurrentLanguage(parseResult.getParserLanguage());
+					counter++;
+				}
+				
 			}
 		}
+		
+		Components.analysisToolBar.checkControls();
 	}
+	
+//	public void updateLanguagePanel() {
+//		JPanel panel = Components.languageRadioButtonGroupPanel;
+//		Components.languageButtonGroup = new ButtonGroup();
+//		panel.removeAll();
+//		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+//		int counter = 0;
+//		for (ParseResult parseResult : ParserExecutor.getParserResultList()) {
+//			JRadioButton rButton = new JRadioButton(parseResult
+//					.getParserLanguage().getDisplayName());
+//			if (counter == 0) {
+//				rButton.setSelected(true);
+//				ParserExecutor.setCurrentLanguage(parseResult
+//						.getParserLanguage());
+//				counter++;
+//			}
+//			rButton.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					rButtonPressed(e);
+//				}
+//			});
+//			Components.languageButtonGroup.add(rButton);
+//			panel.add(rButton);
+//		}
+//		panel.repaint();
+//	}
+//
+//	private void rButtonPressed(ActionEvent evt) {
+//		JRadioButton rbtn = (JRadioButton) evt.getSource();
+//		if (rbtn != null) {
+//			for (Language lang : Language.LIST) {
+//				if (rbtn.getText().equals(lang.getDisplayName())) {
+//					setCurrentLanguage(lang);
+//					break;
+//				}
+//			}
+//		}
+//	}
 
+	public void setCurrentLanguage(int lang)
+	{
+		if (lang < Language.LIST.size())
+			setCurrentLanguage(Language.LIST.get(lang));
+	}
+	
+	public void setCurrentLanguage(Language lang)
+	{
+		displayAllMetrics(lang);
+		ParserExecutor.setCurrentLanguage(lang);
+	}
+	
 	public void displayAllMetrics() {
 		if (ParserExecutor.getParserResultList() != null) {
-			updateLanguagePanel();
+			updateLanguageSet();
 			ParseResult firstResult = ParserExecutor.getParserResultList().get(
 					0);
 			displayMetrics(Components.fileMetricsDataSetPanel, firstResult
@@ -1012,9 +1080,10 @@ public class PackageExplorer {
 					.getDataSetByMetricType(MetricTypeNames.METHOD_METRICS));
 			displayMetrics(Components.packageMetricsDataSetPanel, firstResult
 					.getDataSetByMetricType(MetricTypeNames.PACKAGE_METRICS));
-			CardLayout cards = (CardLayout) Components.pnlDataCardLayout
-					.getLayout();
-			cards.show(Components.pnlDataCardLayout, "card4");
+			Components.resultsDataPanel.validate();
+//			CardLayout cards = (CardLayout) Components.resultsDataPanel
+//					.getLayout();
+//			cards.show(Components.pnlDataCardLayout, "card4");
 		}
 	}
 

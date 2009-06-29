@@ -18,8 +18,8 @@ public class PrestGuiTool implements ISDTool
 { 
 	public boolean instanceActivated()
 	{
-		PrestGuiApp inst = PrestGuiApp.getApplication();
-		if (inst != null)
+		PrestGuiApp inst = PrestGuiApp.getInstance();
+		if (inst != null && !inst.isDisposed())
 		{
 			JFrame frame = inst.getFrameInstance();
 			if (frame.getState() == JFrame.ICONIFIED)
@@ -33,7 +33,7 @@ public class PrestGuiTool implements ISDTool
 
 	public boolean instanceDisposed()
 	{
-		PrestGuiApp inst = PrestGuiApp.getApplication();
+		PrestGuiApp inst = PrestGuiApp.getInstance();
 		return inst == null || inst.isDisposed();
 	}
 
@@ -45,8 +45,7 @@ public class PrestGuiTool implements ISDTool
 	public boolean open(ISDContext context, ISDFile file, boolean modal, Point loc)
 	{
 		PrestGuiApp.setContext(context);
-		PrestGuiApp.launch(PrestGuiApp.class, null);
-		
+		PrestGuiApp.createInstance(null);
 		return true;
 	}
 

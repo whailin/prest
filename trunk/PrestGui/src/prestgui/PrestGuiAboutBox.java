@@ -4,18 +4,19 @@
 
 package prestgui;
 
-import org.jdesktop.application.Action;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
-public class PrestGuiAboutBox extends javax.swing.JDialog {
+import common.gui.util.GUIUtilities;
+
+public class PrestGuiAboutBox extends javax.swing.JDialog implements ActionListener
+{
 
     public PrestGuiAboutBox(java.awt.Frame parent) {
         super(parent);
         initComponents();
         getRootPane().setDefaultButton(closeButton);
-    }
-
-    @Action public void closeAboutBox() {
-        setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -38,45 +39,45 @@ public class PrestGuiAboutBox extends javax.swing.JDialog {
         javax.swing.JLabel imageLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class).getContext().getResourceMap(PrestGuiAboutBox.class);
-        setTitle(resourceMap.getString("title")); // NOI18N
+        ResourceBundle appResources = GUIUtilities.getResources(getClass(), "/prestgui/resources/PrestGuiApp.properties");
+        ResourceBundle boxResources = GUIUtilities.getResources(getClass(), "/prestgui/resources/PrestGuiAboutBox.properties");
+        setTitle(boxResources.getString("title")); // NOI18N
         setModal(true);
         setName("aboutBox"); // NOI18N
         setResizable(false);
 
-        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class).getContext().getActionMap(PrestGuiAboutBox.class, this);
-        closeButton.setAction(actionMap.get("closeAboutBox")); // NOI18N
+        closeButton.setActionCommand("closeAboutBox"); // NOI18N
         closeButton.setName("closeButton"); // NOI18N
 
         appTitleLabel.setFont(appTitleLabel.getFont().deriveFont(appTitleLabel.getFont().getStyle() | java.awt.Font.BOLD, appTitleLabel.getFont().getSize()+4));
-        appTitleLabel.setText(resourceMap.getString("Application.title")); // NOI18N
+        appTitleLabel.setText(appResources.getString("Application.title")); // NOI18N
         appTitleLabel.setName("appTitleLabel"); // NOI18N
 
         versionLabel.setFont(versionLabel.getFont().deriveFont(versionLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        versionLabel.setText(resourceMap.getString("versionLabel.text")); // NOI18N
+        versionLabel.setText(boxResources.getString("versionLabel.text")); // NOI18N
         versionLabel.setName("versionLabel"); // NOI18N
 
-        appVersionLabel.setText(resourceMap.getString("Application.version")); // NOI18N
+        appVersionLabel.setText(appResources.getString("Application.version")); // NOI18N
         appVersionLabel.setName("appVersionLabel"); // NOI18N
 
         vendorLabel.setFont(vendorLabel.getFont().deriveFont(vendorLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        vendorLabel.setText(resourceMap.getString("vendorLabel.text")); // NOI18N
+        vendorLabel.setText(boxResources.getString("vendorLabel.text")); // NOI18N
         vendorLabel.setName("vendorLabel"); // NOI18N
 
-        appVendorLabel.setText(resourceMap.getString("Application.vendor")); // NOI18N
+        appVendorLabel.setText(appResources.getString("Application.vendor")); // NOI18N
         appVendorLabel.setName("appVendorLabel"); // NOI18N
 
         homepageLabel.setFont(homepageLabel.getFont().deriveFont(homepageLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        homepageLabel.setText(resourceMap.getString("homepageLabel.text")); // NOI18N
+        homepageLabel.setText(boxResources.getString("homepageLabel.text")); // NOI18N
         homepageLabel.setName("homepageLabel"); // NOI18N
 
-        appHomepageLabel.setText(resourceMap.getString("Application.homepage")); // NOI18N
+        appHomepageLabel.setText(appResources.getString("Application.homepage")); // NOI18N
         appHomepageLabel.setName("appHomepageLabel"); // NOI18N
 
-        appDescLabel.setText(resourceMap.getString("appDescLabel.text")); // NOI18N
+        appDescLabel.setText(boxResources.getString("appDescLabel.text")); // NOI18N
         appDescLabel.setName("appDescLabel"); // NOI18N
 
-        imageLabel.setIcon(resourceMap.getIcon("imageLabel.icon")); // NOI18N
+        imageLabel.setIcon(GUIUtilities.getIcon(boxResources, "imageLabel.icon", "/prestgui/resources")); // NOI18N
         imageLabel.setName("imageLabel"); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -133,5 +134,11 @@ public class PrestGuiAboutBox extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     // End of variables declaration//GEN-END:variables
+
+	public void actionPerformed(ActionEvent evt)
+	{
+        if (evt.getActionCommand().equalsIgnoreCase("closeAboutBox"))
+        	setVisible(false);
+	}
     
 }

@@ -3,8 +3,15 @@
  */
 package prestgui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -14,18 +21,22 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.DebugGraphics;
+import javax.swing.AbstractButton;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -40,17 +51,15 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.Timer;
-
-import org.jdesktop.application.Action;
-import org.jdesktop.application.FrameView;
-import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.TaskMonitor;
-
-import com.sd.dev.lib.ISDContext;
+import javax.swing.border.LineBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import parser.enumeration.Language;
+import predictor.WekaRunner;
 import wizards.dynamiccategorizer.DynamicCategorizerWizard;
 import categorizer.core.Categorizer;
 import categorizer.core.CategorizerExecutor;
@@ -67,17 +76,21 @@ import categorizer.core.filter.LogFilter;
 import categorizer.core.util.Arff2DataSet;
 import categorizer.staticCategorizer.StaticCategorizer;
 
+import com.sd.dev.lib.ISDContext;
 import common.DataContext;
 import common.ExtensionFileFilter;
 import common.MetricGroup;
 import common.gui.actions.ThresholdTableMouseListener;
+import common.gui.controls.ControlBar;
+import common.gui.controls.IControlBarListener;
+import common.gui.controls.MenuButton;
 import common.gui.models.ThresholdContent;
 import common.gui.models.ThresholdTableModel;
 import common.gui.packageexplorer.PackageExplorer;
 import common.gui.statics.Components;
 import common.gui.util.ComponentState;
-
-import predictor.WekaRunner;
+import common.gui.util.GUIUtilities;
+import common.gui.util.TaggedList;
 
 import definitions.application.ApplicationProperties;
 import executor.ParserExecutor;
@@ -87,321 +100,673 @@ import executor.ParserExecutor;
  */
 
 // SciDesktop Modification TA_R001	--- class implements WindowListener
-public class PrestGuiView extends FrameView implements WindowListener {
+public class PrestGuiView extends JFrame implements ActionListener, WindowListener, PopupMenuListener, IControlBarListener
+{
+	private static final int VIEWWIDTH     = 800;
+	private static final int VIEWHEIGHT    = 600;
 	
 	// SciDesktop Modification TA_R001	--- additional variables are needed for the created instance
 	private ISDContext sdContext;
+	private ResourceBundle resources;
+	private ActionListener buttonExecutor;
+	
+	// Component custom properties
+	
+	private static final String TAGPROPERTY    = "TAG";
+	
+	// Application menu identifiers
+	
+	private static final int MI_ADDPROJECT     = 1;
+	private static final int MI_PARSEPROJECT   = 2;
+	private static final int MI_TABLETRANSFER  = 3;
+	private static final int MI_CVS2ARFF       = 4;
+	private static final int MI_DELETEPROJECT  = 11;
+	private static final int MI_SWITCHWS       = 21;
+	private static final int MI_EXIT           = 91;
+	private static final int MI_NEWTHRESHOLD   = 201;
+	private static final int MI_NEWVMETRIC     = 202;
+	private static final int MI_FILTER	       = 203;
+	private static final int MI_HELPCONTENTS   = 301;
+	private static final int MI_REFERENCES     = 302;
+	private static final int MI_ABOUT          = 303;
+	
+	private static final int MI_LOADSTORE      = 1001;
+	private static final int MI_METRICS        = 1002;
+	private static final int MI_LANGUAGES      = 1003;
+	private static final int MI_SWITCHVW       = 1004;
+	
+	private static final int MI_LOADDATA       = 2001;
+	private static final int MI_PREDOPTS       = 2002;
+	private static final int MI_ALGORITHM      = 2003;
+	private static final int MI_RUNPRED        = 2004;
+	
+	private static final int MI_SOFTLAB        = 9998;
+	private static final int MI_FILLER         = 9999;
+	
+	// Metrics Panels
+	
+	private static final int MP_PACKAGE     = 0;
+	private static final int MP_FILE        = 1;
+	private static final int MP_CLASS       = 2;
+	private static final int MP_METHOD      = 3;
+	
+	// WEKA Attributes
+	
+	private static final int WA_CRSVALD     = 1;
+	private static final int WA_NORMALIZE   = 2;
+	
+	private IPrestViewListener viewListener;
+	
+	// components & dialogs
+
+	private ControlBar analysisToolbar;
+	private ControlBar predictionToolbar;
+	private ImageIcon okMark;
+	private MenuButton metricsMenuButton;
+	private MenuButton languagesMenuButton;
+	private MenuButton wekaAtrbsMenuButton;
+	private MenuButton algorithmMenuButton;
+	
+    private javax.swing.JPanel analysisResultsPanel;
+    private javax.swing.JPanel projectPanel;
+    private javax.swing.JTextField projectTitleDisplay;
+    private JTextArea projectInfoDisplay;
+    private JTabbedPane[] metricsPanels;
+    private javax.swing.JMenu analyzeMenu;
+    private javax.swing.JButton btnApplyFilter;
+    private javax.swing.JButton btnCancelFilter;
+    private javax.swing.JButton btnCategorize;
+    private javax.swing.JButton btnLoadCategorizer;
+    private javax.swing.JTextField predictionTitleDisplay;
+    private javax.swing.JButton btnLoadTest;
+    private javax.swing.JButton btnLoadTraining;
+    private javax.swing.JButton btnStartWeka;
+    private javax.swing.JButton btnStoreCategorizer;
+    private javax.swing.JButton btnThresholdWizardBack;
+    private javax.swing.JButton btnThresholdWizardCancel;
+    private javax.swing.JButton btnThresholdWizardNext;
+    private javax.swing.JButton btnTransferAllToFilter;
+    private javax.swing.JButton btnTransferAllToLeft;
+    private javax.swing.JButton btnTransferLeft;
+    private javax.swing.JButton btnTransferToFilter;
+    private javax.swing.JButton btnVmBack;
+    private javax.swing.JButton btnVmNext;
+    private javax.swing.ButtonGroup btngFirstOperand;
+    private javax.swing.ButtonGroup btngLanguageGroup;
+    private javax.swing.ButtonGroup btngRiskLevel;
+    private javax.swing.ButtonGroup btngSecondOperand;
+    private javax.swing.ButtonGroup btngVmOperand1;
+    private javax.swing.ButtonGroup btngVmOperand2;
+    private javax.swing.JButton cancelVirtualMetricButton;
+    private javax.swing.JCheckBox chkboxCrossValidate;
+    private javax.swing.JPanel classMetricsDataSetPanel;
+    private javax.swing.JTabbedPane classMetricsTabbedPane;
+    private javax.swing.JPanel classMetricsThresholdPanel;
+    private javax.swing.JComboBox cmbMetricGroups;
+    private javax.swing.JComboBox cmbRiskLevels;
+    private javax.swing.JComboBox cmbThresholdMetricList;
+    private javax.swing.JComboBox cmbThresholdOperator;
+    private javax.swing.JComboBox cmbThresholdOperator1;
+    private javax.swing.JComboBox cmbThresholdOperator2;
+    private javax.swing.JComboBox cmbVmMetricOperator;
+    private javax.swing.JComboBox cmbVmOperand1;
+    private javax.swing.JComboBox cmbVmOperand2;
+    private javax.swing.JPanel fileMetricsDataSetPanel;
+    private javax.swing.JTabbedPane fileMetricsTabbedPane;
+    private javax.swing.JPanel fileMetricsThresholdPanel;
+    private javax.swing.JDialog filterWizardDialog;
+    private javax.swing.JCheckBox jCheckBoxNormalize;
+    private javax.swing.JComboBox jComboBoxChooseAlgorithm;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel predictionPanel;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JLabel lblThresholdExpression;
+    private javax.swing.JLabel lblThresholdOperand2;
+    private javax.swing.JLabel lblThresholdRiskLevel;
+    private javax.swing.JLabel lblVirtualMetricEquation;
+    private javax.swing.JLabel lblVirtualMetricName;
+    private javax.swing.JLabel lblVmOperand2;
+    private javax.swing.JList listAllMetrics;
+    private javax.swing.JList listFilterMetrics;
+    private javax.swing.JSplitPane dataSplitPanel;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JMenuBar menuBar;
+    private javax.swing.JPanel methodMetricsDataSetPanel;
+    private javax.swing.JTabbedPane methodMetricsTabbedPane;
+    private javax.swing.JPanel methodMetricsThresholdPanel;
+    private javax.swing.JPanel metricsCardLayoutPanel;
+    private javax.swing.JPanel packageMetricsDataSetPanel;
+    private javax.swing.JTabbedPane packageMetricsTabbedPane;
+    private javax.swing.JPanel packageMetricsThresholdPanel;
+    private javax.swing.JPanel pnlCategorizeButtons;
+    private javax.swing.JPanel pnlDataCardLayout;
+    private javax.swing.JPanel pnlDataFile;
+    private javax.swing.JPanel pnlDataFileAnalyze;
+    private javax.swing.JPanel resultsDataPanel;
+    private javax.swing.JPanel pnlFilterButtons;
+    private javax.swing.JPanel pnlFilterHeader;
+    private javax.swing.JPanel pnlFilterMain;
+    private javax.swing.JPanel pnlLanguageRadioPanel;
+    private javax.swing.JPanel pnlParseResultsAnalyze;
+    private javax.swing.JPanel pnlThresholdApprove;
+    private javax.swing.JPanel pnlThresholdSettings;
+    private javax.swing.JPanel pnlThresholdSettingsCardLayout;
+    private javax.swing.JPanel pnlThresholdWizardButtons;
+    private javax.swing.JPanel pnlThresholdWizardHeader;
+    private javax.swing.JPanel pnlVmApproval;
+    private javax.swing.JPanel pnlVmButtons;
+    private javax.swing.JPanel pnlVmCardLayout;
+    private javax.swing.JPanel pnlVmHeader;
+    private javax.swing.JPanel pnlVmSettings;
+    private javax.swing.JPanel pnlthresholdWizardMain;
+    private javax.swing.JRadioButton rbtnThresholdOperator1Cmb;
+    private javax.swing.JRadioButton rbtnThresholdOperator2Cmb;
+    private javax.swing.JRadioButton rbtnThresholdOperator2Txt;
+    private javax.swing.JRadioButton rbtnThresholdOperatorOneTxt;
+    private javax.swing.JRadioButton rbtnVmOperand1Cmb;
+    private javax.swing.JRadioButton rbtnVmOperand1Txt;
+    private javax.swing.JRadioButton rbtnVmOperand2Cmb;
+    private javax.swing.JRadioButton rbtnVmOperand2Txt;
+    private javax.swing.JTabbedPane tabPaneAnalysisResults;
+    private javax.swing.JTabbedPane tabPaneDataFileAnalyze;
+    private javax.swing.ButtonGroup testOptionsButtonGroup;
+    private javax.swing.JDialog thresholdWizardDialog;
+    private javax.swing.JTextField txtThresholdOperator1;
+    private javax.swing.JTextField txtThresholdOperator2;
+    private javax.swing.JTextField txtVmMetricName;
+    private javax.swing.JTextField txtVmOperand1;
+    private javax.swing.JTextField txtVmOperand2;
+    private javax.swing.JDialog virtualMetricWizardDialog;
+	
+    private StaticCategorizer staticCategorizer;
+	private DefaultListModel leftListModel;
+	private DefaultListModel rightListModel;
+	private boolean doubleOperands;
+	private MetricOperator virtualMetricOperator;
+	private String virtualMetricName;
+	private Operand[] virtualMetricOperands;
+	private String virtualMetricOperand1;
+	private String virtualMetricOperand2;
+	private ThresholdOperator thresholdOperator;
+	private String thresholdSelectedMetric;
+	private String thresholdOperand1;
+	private String thresholdOperand2;
+	private Operand[] thresholdOperands;
+	private PackageExplorer packageExplorer;
+	private DataHeader thresholdDataHeader;
+	private Operand[] operands;
+	private MetricOperator metricOperator;
+	private List<MetricGroup> packageMetrics;
+	private List<MetricGroup> fileMetrics;
+	private List<MetricGroup> classMetrics;
+	private List<MetricGroup> methodMetrics;
+	private DataSet arffDataSet;
+	private CategorizerExecutor categorizerExecutor;
+	private String trainingSetPath;
+	private String testSetPath;
+	private String wekaAlgorithmType = "Naive Bayes";
+	private String wekaCrossValidate = "false";
+	private String wekaPreProcess = "false";
+//	private final Timer messageTimer;
+//	private final Timer busyIconTimer;
+//	private final Icon idleIcon;
+//	private final Icon[] busyIcons = new Icon[15];
+//	private int busyIconIndex = 0;
+	private JDialog aboutBox;
+	// </editor-fold>
 	
 	// SciDesktop Modification TA_R001	--- constructor is modified to allow initialization and handling of context
-	public PrestGuiView(SingleFrameApplication app, ISDContext ctx) {
-		super(app);
+	public PrestGuiView(ISDContext ctx) 
+	{
+		super();
+		addWindowListener(this);
 		
 		// SciDesktop Modification TA_R001	--- context initialization and modification of JFrame instance
 		sdContext = ctx;
 		
-		JFrame frame = getFrame();
-		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		frame.addWindowListener(this);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		if (sdContext != null && sdContext.getMode() == ISDContext.MODE_NATIVE && sdContext.getApplicationIcon() != null)
-			frame.setIconImage(sdContext.getApplicationIcon().getImage());
+			setIconImage(sdContext.getApplicationIcon().getImage());
 		
+		resources = GUIUtilities.getResources(getClass(), "/prestgui/resources/PrestGuiView.properties");
+		okMark = getResourceIcon("OKMark.png");
+		setTitle(resources.getString("application.name"));
+		
+		initExecutor();
+		initMenu();
 		initComponents();
 
 		// status bar initialization - message timeout, idle icon and busy
 		// animation, etc
-		ResourceMap resourceMap = getResourceMap();
-		int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
-		messageTimer = new Timer(messageTimeout, new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				//statusMessageLabel.setText("");
-			}
-		});
-		messageTimer.setRepeats(false);
-		int busyAnimationRate = resourceMap
-				.getInteger("StatusBar.busyAnimationRate");
-		for (int i = 0; i < busyIcons.length; i++) {
-			busyIcons[i] = resourceMap
-					.getIcon("StatusBar.busyIcons[" + i + "]");
-		}
-		busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
-				//statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
-			}
-		});
-		idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
+//		int messageTimeout = GUIUtilities.getResourceInt(resources, "StatusBar.messageTimeout", 0);
+//		messageTimer = new Timer(messageTimeout, new ActionListener() {
+//
+//			public void actionPerformed(ActionEvent e) {
+//				//statusMessageLabel.setText("");
+//			}
+//		});
+//		messageTimer.setRepeats(false);
+//		int busyAnimationRate = GUIUtilities.getResourceInt(resources, "StatusBar.busyAnimationRate", 0);
+//		for (int i = 0; i < busyIcons.length; i++) {
+//			busyIcons[i] = GUIUtilities.getIcon(resources, "StatusBar.busyIcons[" + i + "]", "/prestgui/resources/");
+//		}
+//		busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
+//
+//			public void actionPerformed(ActionEvent e) {
+//				busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
+//				//statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
+//			}
+//		});
+//		idleIcon = GUIUtilities.getIcon(resources, "StatusBar.idleIcon", "/prestgui/resources/");
 		//statusAnimationLabel.setIcon(idleIcon);
 		//progressBar.setVisible(false);
 
 		// connecting action tasks to status bar via TaskMonitor
-		TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
-		taskMonitor
-				.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-
-					public void propertyChange(
-							java.beans.PropertyChangeEvent evt) {
-						String propertyName = evt.getPropertyName();
-						if ("started".equals(propertyName)) {
-							if (!busyIconTimer.isRunning()) {
-								//statusAnimationLabel.setIcon(busyIcons[0]);
-								busyIconIndex = 0;
-								busyIconTimer.start();
-							}
-						//	progressBar.setVisible(true);
-						//	progressBar.setIndeterminate(true);
-						} else if ("done".equals(propertyName)) {
-							busyIconTimer.stop();
-						//	statusAnimationLabel.setIcon(idleIcon);
-						//	progressBar.setVisible(false);
-						//	progressBar.setValue(0);
-						} else if ("message".equals(propertyName)) {
-							String text = (String) (evt.getNewValue());
-						//	statusMessageLabel.setText((text == null) ? ""
-						//			: text);
-							messageTimer.restart();
-						} else if ("progress".equals(propertyName)) {
-							int value = (Integer) (evt.getNewValue());
-						//	progressBar.setVisible(true);
-						//	progressBar.setIndeterminate(false);
-						//	progressBar.setValue(value);
-						}
-					}
-				});
+//		TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
+//		taskMonitor
+//				.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+//
+//					public void propertyChange(
+//							java.beans.PropertyChangeEvent evt) {
+//						String propertyName = evt.getPropertyName();
+//						if ("started".equals(propertyName)) {
+//							if (!busyIconTimer.isRunning()) {
+//								//statusAnimationLabel.setIcon(busyIcons[0]);
+//								busyIconIndex = 0;
+//								busyIconTimer.start();
+//							}
+//						//	progressBar.setVisible(true);
+//						//	progressBar.setIndeterminate(true);
+//						} else if ("done".equals(propertyName)) {
+//							busyIconTimer.stop();
+//						//	statusAnimationLabel.setIcon(idleIcon);
+//						//	progressBar.setVisible(false);
+//						//	progressBar.setValue(0);
+//						} else if ("message".equals(propertyName)) {
+//							String text = (String) (evt.getNewValue());
+//						//	statusMessageLabel.setText((text == null) ? ""
+//						//			: text);
+//							messageTimer.restart();
+//						} else if ("progress".equals(propertyName)) {
+//							int value = (Integer) (evt.getNewValue());
+//						//	progressBar.setVisible(true);
+//						//	progressBar.setIndeterminate(false);
+//						//	progressBar.setValue(value);
+//						}
+//					}
+//				});
 
 		setStaticComponents();
-
-		packageExplorer = new PackageExplorer();
-		packageExplorer.generateRepositoryTree(mainContentSplitPanel);
-		packageExplorer.traverseRepository();
+		
+		pack();
+		setPosition(null);
+		
+		setVisible(true);
 	}
 
-	/**
-	 * This method is called from within the constructor to initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is always
-	 * regenerated by the Form Editor.
-	 */
-	// <editor-fold defaultstate="collapsed" desc="Generated
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+	private void initExecutor()
+	{
+		class Executor implements ActionListener
+		{
+			public Object Parent;
+			
+			public void actionPerformed(ActionEvent evt)
+			{
+				Object src = evt.getSource();
+				if (src instanceof AbstractButton)
+				{
+					String xCmd = ((AbstractButton) src).getActionCommand();
+					try
+					{
+						Method m = Parent.getClass().getMethod(xCmd, (Class[]) null);
+						if (m != null)
+							m.invoke(Parent, (Object[]) null);
+							
+					}
+					catch (Exception e)
+					{
+					}
+				}
+			}
+			
+		}
+		
+		Executor ex  = new Executor();
+		ex.Parent = this;
+		buttonExecutor = ex;
+	}
+
+	public void disposeView()
+	{
+		if (viewListener != null)
+			viewListener.viewDisposed();
+		
+		if (sdContext == null || sdContext.getMode() == ISDContext.MODE_OFFLINE)
+			System.exit(0);
+		else
+			dispose();
+	}
+	
+	public void setViewListener(IPrestViewListener listener)
+	{
+		viewListener = listener;
+	}
+	
+	public void setPosition(Point customPos)
+	{
+		Point position = null;
+		Dimension size = null;
+		if (customPos != null)
+			position = customPos;
+		else {
+//				Object[] props = SDUtilities.getWindowProperties(WINDOWID);
+//				if (props != null)
+//				{
+//					Rectangle wr = SDUtilities.getWindowRectangle(props);
+//					if (wr != null)
+//					{
+//						position = wr.getLocation();
+//						int w = Math.max(wr.width, getWidth());
+//						int h = Math.max(wr.height, getHeight());
+//						setSize(w, h);
+//					}
+//				}
+		}
+	
+		if (size == null)
+			size = new Dimension(VIEWWIDTH, VIEWHEIGHT);
+		setSize(size);
+		
+		if (position == null)
+		{
+			Dimension sDim = Toolkit.getDefaultToolkit().getScreenSize();
+			int x = (sDim.width - getWidth()) / 2;
+			int y = (sDim.height - getHeight()) / 2;
+			position = new Point(x, y);
+		}
+
+		setLocation(position);
+	}
+
+	private void initMenu()
+	{
+        menuBar = new javax.swing.JMenuBar();
+        menuBar.setName("menuBar"); // NOI18N
+
+        javax.swing.JMenu fileMenu = new javax.swing.JMenu();
+        fileMenu.setText(resources.getString("fileMenu.text")); // NOI18N
+        fileMenu.setName("fileMenu"); // NOI18N
+        fileMenu.getPopupMenu().addPopupMenuListener(this);
+        fileMenu.add(createMenuItem(MI_ADDPROJECT, "addProjectMenuItem", "addProjectMenuItem.text"));
+        fileMenu.addSeparator();
+        fileMenu.add(createMenuItem(MI_PARSEPROJECT, "parseProjectMenuItem", "parseProjectMenuItem.text"));
+        fileMenu.add(createMenuItem(MI_TABLETRANSFER, "tableTransferItem", "tableTransferMenuItem.text"));
+        fileMenu.add(createMenuItem(MI_CVS2ARFF, "cvs2ArffItem", "convertCVS2ArffMenuItem.text"));
+        fileMenu.addSeparator();
+        fileMenu.add(createMenuItem(MI_DELETEPROJECT, "deleteProjectItem", "deleteProjectMenuItem.text"));
+        fileMenu.addSeparator();
+        fileMenu.add(createMenuItem(MI_SWITCHWS, "switchWSItem", "switchWorkspaceMenuItem.text"));
+        fileMenu.addSeparator();
+        fileMenu.add(createMenuItem(MI_EXIT, "exitItem", "exitMenuItem.text"));
+        
+        menuBar.add(fileMenu);
+        
+        analyzeMenu = new javax.swing.JMenu();
+        analyzeMenu.setText(resources.getString("analyzeMenu.text")); // NOI18N
+        analyzeMenu.setName("analyzeMenu"); // NOI18N
+        analyzeMenu.getPopupMenu().addPopupMenuListener(this);
+        analyzeMenu.add(createMenuItem(MI_NEWTHRESHOLD, "thresholdMenuItem", "thresholdMenuItem.text"));
+        analyzeMenu.add(createMenuItem(MI_NEWVMETRIC, "virtualMetricMenuItem", "virtualMetricMenuItem.text"));
+        analyzeMenu.add(createMenuItem(MI_FILTER, "filterMenuItem", "filterMenuItem.text"));
+		
+        menuBar.add(analyzeMenu);
+
+        javax.swing.JMenu helpMenu = new javax.swing.JMenu();
+        helpMenu.setText(resources.getString("helpMenu.text")); // NOI18N
+        helpMenu.setName("helpMenu"); // NOI18N
+        helpMenu.getPopupMenu().addPopupMenuListener(this);
+        helpMenu.add(createMenuItem(MI_HELPCONTENTS, "helpContentsMenuItem", "helpContentsMenuItem.text"));
+        helpMenu.add(createMenuItem(MI_REFERENCES, "referencesMenuItem", "referencesMenuItem.text"));
+        helpMenu.addSeparator();
+        helpMenu.add(createMenuItem(MI_ABOUT, "aboutMenuItem", "aboutMenuItem.text"));
+
+        menuBar.add(helpMenu);
+        
+        setJMenuBar(menuBar);
+	}
+	
+	private JMenuItem createMenuItem(int id, String name, String key)
+	{
+		JMenuItem item = new javax.swing.JMenuItem();
+		item.setName(name);
+		item.putClientProperty(TAGPROPERTY, new Integer(id));
+		item.setText(resources.getString(key));
+		item.addActionListener(this);
+		return item;
+	}
+	
     private void initComponents() {
 
         mainPanel = new javax.swing.JPanel();
-        mainContentSplitPanel = new javax.swing.JSplitPane();
-        analysisResultsPanel = new javax.swing.JPanel();
-        tabPaneAnalysisResults = new javax.swing.JTabbedPane();
-        pnlDataTab = new javax.swing.JPanel();
-        pnlCategorizeButtons = new javax.swing.JPanel();
-        btnLoadCategorizer = new javax.swing.JButton();
-        btnCategorize = new javax.swing.JButton();
-        btnStoreCategorizer = new javax.swing.JButton();
-        pnlDataCardLayout = new javax.swing.JPanel();
-        pnlParseResultsAnalyze = new javax.swing.JPanel();
-        cmbMetricGroups = new javax.swing.JComboBox();
-        metricsCardLayoutPanel = new javax.swing.JPanel();
-        packageMetricsTabbedPane = new javax.swing.JTabbedPane();
-        packageMetricsDataSetPanel = new javax.swing.JPanel();
-        packageMetricsThresholdPanel = new javax.swing.JPanel();
-        fileMetricsTabbedPane = new javax.swing.JTabbedPane();
-        fileMetricsDataSetPanel = new javax.swing.JPanel();
-        fileMetricsThresholdPanel = new javax.swing.JPanel();
-        classMetricsTabbedPane = new javax.swing.JTabbedPane();
-        classMetricsDataSetPanel = new javax.swing.JPanel();
-        classMetricsThresholdPanel = new javax.swing.JPanel();
-        methodMetricsTabbedPane = new javax.swing.JTabbedPane();
-        methodMetricsDataSetPanel = new javax.swing.JPanel();
-        methodMetricsThresholdPanel = new javax.swing.JPanel();
-        pnlLanguageRadioPanel = new javax.swing.JPanel();
-        pnlDataFileAnalyze = new javax.swing.JPanel();
-        tabPaneDataFileAnalyze = new javax.swing.JTabbedPane();
-        pnlDataFile = new javax.swing.JPanel();
-        jLabel23 = new javax.swing.JLabel();
-        javax.swing.JLabel imageLabel = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        btnLoadTraining = new javax.swing.JButton();
-        btnLoadTest = new javax.swing.JButton();
-        btnStartWeka = new javax.swing.JButton();
-        jComboBoxChooseAlgorithm = new javax.swing.JComboBox();
-        chkboxCrossValidate = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
-        jCheckBoxNormalize = new javax.swing.JCheckBox();
-        jPanel3 = new javax.swing.JPanel();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        menuBar = new javax.swing.JMenuBar();
-        javax.swing.JMenu fileMenu = new javax.swing.JMenu();
-        addProjectMenuItem = new javax.swing.JMenuItem();
-        switchWorkspaceMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
-        analyzeMenu = new javax.swing.JMenu();
-        thresholdMenuItem = new javax.swing.JMenuItem();
-        virtualMetricMenuItem = new javax.swing.JMenuItem();
-        filterMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenu helpMenu = new javax.swing.JMenu();
-        javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
-        testOptionsButtonGroup = new javax.swing.ButtonGroup();
-        virtualMetricWizardDialog = new javax.swing.JDialog();
-        pnlVmHeader = new javax.swing.JPanel();
-        jLabel19 = new javax.swing.JLabel();
-        pnlVmCardLayout = new javax.swing.JPanel();
-        pnlVmSettings = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        txtVmMetricName = new javax.swing.JTextField();
-        cmbVmMetricOperator = new javax.swing.JComboBox();
-        jLabel9 = new javax.swing.JLabel();
-        rbtnVmOperand1Txt = new javax.swing.JRadioButton();
-        txtVmOperand1 = new javax.swing.JTextField();
-        rbtnVmOperand1Cmb = new javax.swing.JRadioButton();
-        cmbVmOperand1 = new javax.swing.JComboBox();
-        lblVmOperand2 = new javax.swing.JLabel();
-        rbtnVmOperand2Txt = new javax.swing.JRadioButton();
-        txtVmOperand2 = new javax.swing.JTextField();
-        rbtnVmOperand2Cmb = new javax.swing.JRadioButton();
-        cmbVmOperand2 = new javax.swing.JComboBox();
-        pnlVmApproval = new javax.swing.JPanel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
-        lblVirtualMetricName = new javax.swing.JLabel();
-        lblVirtualMetricEquation = new javax.swing.JLabel();
-        pnlVmButtons = new javax.swing.JPanel();
-        btnVmBack = new javax.swing.JButton();
-        cancelVirtualMetricButton = new javax.swing.JButton();
-        btnVmNext = new javax.swing.JButton();
-        thresholdWizardDialog = new javax.swing.JDialog();
-        pnlthresholdWizardMain = new javax.swing.JPanel();
-        pnlThresholdSettingsCardLayout = new javax.swing.JPanel();
-        pnlThresholdSettings = new javax.swing.JPanel();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
-        cmbThresholdMetricList = new javax.swing.JComboBox();
-        cmbThresholdOperator1 = new javax.swing.JComboBox();
-        cmbThresholdOperator = new javax.swing.JComboBox();
-        rbtnThresholdOperatorOneTxt = new javax.swing.JRadioButton();
-        rbtnThresholdOperator1Cmb = new javax.swing.JRadioButton();
-        txtThresholdOperator1 = new javax.swing.JTextField();
-        cmbRiskLevels = new javax.swing.JComboBox();
-        lblThresholdOperand2 = new javax.swing.JLabel();
-        rbtnThresholdOperator2Txt = new javax.swing.JRadioButton();
-        txtThresholdOperator2 = new javax.swing.JTextField();
-        rbtnThresholdOperator2Cmb = new javax.swing.JRadioButton();
-        cmbThresholdOperator2 = new javax.swing.JComboBox();
-        pnlThresholdApprove = new javax.swing.JPanel();
-        jLabel18 = new javax.swing.JLabel();
-        lblThresholdExpression = new javax.swing.JLabel();
-        lblThresholdRiskLevel = new javax.swing.JLabel();
-        pnlThresholdWizardHeader = new javax.swing.JPanel();
-        jLabel17 = new javax.swing.JLabel();
-        pnlThresholdWizardButtons = new javax.swing.JPanel();
-        btnThresholdWizardBack = new javax.swing.JButton();
-        btnThresholdWizardNext = new javax.swing.JButton();
-        btnThresholdWizardCancel = new javax.swing.JButton();
-        btngRiskLevel = new javax.swing.ButtonGroup();
-        btngFirstOperand = new javax.swing.ButtonGroup();
-        btngSecondOperand = new javax.swing.ButtonGroup();
-        btngVmOperand1 = new javax.swing.ButtonGroup();
-        btngVmOperand2 = new javax.swing.ButtonGroup();
-        btngLanguageGroup = new javax.swing.ButtonGroup();
-        filterWizardDialog = new javax.swing.JDialog();
-        pnlFilterHeader = new javax.swing.JPanel();
-        jLabel21 = new javax.swing.JLabel();
-        pnlFilterButtons = new javax.swing.JPanel();
-        btnApplyFilter = new javax.swing.JButton();
-        btnCancelFilter = new javax.swing.JButton();
-        pnlFilterMain = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        listAllMetrics = new javax.swing.JList();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        listFilterMetrics = new javax.swing.JList();
-        jLabel22 = new javax.swing.JLabel();
-        btnTransferToFilter = new javax.swing.JButton();
-        btnTransferLeft = new javax.swing.JButton();
-        btnTransferAllToFilter = new javax.swing.JButton();
-        btnTransferAllToLeft = new javax.swing.JButton();
-
         mainPanel.setName("mainPanel"); // NOI18N
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        mainContentSplitPanel.setDividerLocation(150);
-        mainContentSplitPanel.setDividerSize(1);
-        mainContentSplitPanel.setMinimumSize(new java.awt.Dimension(90, 80));
-        mainContentSplitPanel.setName("mainContentSplitPanel"); // NOI18N
-        mainContentSplitPanel.setPreferredSize(new java.awt.Dimension(90, 80));
+        createAnalysisResults();
+        createPredictionPanel();
+        createVMetricsDialog();
+        createThresholdDialog();
+        createFilterDialog();
+        
+        
+        testOptionsButtonGroup = new javax.swing.ButtonGroup();
+        btngRiskLevel = new javax.swing.ButtonGroup();
+        btngLanguageGroup = new javax.swing.ButtonGroup();
 
+//        dataSplitPanel.setPreferredSize(new java.awt.Dimension(90, 80));
+        
+        mainPanel.add(analysisResultsPanel);
+        predictionPanel.setVisible(false);
+        mainPanel.add(predictionPanel);
+        mainPanel.validate();
+        
+//        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+//        mainPanel.setLayout(mainPanelLayout);
+//        mainPanelLayout.setHorizontalGroup(
+//            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addComponent(dataSplitPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 1117, javax.swing.GroupLayout.PREFERRED_SIZE)
+//        );
+//        mainPanelLayout.setVerticalGroup(
+//            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(mainPanelLayout.createSequentialGroup()
+//                .addContainerGap()
+//                .addComponent(dataSplitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+//                .addContainerGap())
+//        );
+        
+        getContentPane().add(mainPanel);
+        
+        checkToolBars();
+    }
+
+    private void checkToolBars()
+    {
+        analysisToolbar.checkControls();
+        predictionToolbar.checkControls();
+    }
+    
+	private void createAnalysisResults()
+	{
+        analysisResultsPanel = new javax.swing.JPanel();
         analysisResultsPanel.setName("analysisResultsPanel"); // NOI18N
+        analysisResultsPanel.setLayout(new BorderLayout());
+        
+        analysisResultsPanel.add(createAnalysisToolbar(), BorderLayout.NORTH);
+        
+        dataSplitPanel = new javax.swing.JSplitPane();
+        dataSplitPanel.setDividerLocation(150);
+        dataSplitPanel.setResizeWeight(0.25);
+        dataSplitPanel.setDividerSize(6);
+        dataSplitPanel.setOneTouchExpandable(true);
+        dataSplitPanel.setMinimumSize(new java.awt.Dimension(90, 80));
+        dataSplitPanel.setName("dataSplitPanel"); // NOI18N
 
-        tabPaneAnalysisResults.setName("tabPaneAnalysisResults"); // NOI18N
+		packageExplorer = new PackageExplorer();
+		packageExplorer.generateRepositoryTree(dataSplitPanel);
+		packageExplorer.traverseRepository();
+        
+        dataSplitPanel.setRightComponent(createProjectPanel());
+        
+//        tabPaneAnalysisResults = new javax.swing.JTabbedPane();
+//        tabPaneAnalysisResults.setName("tabPaneAnalysisResults"); // NOI18N
+//        tabPaneAnalysisResults.addTab(resources.getString("resultsDataPanel.TabConstraints.tabTitle"), createDataTab()); // NOI18N
+//        tabPaneAnalysisResults.addTab(resources.getString("predictionPanel.TabConstraints.tabTitle"), createPredictionTab()); // NOI18N
+        
+        analysisResultsPanel.add(dataSplitPanel, BorderLayout.CENTER);
+  
+        
+//        javax.swing.GroupLayout analysisResultsPanelLayout = new javax.swing.GroupLayout(analysisResultsPanel);
+//        
+//        analysisResultsPanelLayout.setHorizontalGroup(
+//            analysisResultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(analysisResultsPanelLayout.createSequentialGroup()
+//                .addContainerGap()
+//                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 945, Short.MAX_VALUE)
+//                .addContainerGap())
+//        );
+//        analysisResultsPanelLayout.setVerticalGroup(
+//            analysisResultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, analysisResultsPanelLayout.createSequentialGroup()
+//                .addContainerGap()
+//                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
+//        );
+	}
 
-        pnlDataTab.setName("pnlDataTab"); // NOI18N
+	private Component createAnalysisToolbar()
+	{
+		analysisToolbar = new ControlBar();
+		analysisToolbar.setCBListener(this);
+		analysisToolbar.setMarkIcon(okMark);
+		
+		analysisToolbar.addImageButton(MI_ADDPROJECT, getResourceIcon("addproject.png"), -1, resources.getString("addProjectMenuItem.text"), 0, 2);
+		analysisToolbar.addImageButton(MI_PARSEPROJECT, getResourceIcon("parseproject.png"), -1, resources.getString("parseProjectMenuItem.text"), 0, 2);
+		analysisToolbar.addImageButton(MI_DELETEPROJECT, getResourceIcon("delete.png"), -1, resources.getString("deleteProjectMenuItem.text"), 0, 2);
+		analysisToolbar.addImageButton(MI_NEWTHRESHOLD, getResourceIcon("newthreshold.png"), -1, resources.getString("thresholdMenuItem.text"), 0, 2);
+		analysisToolbar.addMenuButton(MI_LOADSTORE, getResourceIcon("load.png"), getResourceList("loadstore.button.items"), -1, resources.getString("loadstore.button.text"), false, 0, 2);
+		analysisToolbar.addImageButton(MI_FILTER, getResourceIcon("filter.png"), -1, resources.getString("filterMenuItem.text"), 0, 2);
+		analysisToolbar.addImageButton(MI_NEWVMETRIC, getResourceIcon("newmetric.png"), -1, resources.getString("virtualMetricMenuItem.text"), 0, 20);
+		analysisToolbar.addLabel(MI_FILLER, -1, "", 1.0, 0, 0);
+		metricsMenuButton = analysisToolbar.addMenuButton(MI_METRICS, getResourceIcon("metrics.png"), getResourceList("metrics.button.items"), -1, resources.getString("metrics.button.text"), false, 0, 2);
+		languagesMenuButton = analysisToolbar.addMenuButton(MI_LANGUAGES, getResourceIcon("language.png"), getResourceList("language.button.items"), -1, resources.getString("language.button.text"), false, 0, 2);
+		analysisToolbar.addImageButton(MI_SWITCHWS, getResourceIcon("switchws.png"), -1, resources.getString("switchWorkspaceMenuItem.text"), 0, 2);
+		analysisToolbar.addImageButton(MI_SWITCHVW, getResourceIcon("switchpn.png"), -1, resources.getString("switchView.button.text"), 0, 2);
+		analysisToolbar.addImageButton(MI_SOFTLAB, getResourceIcon("softlab24.PNG"), -1, null, 0, 2);
+		
+		analysisToolbar.addTerminators(true);
+		analysisToolbar.setMenuButtonMark(MI_LOADSTORE, false);
+		analysisToolbar.markMenuButtonSelection(metricsMenuButton, 0, okMark);
+		analysisToolbar.markMenuButtonSelection(languagesMenuButton, 0, okMark);
+		
+		return analysisToolbar;
+	}
 
-        pnlCategorizeButtons.setName("pnlCategorizeButtons"); // NOI18N
-
-        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class).getContext().getActionMap(PrestGuiView.class, this);
-        btnLoadCategorizer.setAction(actionMap.get("loadCategorizer")); // NOI18N
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class).getContext().getResourceMap(PrestGuiView.class);
-        btnLoadCategorizer.setText(resourceMap.getString("btnLoadCategorizer.text")); // NOI18N
-        btnLoadCategorizer.setName("btnLoadCategorizer"); // NOI18N
-        btnLoadCategorizer.setVisible(false);
-
-        btnCategorize.setAction(actionMap.get("categorize")); // NOI18N
-        btnCategorize.setText(resourceMap.getString("btnCategorize.text")); // NOI18N
-        btnCategorize.setName("btnCategorize"); // NOI18N
-        btnCategorize.setVisible(false);
-
-        btnStoreCategorizer.setAction(actionMap.get("storeCategorizer")); // NOI18N
-        btnStoreCategorizer.setText(resourceMap.getString("btnStoreCategorizer.text")); // NOI18N
-        btnStoreCategorizer.setName("btnStoreCategorizer"); // NOI18N
-        btnStoreCategorizer.setVisible(false);
-
-        javax.swing.GroupLayout pnlCategorizeButtonsLayout = new javax.swing.GroupLayout(pnlCategorizeButtons);
-        pnlCategorizeButtons.setLayout(pnlCategorizeButtonsLayout);
-        pnlCategorizeButtonsLayout.setHorizontalGroup(
-            pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlCategorizeButtonsLayout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addComponent(btnLoadCategorizer)
-                .addGap(28, 28, 28)
-                .addComponent(btnCategorize)
-                .addGap(29, 29, 29)
-                .addComponent(btnStoreCategorizer)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        pnlCategorizeButtonsLayout.setVerticalGroup(
-            pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlCategorizeButtonsLayout.createSequentialGroup()
-                .addGroup(pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnLoadCategorizer)
-                    .addComponent(btnCategorize)
-                    .addComponent(btnStoreCategorizer))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        pnlDataCardLayout.setName("pnlDataCardLayout"); // NOI18N
-        pnlDataCardLayout.setLayout(new java.awt.CardLayout());
-
-        pnlParseResultsAnalyze.setName("pnlParseResultsAnalyze"); // NOI18N
-
-        cmbMetricGroups.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Package Metrics", "File Metrics", "Class Metrics", "Method Metrics" }));
-        cmbMetricGroups.setName("cmbMetricGroups"); // NOI18N
-        cmbMetricGroups.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cmbMetricGroupsItemStateChanged(evt);
-            }
-        });
-
-        metricsCardLayoutPanel.setName("metricsCardLayoutPanel"); // NOI18N
-        metricsCardLayoutPanel.setLayout(new java.awt.CardLayout());
-        CardLayout cards = (CardLayout)metricsCardLayoutPanel.getLayout();
-        cards.show(metricsCardLayoutPanel, "card3");
-
+	private ImageIcon getResourceIcon(String name)
+	{
+		return GUIUtilities.getIcon(getClass(), "/prestgui/resources/"+name);
+	}
+	
+	private TaggedList getResourceList(String key)
+	{
+		String lStr = resources.getString(key);
+		if (lStr != null)
+		{
+			TaggedList l =  new TaggedList();
+			l.addAll(lStr);
+			return l;
+		}
+		
+		return null;
+	}
+	
+	private Component createProjectPanel()
+	{
+        projectPanel = new JPanel();
+        projectPanel.setName("project");
+        projectPanel.setLayout(new BorderLayout());
+        
+        JPanel header = new JPanel();
+        header.setLayout(new BorderLayout());
+        
+        projectTitleDisplay = new JTextField();
+        projectTitleDisplay.setEditable(false);
+        projectTitleDisplay.setFocusable(false);
+        projectTitleDisplay.setBackground(Color.DARK_GRAY);
+        projectTitleDisplay.setForeground(Color.WHITE);
+		Font font = new Font("Tahoma", Font.BOLD, 10);
+		projectTitleDisplay.setFont(font);
+		projectTitleDisplay.setText("Project");
+		projectTitleDisplay.setPreferredSize(new Dimension(50, 18));
+		
+		header.add(projectTitleDisplay, BorderLayout.NORTH);
+		
+		projectInfoDisplay = new JTextArea();
+		projectInfoDisplay.setPreferredSize(new Dimension(48, 48));
+		projectInfoDisplay.setEditable(false);
+		projectInfoDisplay.setBorder(new LineBorder(Color.BLACK, 2));
+		projectInfoDisplay.setMinimumSize(new Dimension(10, 10));
+		
+		header.add(projectInfoDisplay, BorderLayout.CENTER);
+		
+		projectPanel.add(header, BorderLayout.NORTH);
+        
+		
+		metricsPanels = new JTabbedPane[4];
+        
+		resultsDataPanel = new javax.swing.JPanel();
+        resultsDataPanel.setName("resultsDataPanel"); // NOI18N
+        resultsDataPanel.setLayout(new BoxLayout(resultsDataPanel, BoxLayout.Y_AXIS));
+        
+//        pnlDataCardLayout = new javax.swing.JPanel();
+//        pnlDataCardLayout.setName("pnlDataCardLayout"); // NOI18N
+//        pnlDataCardLayout.setLayout(new java.awt.CardLayout());
+        
+//        pnlParseResultsAnalyze = new javax.swing.JPanel();
+//        pnlParseResultsAnalyze.setName("pnlParseResultsAnalyze"); // NOI18N
+//
+//        metricsCardLayoutPanel = new javax.swing.JPanel();
+//        metricsCardLayoutPanel.setName("metricsCardLayoutPanel"); // NOI18N
+//        metricsCardLayoutPanel.setLayout(new java.awt.CardLayout());
+//        CardLayout cards = (CardLayout)metricsCardLayoutPanel.getLayout();
+//        cards.show(metricsCardLayoutPanel, "card3");
+        
+        packageMetricsTabbedPane = new javax.swing.JTabbedPane();
+        packageMetricsTabbedPane.setMinimumSize(new Dimension(30, 25));
         packageMetricsTabbedPane.setName("packageMetricsTabbedPane"); // NOI18N
-
+        
+        packageMetricsDataSetPanel = new javax.swing.JPanel();
         packageMetricsDataSetPanel.setName("packageMetricsDataSetPanel"); // NOI18N
-
+        
         javax.swing.GroupLayout packageMetricsDataSetPanelLayout = new javax.swing.GroupLayout(packageMetricsDataSetPanel);
         packageMetricsDataSetPanel.setLayout(packageMetricsDataSetPanelLayout);
         packageMetricsDataSetPanelLayout.setHorizontalGroup(
@@ -412,11 +777,11 @@ public class PrestGuiView extends FrameView implements WindowListener {
             packageMetricsDataSetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 290, Short.MAX_VALUE)
         );
-
-        packageMetricsTabbedPane.addTab(resourceMap.getString("packageMetricsDataSetPanel.TabConstraints.tabTitle"), packageMetricsDataSetPanel); // NOI18N
-
+        packageMetricsTabbedPane.addTab(resources.getString("packageMetricsDataSetPanel.TabConstraints.tabTitle"), packageMetricsDataSetPanel); // NOI18N
+        
+        packageMetricsThresholdPanel = new javax.swing.JPanel();
         packageMetricsThresholdPanel.setName("packageMetricsThresholdPanel"); // NOI18N
-
+        
         javax.swing.GroupLayout packageMetricsThresholdPanelLayout = new javax.swing.GroupLayout(packageMetricsThresholdPanel);
         packageMetricsThresholdPanel.setLayout(packageMetricsThresholdPanelLayout);
         packageMetricsThresholdPanelLayout.setHorizontalGroup(
@@ -427,17 +792,18 @@ public class PrestGuiView extends FrameView implements WindowListener {
             packageMetricsThresholdPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 290, Short.MAX_VALUE)
         );
-
-        packageMetricsTabbedPane.addTab(resourceMap.getString("packageMetricsThresholdPanel.TabConstraints.tabTitle"), packageMetricsThresholdPanel); // NOI18N
-
+        packageMetricsTabbedPane.addTab(resources.getString("packageMetricsThresholdPanel.TabConstraints.tabTitle"), packageMetricsThresholdPanel); // NOI18N
         packageMetricsTabbedPane.setSelectedIndex(0);
-
-        metricsCardLayoutPanel.add(packageMetricsTabbedPane, "card3");
-
+        metricsPanels[MP_PACKAGE] = packageMetricsTabbedPane;
+        
+//        metricsCardLayoutPanel.add(packageMetricsTabbedPane, "card3");
+        resultsDataPanel.add(packageMetricsTabbedPane);
+        
+        fileMetricsTabbedPane = new javax.swing.JTabbedPane();
+        fileMetricsTabbedPane.setMinimumSize(new Dimension(30, 25));
         fileMetricsTabbedPane.setName("fileMetricsTabbedPane"); // NOI18N
-
+        fileMetricsDataSetPanel = new javax.swing.JPanel();
         fileMetricsDataSetPanel.setName("fileMetricsDataSetPanel"); // NOI18N
-
         javax.swing.GroupLayout fileMetricsDataSetPanelLayout = new javax.swing.GroupLayout(fileMetricsDataSetPanel);
         fileMetricsDataSetPanel.setLayout(fileMetricsDataSetPanelLayout);
         fileMetricsDataSetPanelLayout.setHorizontalGroup(
@@ -448,11 +814,11 @@ public class PrestGuiView extends FrameView implements WindowListener {
             fileMetricsDataSetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 290, Short.MAX_VALUE)
         );
-
-        fileMetricsTabbedPane.addTab(resourceMap.getString("fileMetricsDataSetPanel.TabConstraints.tabTitle"), fileMetricsDataSetPanel); // NOI18N
-
+        fileMetricsTabbedPane.addTab(resources.getString("fileMetricsDataSetPanel.TabConstraints.tabTitle"), fileMetricsDataSetPanel); // NOI18N
+        
+        fileMetricsThresholdPanel = new javax.swing.JPanel();
         fileMetricsThresholdPanel.setName("fileMetricsThresholdPanel"); // NOI18N
-
+        
         javax.swing.GroupLayout fileMetricsThresholdPanelLayout = new javax.swing.GroupLayout(fileMetricsThresholdPanel);
         fileMetricsThresholdPanel.setLayout(fileMetricsThresholdPanelLayout);
         fileMetricsThresholdPanelLayout.setHorizontalGroup(
@@ -463,17 +829,19 @@ public class PrestGuiView extends FrameView implements WindowListener {
             fileMetricsThresholdPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 290, Short.MAX_VALUE)
         );
-
-        fileMetricsTabbedPane.addTab(resourceMap.getString("fileMetricsThresholdPanel.TabConstraints.tabTitle"), fileMetricsThresholdPanel); // NOI18N
-
+        fileMetricsTabbedPane.addTab(resources.getString("fileMetricsThresholdPanel.TabConstraints.tabTitle"), fileMetricsThresholdPanel); // NOI18N
         fileMetricsTabbedPane.setSelectedIndex(0);
-
-        metricsCardLayoutPanel.add(fileMetricsTabbedPane, "card2");
-
+        fileMetricsTabbedPane.setVisible(false);
+        metricsPanels[MP_FILE] = fileMetricsTabbedPane;
+        
+//        metricsCardLayoutPanel.add(fileMetricsTabbedPane, "card2");
+        resultsDataPanel.add(fileMetricsTabbedPane);
+        
+        classMetricsTabbedPane = new javax.swing.JTabbedPane();
+        classMetricsTabbedPane.setMinimumSize(new Dimension(30, 25));
         classMetricsTabbedPane.setName("classMetricsTabbedPane"); // NOI18N
-
+        classMetricsDataSetPanel = new javax.swing.JPanel();
         classMetricsDataSetPanel.setName("classMetricsDataSetPanel"); // NOI18N
-
         javax.swing.GroupLayout classMetricsDataSetPanelLayout = new javax.swing.GroupLayout(classMetricsDataSetPanel);
         classMetricsDataSetPanel.setLayout(classMetricsDataSetPanelLayout);
         classMetricsDataSetPanelLayout.setHorizontalGroup(
@@ -484,11 +852,9 @@ public class PrestGuiView extends FrameView implements WindowListener {
             classMetricsDataSetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 290, Short.MAX_VALUE)
         );
-
-        classMetricsTabbedPane.addTab(resourceMap.getString("classMetricsDataSetPanel.TabConstraints.tabTitle"), classMetricsDataSetPanel); // NOI18N
-
+        classMetricsTabbedPane.addTab(resources.getString("classMetricsDataSetPanel.TabConstraints.tabTitle"), classMetricsDataSetPanel); // NOI18N
+        classMetricsThresholdPanel = new javax.swing.JPanel();
         classMetricsThresholdPanel.setName("classMetricsThresholdPanel"); // NOI18N
-
         javax.swing.GroupLayout classMetricsThresholdPanelLayout = new javax.swing.GroupLayout(classMetricsThresholdPanel);
         classMetricsThresholdPanel.setLayout(classMetricsThresholdPanelLayout);
         classMetricsThresholdPanelLayout.setHorizontalGroup(
@@ -499,17 +865,19 @@ public class PrestGuiView extends FrameView implements WindowListener {
             classMetricsThresholdPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 290, Short.MAX_VALUE)
         );
-
-        classMetricsTabbedPane.addTab(resourceMap.getString("classMetricsThresholdPanel.TabConstraints.tabTitle"), classMetricsThresholdPanel); // NOI18N
-
+        classMetricsTabbedPane.addTab(resources.getString("classMetricsThresholdPanel.TabConstraints.tabTitle"), classMetricsThresholdPanel); // NOI18N
         classMetricsTabbedPane.setSelectedIndex(0);
+        classMetricsTabbedPane.setVisible(false);
+        metricsPanels[MP_CLASS] = classMetricsTabbedPane;
 
-        metricsCardLayoutPanel.add(classMetricsTabbedPane, "card5");
-
+//        metricsCardLayoutPanel.add(classMetricsTabbedPane, "card5");
+        resultsDataPanel.add(classMetricsTabbedPane);
+        
+        methodMetricsTabbedPane = new javax.swing.JTabbedPane();
+        methodMetricsTabbedPane.setMinimumSize(new Dimension(30, 25));
         methodMetricsTabbedPane.setName("methodMetricsTabbedPane"); // NOI18N
-
+        methodMetricsDataSetPanel = new javax.swing.JPanel();
         methodMetricsDataSetPanel.setName("methodMetricsDataSetPanel"); // NOI18N
-
         javax.swing.GroupLayout methodMetricsDataSetPanelLayout = new javax.swing.GroupLayout(methodMetricsDataSetPanel);
         methodMetricsDataSetPanel.setLayout(methodMetricsDataSetPanelLayout);
         methodMetricsDataSetPanelLayout.setHorizontalGroup(
@@ -520,11 +888,9 @@ public class PrestGuiView extends FrameView implements WindowListener {
             methodMetricsDataSetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 290, Short.MAX_VALUE)
         );
-
-        methodMetricsTabbedPane.addTab(resourceMap.getString("methodMetricsDataSetPanel.TabConstraints.tabTitle"), methodMetricsDataSetPanel); // NOI18N
-
+        methodMetricsTabbedPane.addTab(resources.getString("methodMetricsDataSetPanel.TabConstraints.tabTitle"), methodMetricsDataSetPanel); // NOI18N
+        methodMetricsThresholdPanel = new javax.swing.JPanel();
         methodMetricsThresholdPanel.setName("methodMetricsThresholdPanel"); // NOI18N
-
         javax.swing.GroupLayout methodMetricsThresholdPanelLayout = new javax.swing.GroupLayout(methodMetricsThresholdPanel);
         methodMetricsThresholdPanel.setLayout(methodMetricsThresholdPanelLayout);
         methodMetricsThresholdPanelLayout.setHorizontalGroup(
@@ -535,455 +901,548 @@ public class PrestGuiView extends FrameView implements WindowListener {
             methodMetricsThresholdPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 290, Short.MAX_VALUE)
         );
-
-        methodMetricsTabbedPane.addTab(resourceMap.getString("methodMetricsThresholdPanel.TabConstraints.tabTitle"), methodMetricsThresholdPanel); // NOI18N
-
+        methodMetricsTabbedPane.addTab(resources.getString("methodMetricsThresholdPanel.TabConstraints.tabTitle"), methodMetricsThresholdPanel); // NOI18N
         methodMetricsTabbedPane.setSelectedIndex(0);
+        methodMetricsTabbedPane.setVisible(false);
+        metricsPanels[MP_METHOD] = methodMetricsTabbedPane;
+        
+//        metricsCardLayoutPanel.add(methodMetricsTabbedPane, "card4");
+        resultsDataPanel.add(methodMetricsTabbedPane);
+        
+//        cmbMetricGroups = new javax.swing.JComboBox();
+//        cmbMetricGroups.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Package Metrics", "File Metrics", "Class Metrics", "Method Metrics" }));
+//        cmbMetricGroups.setName("cmbMetricGroups"); // NOI18N
+//        cmbMetricGroups.addItemListener(new java.awt.event.ItemListener() {
+//            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+//                cmbMetricGroupsItemStateChanged(evt);
+//            }
+//        });
+//
+//        pnlLanguageRadioPanel = new javax.swing.JPanel();
+//        pnlLanguageRadioPanel.setAlignmentY(0.0F);
+//        pnlLanguageRadioPanel.setName("pnlLanguageRadioPanel"); // NOI18N
+//
+//        javax.swing.GroupLayout pnlLanguageRadioPanelLayout = new javax.swing.GroupLayout(pnlLanguageRadioPanel);
+//        pnlLanguageRadioPanel.setLayout(pnlLanguageRadioPanelLayout);
+//        pnlLanguageRadioPanelLayout.setHorizontalGroup(
+//            pnlLanguageRadioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGap(0, 681, Short.MAX_VALUE)
+//        );
+//        pnlLanguageRadioPanelLayout.setVerticalGroup(
+//            pnlLanguageRadioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGap(0, 20, Short.MAX_VALUE)
+//        );
+//
+//        javax.swing.GroupLayout pnlParseResultsAnalyzeLayout = new javax.swing.GroupLayout(pnlParseResultsAnalyze);
+//        pnlParseResultsAnalyze.setLayout(pnlParseResultsAnalyzeLayout);
+//        pnlParseResultsAnalyzeLayout.setHorizontalGroup(
+//            pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
+//                .addContainerGap()
+//                .addGroup(pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//                    .addComponent(metricsCardLayoutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
+//                    .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
+//                        .addComponent(cmbMetricGroups, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+//                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                        .addComponent(pnlLanguageRadioPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+//                .addContainerGap())
+//        );
+//        pnlParseResultsAnalyzeLayout.setVerticalGroup(
+//            pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
+//                .addContainerGap()
+//                .addGroup(pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+//                    .addComponent(cmbMetricGroups, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+//                    .addComponent(pnlLanguageRadioPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                .addComponent(metricsCardLayoutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
+//        );
+//        
+//        pnlDataCardLayout.add(pnlParseResultsAnalyze, "card4");
+//
+//        pnlDataFileAnalyze = new javax.swing.JPanel();
+//        pnlDataFileAnalyze.setName("pnlDataFileAnalyze"); // NOI18N
+//
+//        tabPaneDataFileAnalyze = new javax.swing.JTabbedPane();
+//        tabPaneDataFileAnalyze.setName("tabPaneDataFileAnalyze"); // NOI18N
+//
+//        pnlDataFile = new javax.swing.JPanel();
+//        pnlDataFile.setName("pnlDataFile"); // NOI18N
+//
+//        jLabel23 = new javax.swing.JLabel();
+//        jLabel23.setText(resources.getString("jLabel23.text")); // NOI18N
+//        jLabel23.setName("jLabel23"); // NOI18N
+//
+//        javax.swing.GroupLayout pnlDataFileLayout = new javax.swing.GroupLayout(pnlDataFile);
+//        pnlDataFile.setLayout(pnlDataFileLayout);
+//        pnlDataFileLayout.setHorizontalGroup(
+//            pnlDataFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(pnlDataFileLayout.createSequentialGroup()
+//                .addContainerGap()
+//                .addComponent(jLabel23)
+//                .addContainerGap(786, Short.MAX_VALUE))
+//        );
+//        pnlDataFileLayout.setVerticalGroup(
+//            pnlDataFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(pnlDataFileLayout.createSequentialGroup()
+//                .addContainerGap()
+//                .addComponent(jLabel23)
+//                .addContainerGap(302, Short.MAX_VALUE))
+//        );
+//
+//        tabPaneDataFileAnalyze.addTab(resources.getString("pnlDataFile.TabConstraints.tabTitle"), pnlDataFile); // NOI18N
+//
+//        javax.swing.GroupLayout pnlDataFileAnalyzeLayout = new javax.swing.GroupLayout(pnlDataFileAnalyze);
+//        pnlDataFileAnalyze.setLayout(pnlDataFileAnalyzeLayout);
+//        pnlDataFileAnalyzeLayout.setHorizontalGroup(
+//            pnlDataFileAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addComponent(tabPaneDataFileAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE)
+//        );
+//        pnlDataFileAnalyzeLayout.setVerticalGroup(
+//            pnlDataFileAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addComponent(tabPaneDataFileAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+//        );
+//
+//        pnlDataCardLayout.add(pnlDataFileAnalyze, "card3");
+//        
+//        javax.swing.JLabel imageLabel = new javax.swing.JLabel();
+//        imageLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+//        imageLabel.setIcon(GUIUtilities.getIcon(resources, "imageLabel.icon", "/prestgui/resources")); // NOI18N
+//        imageLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+//        imageLabel.setMaximumSize(new java.awt.Dimension(50, 50));
+//        imageLabel.setMinimumSize(new java.awt.Dimension(50, 50));
+//        imageLabel.setName("imageLabel"); // NOI18N
+//        imageLabel.setPreferredSize(new java.awt.Dimension(50, 50));
+//        
+//        
+//        pnlCategorizeButtons = new javax.swing.JPanel();
+//        pnlCategorizeButtons.setName("pnlCategorizeButtons"); // NOI18N
+//        
+//        btnLoadCategorizer = new javax.swing.JButton();
+//        btnLoadCategorizer.addActionListener(buttonExecutor);
+//        btnLoadCategorizer.setActionCommand("loadCategorizer"); // NOI18N
+//        btnLoadCategorizer.setText(resources.getString("btnLoadCategorizer.text")); // NOI18N
+//        btnLoadCategorizer.setName("btnLoadCategorizer"); // NOI18N
+//        btnLoadCategorizer.setVisible(false);
+//
+//        btnCategorize = new javax.swing.JButton();
+//        btnCategorize.addActionListener(buttonExecutor);
+//        btnCategorize.setActionCommand("categorize"); // NOI18N
+//        btnCategorize.setText(resources.getString("btnCategorize.text")); // NOI18N
+//        btnCategorize.setName("btnCategorize"); // NOI18N
+//        btnCategorize.setVisible(false);
+//
+//        btnStoreCategorizer = new javax.swing.JButton();
+//        btnStoreCategorizer.addActionListener(buttonExecutor);
+//        btnStoreCategorizer.setActionCommand("storeCategorizer"); // NOI18N
+//        btnStoreCategorizer.setText(resources.getString("btnStoreCategorizer.text")); // NOI18N
+//        btnStoreCategorizer.setName("btnStoreCategorizer"); // NOI18N
+//        btnStoreCategorizer.setVisible(false);
+//        
+//        javax.swing.GroupLayout pnlCategorizeButtonsLayout = new javax.swing.GroupLayout(pnlCategorizeButtons);
+//        pnlCategorizeButtons.setLayout(pnlCategorizeButtonsLayout);
+//        pnlCategorizeButtonsLayout.setHorizontalGroup(
+//            pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(pnlCategorizeButtonsLayout.createSequentialGroup()
+//                .addGap(17, 17, 17)
+//                .addComponent(btnLoadCategorizer)
+//                .addGap(28, 28, 28)
+//                .addComponent(btnCategorize)
+//                .addGap(29, 29, 29)
+//                .addComponent(btnStoreCategorizer)
+//                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+//        );
+//        pnlCategorizeButtonsLayout.setVerticalGroup(
+//            pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(pnlCategorizeButtonsLayout.createSequentialGroup()
+//                .addGroup(pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+//                    .addComponent(btnLoadCategorizer)
+//                    .addComponent(btnCategorize)
+//                    .addComponent(btnStoreCategorizer))
+//                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+//        );
+//        
+//        javax.swing.GroupLayout pnlDataTabLayout = new javax.swing.GroupLayout(resultsDataPanel);
+//        resultsDataPanel.setLayout(pnlDataTabLayout);
+//        pnlDataTabLayout.setHorizontalGroup(
+//            pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(pnlDataTabLayout.createSequentialGroup()
+//                .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//                    .addGroup(pnlDataTabLayout.createSequentialGroup()
+//                        .addContainerGap()
+//                        .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE))
+//                    .addGroup(pnlDataTabLayout.createSequentialGroup()
+//                        .addGap(128, 128, 128)
+//                        .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+//                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 351, Short.MAX_VALUE)
+//                        .addComponent(imageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+//                .addContainerGap())
+//        );
+//        pnlDataTabLayout.setVerticalGroup(
+//            pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(pnlDataTabLayout.createSequentialGroup()
+//                .addContainerGap()
+//                .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+//                    .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+//                    .addComponent(imageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+//                .addGap(7, 7, 7)
+//                .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+//                .addContainerGap())
+//        );
+		
+        projectPanel.add(resultsDataPanel, BorderLayout.CENTER);
+        
+        return projectPanel;
+	}
 
-        metricsCardLayoutPanel.add(methodMetricsTabbedPane, "card4");
+	private Component createPredictionPanel()
+	{
+        predictionPanel = new javax.swing.JPanel();
+        predictionPanel.setName("predictionPanel"); // NOI18N
+        predictionPanel.setLayout(new BorderLayout());
 
-        pnlLanguageRadioPanel.setAlignmentY(0.0F);
-        pnlLanguageRadioPanel.setName("pnlLanguageRadioPanel"); // NOI18N
-
-        javax.swing.GroupLayout pnlLanguageRadioPanelLayout = new javax.swing.GroupLayout(pnlLanguageRadioPanel);
-        pnlLanguageRadioPanel.setLayout(pnlLanguageRadioPanelLayout);
-        pnlLanguageRadioPanelLayout.setHorizontalGroup(
-            pnlLanguageRadioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 681, Short.MAX_VALUE)
-        );
-        pnlLanguageRadioPanelLayout.setVerticalGroup(
-            pnlLanguageRadioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 20, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout pnlParseResultsAnalyzeLayout = new javax.swing.GroupLayout(pnlParseResultsAnalyze);
-        pnlParseResultsAnalyze.setLayout(pnlParseResultsAnalyzeLayout);
-        pnlParseResultsAnalyzeLayout.setHorizontalGroup(
-            pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(metricsCardLayoutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
-                    .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
-                        .addComponent(cmbMetricGroups, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pnlLanguageRadioPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        pnlParseResultsAnalyzeLayout.setVerticalGroup(
-            pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(cmbMetricGroups, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pnlLanguageRadioPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(metricsCardLayoutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
-        );
-
-        pnlDataCardLayout.add(pnlParseResultsAnalyze, "card4");
-
-        pnlDataFileAnalyze.setName("pnlDataFileAnalyze"); // NOI18N
-
-        tabPaneDataFileAnalyze.setName("tabPaneDataFileAnalyze"); // NOI18N
-
-        pnlDataFile.setName("pnlDataFile"); // NOI18N
-
-        jLabel23.setText(resourceMap.getString("jLabel23.text")); // NOI18N
-        jLabel23.setName("jLabel23"); // NOI18N
-
-        javax.swing.GroupLayout pnlDataFileLayout = new javax.swing.GroupLayout(pnlDataFile);
-        pnlDataFile.setLayout(pnlDataFileLayout);
-        pnlDataFileLayout.setHorizontalGroup(
-            pnlDataFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDataFileLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel23)
-                .addContainerGap(786, Short.MAX_VALUE))
-        );
-        pnlDataFileLayout.setVerticalGroup(
-            pnlDataFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDataFileLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel23)
-                .addContainerGap(302, Short.MAX_VALUE))
-        );
-
-        tabPaneDataFileAnalyze.addTab(resourceMap.getString("pnlDataFile.TabConstraints.tabTitle"), pnlDataFile); // NOI18N
-
-        javax.swing.GroupLayout pnlDataFileAnalyzeLayout = new javax.swing.GroupLayout(pnlDataFileAnalyze);
-        pnlDataFileAnalyze.setLayout(pnlDataFileAnalyzeLayout);
-        pnlDataFileAnalyzeLayout.setHorizontalGroup(
-            pnlDataFileAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabPaneDataFileAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE)
-        );
-        pnlDataFileAnalyzeLayout.setVerticalGroup(
-            pnlDataFileAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabPaneDataFileAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
-        );
-
-        pnlDataCardLayout.add(pnlDataFileAnalyze, "card3");
-
-        imageLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        imageLabel.setIcon(resourceMap.getIcon("imageLabel.icon")); // NOI18N
-        imageLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        imageLabel.setMaximumSize(new java.awt.Dimension(50, 50));
-        imageLabel.setMinimumSize(new java.awt.Dimension(50, 50));
-        imageLabel.setName("imageLabel"); // NOI18N
-        imageLabel.setPreferredSize(new java.awt.Dimension(50, 50));
-
-        javax.swing.GroupLayout pnlDataTabLayout = new javax.swing.GroupLayout(pnlDataTab);
-        pnlDataTab.setLayout(pnlDataTabLayout);
-        pnlDataTabLayout.setHorizontalGroup(
-            pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDataTabLayout.createSequentialGroup()
-                .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlDataTabLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE))
-                    .addGroup(pnlDataTabLayout.createSequentialGroup()
-                        .addGap(128, 128, 128)
-                        .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 351, Short.MAX_VALUE)
-                        .addComponent(imageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        pnlDataTabLayout.setVerticalGroup(
-            pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDataTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(imageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(7, 7, 7)
-                .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        tabPaneAnalysisResults.addTab(resourceMap.getString("pnlDataTab.TabConstraints.tabTitle"), pnlDataTab); // NOI18N
-
-        jPanel1.setName("jPanel1"); // NOI18N
-
-        jPanel2.setName("jPanel2"); // NOI18N
-
-        btnLoadTraining.setAction(actionMap.get("openTrainingFile")); // NOI18N
-        btnLoadTraining.setText(resourceMap.getString("btnLoadTraining.text")); // NOI18N
-        btnLoadTraining.setName("btnLoadTraining"); // NOI18N
-
-        btnLoadTest.setAction(actionMap.get("openTestFile")); // NOI18N
-        btnLoadTest.setName("btnLoadTest"); // NOI18N
-
-        btnStartWeka.setAction(actionMap.get("startWeka")); // NOI18N
-        btnStartWeka.setText(resourceMap.getString("btnStartWeka.text")); // NOI18N
-        btnStartWeka.setName("btnStartWeka"); // NOI18N
-
-        jComboBoxChooseAlgorithm.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Naive Bayes", "J48" }));
-        jComboBoxChooseAlgorithm.setName("jComboBoxChooseAlgorithm"); // NOI18N
-        jComboBoxChooseAlgorithm.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jComboBoxChooseAlgorithmItemStateChanged(evt);
-            }
-        });
-
-        chkboxCrossValidate.setAction(actionMap.get("crossValidateAction")); // NOI18N
-        chkboxCrossValidate.setName("chkboxCrossValidate"); // NOI18N
-
-        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
-        jLabel1.setName("jLabel1"); // NOI18N
-
-        jCheckBoxNormalize.setText(resourceMap.getString("jCheckBoxNormalize.text")); // NOI18N
-        jCheckBoxNormalize.setName("jCheckBoxNormalize"); // NOI18N
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(chkboxCrossValidate))
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addComponent(btnLoadTest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                            .addGap(10, 10, 10)
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(btnLoadTraining, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btnStartWeka, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jCheckBoxNormalize, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jComboBoxChooseAlgorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(8, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btnLoadTraining)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnLoadTest)
-                .addGap(14, 14, 14)
-                .addComponent(chkboxCrossValidate)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCheckBoxNormalize)
-                .addGap(75, 75, 75)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBoxChooseAlgorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 130, Short.MAX_VALUE)
-                .addComponent(btnStartWeka)
-                .addContainerGap())
-        );
-
-        jPanel3.setName("jPanel3"); // NOI18N
-
+//        jPanel2 = new javax.swing.JPanel();
+//        jPanel2.setName("jPanel2"); // NOI18N
+//
+//        jLabel1 = new javax.swing.JLabel();
+//        jLabel1.setText(resources.getString("jLabel1.text")); // NOI18N
+//        jLabel1.setName("jLabel1"); // NOI18N
+//        btnLoadTraining = new javax.swing.JButton();
+//        btnLoadTraining.addActionListener(buttonExecutor);
+//        btnLoadTraining.setActionCommand("openTrainingFile"); // NOI18N
+//        btnLoadTraining.setText(resources.getString("btnLoadTraining.text")); // NOI18N
+//        btnLoadTraining.setName("btnLoadTraining"); // NOI18N
+//        btnLoadTest = new javax.swing.JButton();
+//        btnLoadTest.addActionListener(buttonExecutor);
+//        btnLoadTest.setActionCommand("openTestFile"); // NOI18N
+//        btnLoadTest.setName("btnLoadTest"); // NOI18N
+//        btnLoadTest.setText(resources.getString("btnLoadTest.text"));
+//        btnStartWeka = new javax.swing.JButton();
+//        btnStartWeka.addActionListener(buttonExecutor);
+//        btnStartWeka.setActionCommand("startWeka"); // NOI18N
+//        btnStartWeka.setText(resources.getString("btnStartWeka.text")); // NOI18N
+//        btnStartWeka.setName("btnStartWeka"); // NOI18N
+//        jComboBoxChooseAlgorithm = new javax.swing.JComboBox();
+//        jComboBoxChooseAlgorithm.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Naive Bayes", "J48" }));
+//        jComboBoxChooseAlgorithm.setName("jComboBoxChooseAlgorithm"); // NOI18N
+//        jComboBoxChooseAlgorithm.addItemListener(new java.awt.event.ItemListener() {
+//          public void itemStateChanged(java.awt.event.ItemEvent evt) {
+//              jComboBoxChooseAlgorithmItemStateChanged(evt);
+//          }
+//        });
+//        chkboxCrossValidate = new javax.swing.JCheckBox();
+//        chkboxCrossValidate.addActionListener(buttonExecutor);
+//        chkboxCrossValidate.setActionCommand("crossValidateAction"); // NOI18N
+//        chkboxCrossValidate.setName("chkboxCrossValidate"); // NOI18N
+//        chkboxCrossValidate.setText(resources.getString("crossValidateAction.text")); // NOI18N
+//        jCheckBoxNormalize = new javax.swing.JCheckBox();
+//        jCheckBoxNormalize.setText(resources.getString("jCheckBoxNormalize.text")); // NOI18N
+//        jCheckBoxNormalize.setName("jCheckBoxNormalize"); // NOI18N
+//        
+//        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+//        jPanel2.setLayout(jPanel2Layout);
+//        jPanel2Layout.setHorizontalGroup(
+//            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(jPanel2Layout.createSequentialGroup()
+//                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//                    .addGroup(jPanel2Layout.createSequentialGroup()
+//                        .addContainerGap()
+//                        .addComponent(chkboxCrossValidate))
+//                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+//                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+//                            .addContainerGap()
+//                            .addComponent(btnLoadTest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+//                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+//                            .addGap(10, 10, 10)
+//                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+//                                .addComponent(btnLoadTraining, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//                                .addComponent(btnStartWeka, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+//                    .addGroup(jPanel2Layout.createSequentialGroup()
+//                        .addContainerGap()
+//                        .addComponent(jCheckBoxNormalize, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
+//                    .addGroup(jPanel2Layout.createSequentialGroup()
+//                        .addContainerGap()
+//                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
+//                    .addGroup(jPanel2Layout.createSequentialGroup()
+//                        .addContainerGap()
+//                        .addComponent(jComboBoxChooseAlgorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+//                .addContainerGap(8, Short.MAX_VALUE))
+//        );
+//        jPanel2Layout.setVerticalGroup(
+//            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(jPanel2Layout.createSequentialGroup()
+//                .addContainerGap()
+//                .addComponent(btnLoadTraining)
+//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+//                .addComponent(btnLoadTest)
+//                .addGap(14, 14, 14)
+//                .addComponent(chkboxCrossValidate)
+//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                .addComponent(jCheckBoxNormalize)
+//                .addGap(75, 75, 75)
+//                .addComponent(jLabel1)
+//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                .addComponent(jComboBoxChooseAlgorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 130, Short.MAX_VALUE)
+//                .addComponent(btnStartWeka)
+//                .addContainerGap())
+//        );
+        
+        jScrollPane4 = new javax.swing.JScrollPane();
         jScrollPane4.setName("jScrollPane4"); // NOI18N
-
+        jTextArea1 = new javax.swing.JTextArea();
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
-        jTextArea1.setFont(resourceMap.getFont("jTextArea1.font")); // NOI18N
+        jTextArea1.setFont(GUIUtilities.getResourceFont(resources, "jTextArea1.font")); // NOI18N
         jTextArea1.setRows(5);
-        jTextArea1.setText(resourceMap.getString("jTextArea1.text")); // NOI18N
+        jTextArea1.setText(resources.getString("jTextArea1.text")); // NOI18N
         jTextArea1.setName("jTextArea1"); // NOI18N
+        jTextArea1.setMinimumSize(new Dimension(10, 10));
         jScrollPane4.setViewportView(jTextArea1);
+        
+        jPanel3 = new javax.swing.JPanel();
+        jPanel3.setName("jPanel3"); // NOI18N
+        jPanel3.setLayout(new BorderLayout());
+        
+        predictionTitleDisplay = new JTextField();
+        predictionTitleDisplay.setEditable(false);
+        predictionTitleDisplay.setFocusable(false);
+        predictionTitleDisplay.setBackground(Color.DARK_GRAY);
+        predictionTitleDisplay.setForeground(Color.WHITE);
+		Font font = new Font("Tahoma", Font.BOLD, 10);
+		predictionTitleDisplay.setFont(font);
+		predictionTitleDisplay.setText(resources.getString("predictionDisplay.text"));
+		predictionTitleDisplay.setPreferredSize(new Dimension(50, 18));
+		
+		jPanel3.add(predictionTitleDisplay, BorderLayout.NORTH);
+		jPanel3.add(jScrollPane4, BorderLayout.CENTER);
+        
+//        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+//        jPanel3.setLayout(jPanel3Layout);
+//        jPanel3Layout.setHorizontalGroup(
+//            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+//                .addContainerGap(62, Short.MAX_VALUE)
+//                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 589, javax.swing.GroupLayout.PREFERRED_SIZE)
+//                .addGap(108, 108, 108))
+//        );
+//        jPanel3Layout.setVerticalGroup(
+//            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+//        );
+        
+        
+        predictionPanel.add(createPredictionToolbar(), BorderLayout.NORTH);
+//        predictionPanel.add(jPanel2, BorderLayout.WEST);
+        predictionPanel.add(jPanel3, BorderLayout.CENTER);
+        
+//        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(predictionPanel);
+//        predictionPanel.setLayout(jPanel1Layout);
+//        jPanel1Layout.setHorizontalGroup(
+//            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(jPanel1Layout.createSequentialGroup()
+//                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+//                .addGap(30, 30, 30)
+//                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//                .addContainerGap())
+//        );
+//        jPanel1Layout.setVerticalGroup(
+//            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+//                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+//                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+//                .addContainerGap())
+//        );
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(62, Short.MAX_VALUE)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 589, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(108, 108, 108))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30)
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-
-        tabPaneAnalysisResults.addTab(resourceMap.getString("jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
-
-        javax.swing.GroupLayout analysisResultsPanelLayout = new javax.swing.GroupLayout(analysisResultsPanel);
-        analysisResultsPanel.setLayout(analysisResultsPanelLayout);
-        analysisResultsPanelLayout.setHorizontalGroup(
-            analysisResultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(analysisResultsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 945, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        analysisResultsPanelLayout.setVerticalGroup(
-            analysisResultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, analysisResultsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
-        );
-
-        mainContentSplitPanel.setRightComponent(analysisResultsPanel);
-
-        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
-        mainPanel.setLayout(mainPanelLayout);
-        mainPanelLayout.setHorizontalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainContentSplitPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 1117, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        mainPanelLayout.setVerticalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(mainContentSplitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        menuBar.setName("menuBar"); // NOI18N
-
-        fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
-        fileMenu.setName("fileMenu"); // NOI18N
-
-        addProjectMenuItem.setText(resourceMap.getString("addProjectMenuItem.text")); // NOI18N
-        addProjectMenuItem.setName("addProjectMenuItem"); // NOI18N
-        addProjectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addProjectMenuItemActionPerformed(evt);
-            }
-        });
-        fileMenu.add(addProjectMenuItem);
-
-        switchWorkspaceMenuItem.setAction(actionMap.get("switchWorkspace")); // NOI18N
-        switchWorkspaceMenuItem.setText(resourceMap.getString("switchWorkspaceMenuItem.text")); // NOI18N
-        switchWorkspaceMenuItem.setName("switchWorkspaceMenuItem"); // NOI18N
-        fileMenu.add(switchWorkspaceMenuItem);
-
-        exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
-        exitMenuItem.setName("exitMenuItem"); // NOI18N
-        fileMenu.add(exitMenuItem);
-
-        menuBar.add(fileMenu);
-
-        analyzeMenu.setAction(actionMap.get("defineThreshold")); // NOI18N
-        analyzeMenu.setText(resourceMap.getString("analyzeMenu.text")); // NOI18N
-        analyzeMenu.setName("analyzeMenu"); // NOI18N
-
-        thresholdMenuItem.setAction(actionMap.get("defineThreshold")); // NOI18N
-        thresholdMenuItem.setText(resourceMap.getString("thresholdMenuItem.text")); // NOI18N
-        thresholdMenuItem.setName("thresholdMenuItem"); // NOI18N
-        analyzeMenu.add(thresholdMenuItem);
-
-        virtualMetricMenuItem.setAction(actionMap.get("defineVirtualMetric")); // NOI18N
-        virtualMetricMenuItem.setText(resourceMap.getString("virtualMetricMenuItem.text")); // NOI18N
-        virtualMetricMenuItem.setName("virtualMetricMenuItem"); // NOI18N
-        analyzeMenu.add(virtualMetricMenuItem);
-
-        filterMenuItem.setAction(actionMap.get("defineNewFilter")); // NOI18N
-        filterMenuItem.setText(resourceMap.getString("filterMenuItem.text")); // NOI18N
-        filterMenuItem.setName("filterMenuItem"); // NOI18N
-        analyzeMenu.add(filterMenuItem);
-
-        menuBar.add(analyzeMenu);
-
-        helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
-        helpMenu.setName("helpMenu"); // NOI18N
-
-        aboutMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
-        aboutMenuItem.setName("aboutMenuItem"); // NOI18N
-        helpMenu.add(aboutMenuItem);
-
-        menuBar.add(helpMenu);
-
-        virtualMetricWizardDialog.setTitle(resourceMap.getString("virtualMetricWizardDialog.title")); // NOI18N
+		return predictionPanel;
+	}
+	
+	private Component createPredictionToolbar()
+	{
+		predictionToolbar = new ControlBar();
+		predictionToolbar.setCBListener(this);
+		predictionToolbar.setMarkIcon(okMark);
+		
+		predictionToolbar.addMenuButton(MI_LOADDATA, getResourceIcon("load.png"), getResourceList("loadset.button.items"), -1, resources.getString("loadset.button.text"), false, 0, 2);
+		wekaAtrbsMenuButton = predictionToolbar.addMenuButton(MI_PREDOPTS, getResourceIcon("options.png"), getResourceList("predoptions.button.items"), -1, resources.getString("predoptions.button.text"), true, 0, 2);
+		algorithmMenuButton = predictionToolbar.addMenuButton(MI_ALGORITHM, getResourceIcon("algorithm.png"), getResourceList("algort.button.items"), -1, resources.getString("algort.button.text"), false, 0, 2);
+		predictionToolbar.addImageButton(MI_RUNPRED, getResourceIcon("start.png"), -1, resources.getString("runpred.button.text"), 0, 20);
+		predictionToolbar.addLabel(MI_FILLER, -1, "", 1.0, 0, 0);
+		predictionToolbar.addImageButton(MI_SWITCHVW, getResourceIcon("switchpn.png"), -1, resources.getString("switchView.button.text"), 0, 2);
+		predictionToolbar.addImageButton(MI_SOFTLAB, getResourceIcon("softlab24.PNG"), -1, null, 0, 2);
+		
+		predictionToolbar.markMenuButtonSelection(algorithmMenuButton, 0, okMark);
+		predictionToolbar.setMenuButtonMark(MI_LOADDATA, false);
+		predictionToolbar.addTerminators(true);
+		
+		return predictionToolbar;
+	}
+	
+	public void createVMetricsDialog()
+	{
+        virtualMetricWizardDialog = new javax.swing.JDialog();
+        virtualMetricWizardDialog.setTitle(resources.getString("virtualMetricWizardDialog.title")); // NOI18N
         virtualMetricWizardDialog.setAlwaysOnTop(true);
         virtualMetricWizardDialog.setName("virtualMetricWizardDialog"); // NOI18N
         virtualMetricWizardDialog.setResizable(false);
-
-        pnlVmHeader.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        pnlVmHeader.setName("pnlVmHeader"); // NOI18N
-
-        jLabel19.setFont(resourceMap.getFont("jLabel19.font")); // NOI18N
-        jLabel19.setText(resourceMap.getString("jLabel19.text")); // NOI18N
-        jLabel19.setName("jLabel19"); // NOI18N
-
-        javax.swing.GroupLayout pnlVmHeaderLayout = new javax.swing.GroupLayout(pnlVmHeader);
-        pnlVmHeader.setLayout(pnlVmHeaderLayout);
-        pnlVmHeaderLayout.setHorizontalGroup(
-            pnlVmHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlVmHeaderLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel19)
-                .addContainerGap(267, Short.MAX_VALUE))
-        );
-        pnlVmHeaderLayout.setVerticalGroup(
-            pnlVmHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlVmHeaderLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel19)
-                .addContainerGap())
-        );
-
+        
+        pnlVmCardLayout = new javax.swing.JPanel();
         pnlVmCardLayout.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         pnlVmCardLayout.setName("pnlVmCardLayout"); // NOI18N
         pnlVmCardLayout.setLayout(new java.awt.CardLayout());
-
+        pnlVmSettings = new javax.swing.JPanel();
         pnlVmSettings.setName("pnlVmSettings"); // NOI18N
-
-        jLabel7.setText(resourceMap.getString("jLabel7.text")); // NOI18N
-        jLabel7.setName("jLabel7"); // NOI18N
-
-        jLabel8.setText(resourceMap.getString("jLabel8.text")); // NOI18N
-        jLabel8.setName("jLabel8"); // NOI18N
-
-        txtVmMetricName.setText(resourceMap.getString("txtVmMetricName.text")); // NOI18N
-        txtVmMetricName.setName("txtVmMetricName"); // NOI18N
-
-        cmbVmMetricOperator.setName("cmbVmMetricOperator"); // NOI18N
-        cmbVmMetricOperator.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cmbVmMetricOperatorItemStateChanged(evt);
-            }
-        });
-
-        jLabel9.setText(resourceMap.getString("jLabel9.text")); // NOI18N
-        jLabel9.setName("jLabel9"); // NOI18N
-
-        btngVmOperand1.add(rbtnVmOperand1Txt);
-        rbtnVmOperand1Txt.setSelected(true);
-        rbtnVmOperand1Txt.setText(resourceMap.getString("rbtnVmOperand1Txt.text")); // NOI18N
-        rbtnVmOperand1Txt.setName("rbtnVmOperand1Txt"); // NOI18N
-        rbtnVmOperand1Txt.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                rbtnVmOperand1TxtStateChanged(evt);
-            }
-        });
-
-        txtVmOperand1.setText(resourceMap.getString("txtVmOperand1.text")); // NOI18N
-        txtVmOperand1.setName("txtVmOperand1"); // NOI18N
-
-        btngVmOperand1.add(rbtnVmOperand1Cmb);
-        rbtnVmOperand1Cmb.setText(resourceMap.getString("rbtnVmOperand1Cmb.text")); // NOI18N
-        rbtnVmOperand1Cmb.setName("rbtnVmOperand1Cmb"); // NOI18N
-        rbtnVmOperand1Cmb.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                rbtnVmOperand1CmbItemStateChanged(evt);
-            }
-        });
-
-        cmbVmOperand1.setEnabled(false);
-        cmbVmOperand1.setName("cmbVmOperand1"); // NOI18N
-
-        lblVmOperand2.setText(resourceMap.getString("lblVmOperand2.text")); // NOI18N
+        
+        
+        lblVmOperand2 = new javax.swing.JLabel();
+        lblVmOperand2.setText(resources.getString("lblVmOperand2.text")); // NOI18N
         lblVmOperand2.setName("lblVmOperand2"); // NOI18N
 
-        btngVmOperand2.add(rbtnVmOperand2Txt);
+        rbtnVmOperand2Txt = new javax.swing.JRadioButton();
         rbtnVmOperand2Txt.setSelected(true);
-        rbtnVmOperand2Txt.setText(resourceMap.getString("rbtnVmOperand2Txt.text")); // NOI18N
+        rbtnVmOperand2Txt.setText(resources.getString("rbtnVmOperand2Txt.text")); // NOI18N
         rbtnVmOperand2Txt.setName("rbtnVmOperand2Txt"); // NOI18N
         rbtnVmOperand2Txt.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 rbtnVmOperand2TxtStateChanged(evt);
             }
         });
-
-        txtVmOperand2.setText(resourceMap.getString("txtVmOperand2.text")); // NOI18N
-        txtVmOperand2.setName("txtVmOperand2"); // NOI18N
-
-        btngVmOperand2.add(rbtnVmOperand2Cmb);
-        rbtnVmOperand2Cmb.setText(resourceMap.getString("rbtnVmOperand2Cmb.text")); // NOI18N
+        
+        rbtnVmOperand2Cmb = new javax.swing.JRadioButton();
+        rbtnVmOperand2Cmb.setText(resources.getString("rbtnVmOperand2Cmb.text")); // NOI18N
         rbtnVmOperand2Cmb.setName("rbtnVmOperand2Cmb"); // NOI18N
         rbtnVmOperand2Cmb.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 rbtnVmOperand2CmbItemStateChanged(evt);
             }
         });
+        
+        txtVmOperand2 = new javax.swing.JTextField();
+        txtVmOperand2.setText(resources.getString("txtVmOperand2.text")); // NOI18N
+        txtVmOperand2.setName("txtVmOperand2"); // NOI18N
 
+        cmbVmOperand2 = new javax.swing.JComboBox();
         cmbVmOperand2.setEnabled(false);
         cmbVmOperand2.setName("cmbVmOperand2"); // NOI18N
+        
+        cmbVmMetricOperator = new javax.swing.JComboBox();
+        cmbVmMetricOperator.setName("cmbVmMetricOperator"); // NOI18N
+        cmbVmMetricOperator.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cmbVmMetricOperatorItemStateChanged(evt);
+            }
+        });
+        
+        txtVmMetricName = new javax.swing.JTextField();
+        txtVmMetricName.setText(resources.getString("txtVmMetricName.text")); // NOI18N
+        txtVmMetricName.setName("txtVmMetricName"); // NOI18N
+        
+        rbtnVmOperand1Txt = new javax.swing.JRadioButton();
+        rbtnVmOperand1Txt.setSelected(true);
+        rbtnVmOperand1Txt.setText(resources.getString("rbtnVmOperand1Txt.text")); // NOI18N
+        rbtnVmOperand1Txt.setName("rbtnVmOperand1Txt"); // NOI18N
+        rbtnVmOperand1Txt.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                rbtnVmOperand1TxtStateChanged(evt);
+            }
+        });
+        
+        txtVmOperand1 = new javax.swing.JTextField();
+        txtVmOperand1.setText(resources.getString("txtVmOperand1.text")); // NOI18N
+        txtVmOperand1.setName("txtVmOperand1"); // NOI18N
+        
+        rbtnVmOperand1Cmb = new javax.swing.JRadioButton();
+        rbtnVmOperand1Cmb.setText(resources.getString("rbtnVmOperand1Cmb.text")); // NOI18N
+        rbtnVmOperand1Cmb.setName("rbtnVmOperand1Cmb"); // NOI18N
+        rbtnVmOperand1Cmb.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                rbtnVmOperand1CmbItemStateChanged(evt);
+            }
+        });
+        
+        cmbVmOperand1 = new javax.swing.JComboBox();
+        cmbVmOperand1.setEnabled(false);
+        cmbVmOperand1.setName("cmbVmOperand1"); // NOI18N
+        
+        jLabel7 = new javax.swing.JLabel();
+        jLabel7.setText(resources.getString("jLabel7.text")); // NOI18N
+        jLabel7.setName("jLabel7"); // NOI18N
+        jLabel8 = new javax.swing.JLabel();
+        jLabel8.setText(resources.getString("jLabel8.text")); // NOI18N
+        jLabel8.setName("jLabel8"); // NOI18N
+        jLabel9 = new javax.swing.JLabel();
+        jLabel9.setText(resources.getString("jLabel9.text")); // NOI18N
+        jLabel9.setName("jLabel9"); // NOI18N
+        
+        btngVmOperand1 = new javax.swing.ButtonGroup();
+        btngVmOperand2 = new javax.swing.ButtonGroup();
+        btngVmOperand1.add(rbtnVmOperand1Txt);
+        btngVmOperand1.add(rbtnVmOperand1Cmb);
+        btngVmOperand2.add(rbtnVmOperand2Txt);
+        btngVmOperand2.add(rbtnVmOperand2Cmb);
 
+        pnlVmApproval = new javax.swing.JPanel();
+        pnlVmApproval.setName("pnlVmApproval"); // NOI18N
+        
+        jLabel10 = new javax.swing.JLabel();
+        jLabel10.setText(resources.getString("jLabel10.text")); // NOI18N
+        jLabel10.setName("jLabel10"); // NOI18N
+
+        jLabel16 = new javax.swing.JLabel();
+        jLabel16.setText(resources.getString("jLabel16.text")); // NOI18N
+        jLabel16.setName("jLabel16"); // NOI18N
+
+        jLabel20 = new javax.swing.JLabel();
+        jLabel20.setText(resources.getString("jLabel20.text")); // NOI18N
+        jLabel20.setName("jLabel20"); // NOI18N
+        
+        lblVirtualMetricName = new javax.swing.JLabel();
+//      lblVirtualMetricName.setFont(resourceMap.getFont("lblVirtualMetricName.font")); // NOI18N
+        lblVirtualMetricName.setText(resources.getString("lblVirtualMetricName.text")); // NOI18N
+        lblVirtualMetricName.setName("lblVirtualMetricName"); // NOI18N
+
+        lblVirtualMetricEquation = new javax.swing.JLabel();
+//      lblVirtualMetricEquation.setFont(resourceMap.getFont("lblVirtualMetricEquation.font")); // NOI18N
+        lblVirtualMetricEquation.setText(resources.getString("lblVirtualMetricEquation.text")); // NOI18N
+        lblVirtualMetricEquation.setName("lblVirtualMetricEquation"); // NOI18N
+        
+        javax.swing.GroupLayout pnlVmApprovalLayout = new javax.swing.GroupLayout(pnlVmApproval);
+        pnlVmApproval.setLayout(pnlVmApprovalLayout);
+        pnlVmApprovalLayout.setHorizontalGroup(
+            pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlVmApprovalLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel10)
+                    .addGroup(pnlVmApprovalLayout.createSequentialGroup()
+                        .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pnlVmApprovalLayout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel20))
+                            .addComponent(jLabel16))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblVirtualMetricName, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                            .addComponent(lblVirtualMetricEquation, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))))
+                .addContainerGap())
+        );
+        pnlVmApprovalLayout.setVerticalGroup(
+            pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlVmApprovalLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel16)
+                    .addComponent(lblVirtualMetricName, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(19, 19, 19)
+                .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel20)
+                    .addComponent(lblVirtualMetricEquation, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(28, Short.MAX_VALUE))
+        );
+        
         javax.swing.GroupLayout pnlVmSettingsLayout = new javax.swing.GroupLayout(pnlVmSettings);
         pnlVmSettings.setLayout(pnlVmSettingsLayout);
         pnlVmSettingsLayout.setHorizontalGroup(
@@ -1050,81 +1509,57 @@ public class PrestGuiView extends FrameView implements WindowListener {
                     .addComponent(lblVmOperand2))
                 .addContainerGap(12, Short.MAX_VALUE))
         );
-
         pnlVmCardLayout.add(pnlVmSettings, "card3");
+        pnlVmCardLayout.add(pnlVmApproval, "card2");
+        
+        pnlVmHeader = new javax.swing.JPanel();
+        pnlVmHeader.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        pnlVmHeader.setName("pnlVmHeader"); // NOI18N
 
-        pnlVmApproval.setName("pnlVmApproval"); // NOI18N
+        jLabel19 = new javax.swing.JLabel();
+//        jLabel19.setFont(resourceMap.getFont("jLabel19.font")); // NOI18N
+        jLabel19.setText(resources.getString("jLabel19.text")); // NOI18N
+        jLabel19.setName("jLabel19"); // NOI18N
 
-        jLabel10.setText(resourceMap.getString("jLabel10.text")); // NOI18N
-        jLabel10.setName("jLabel10"); // NOI18N
-
-        jLabel16.setText(resourceMap.getString("jLabel16.text")); // NOI18N
-        jLabel16.setName("jLabel16"); // NOI18N
-
-        jLabel20.setText(resourceMap.getString("jLabel20.text")); // NOI18N
-        jLabel20.setName("jLabel20"); // NOI18N
-
-        lblVirtualMetricName.setFont(resourceMap.getFont("lblVirtualMetricName.font")); // NOI18N
-        lblVirtualMetricName.setText(resourceMap.getString("lblVirtualMetricName.text")); // NOI18N
-        lblVirtualMetricName.setName("lblVirtualMetricName"); // NOI18N
-
-        lblVirtualMetricEquation.setFont(resourceMap.getFont("lblVirtualMetricEquation.font")); // NOI18N
-        lblVirtualMetricEquation.setText(resourceMap.getString("lblVirtualMetricEquation.text")); // NOI18N
-        lblVirtualMetricEquation.setName("lblVirtualMetricEquation"); // NOI18N
-
-        javax.swing.GroupLayout pnlVmApprovalLayout = new javax.swing.GroupLayout(pnlVmApproval);
-        pnlVmApproval.setLayout(pnlVmApprovalLayout);
-        pnlVmApprovalLayout.setHorizontalGroup(
-            pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlVmApprovalLayout.createSequentialGroup()
+        javax.swing.GroupLayout pnlVmHeaderLayout = new javax.swing.GroupLayout(pnlVmHeader);
+        pnlVmHeader.setLayout(pnlVmHeaderLayout);
+        pnlVmHeaderLayout.setHorizontalGroup(
+            pnlVmHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlVmHeaderLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel10)
-                    .addGroup(pnlVmApprovalLayout.createSequentialGroup()
-                        .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnlVmApprovalLayout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel20))
-                            .addComponent(jLabel16))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblVirtualMetricName, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
-                            .addComponent(lblVirtualMetricEquation, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))))
+                .addComponent(jLabel19)
+                .addContainerGap(267, Short.MAX_VALUE))
+        );
+        pnlVmHeaderLayout.setVerticalGroup(
+            pnlVmHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlVmHeaderLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel19)
                 .addContainerGap())
         );
-        pnlVmApprovalLayout.setVerticalGroup(
-            pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlVmApprovalLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel10)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel16)
-                    .addComponent(lblVirtualMetricName, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(19, 19, 19)
-                .addGroup(pnlVmApprovalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel20)
-                    .addComponent(lblVirtualMetricEquation, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(28, Short.MAX_VALUE))
-        );
-
-        pnlVmCardLayout.add(pnlVmApproval, "card2");
-
+        
+        pnlVmButtons = new javax.swing.JPanel();
         pnlVmButtons.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         pnlVmButtons.setName("pnlVmButtons"); // NOI18N
-
-        btnVmBack.setAction(actionMap.get("vitualMetricBack")); // NOI18N
-        btnVmBack.setText(resourceMap.getString("btnVmBack.text")); // NOI18N
+        
+        btnVmBack = new javax.swing.JButton();
+        btnVmBack.addActionListener(buttonExecutor);
+        btnVmBack.setActionCommand("vitualMetricBack"); // NOI18N
+        btnVmBack.setText(resources.getString("btnVmBack.text")); // NOI18N
         btnVmBack.setName("btnVmBack"); // NOI18N
 
-        cancelVirtualMetricButton.setAction(actionMap.get("closeVirtualMetricDialog")); // NOI18N
-        cancelVirtualMetricButton.setText(resourceMap.getString("cancelVirtualMetricButton.text")); // NOI18N
-        cancelVirtualMetricButton.setName("cancelVirtualMetricButton"); // NOI18N
-
-        btnVmNext.setAction(actionMap.get("virtualMetricWizardNext")); // NOI18N
-        btnVmNext.setText(resourceMap.getString("btnVmNext.text")); // NOI18N
+        btnVmNext = new javax.swing.JButton();
+        btnVmNext.addActionListener(buttonExecutor);
+        btnVmNext.setActionCommand("virtualMetricWizardNext"); // NOI18N
+        btnVmNext.setText(resources.getString("btnVmNext.text")); // NOI18N
         btnVmNext.setName("btnVmNext"); // NOI18N
-
+        
+        cancelVirtualMetricButton = new javax.swing.JButton();
+        cancelVirtualMetricButton.addActionListener(buttonExecutor);
+        cancelVirtualMetricButton.setActionCommand("closeVirtualMetricDialog"); // NOI18N
+        cancelVirtualMetricButton.setText(resources.getString("cancelVirtualMetricButton.text")); // NOI18N
+        cancelVirtualMetricButton.setName("cancelVirtualMetricButton"); // NOI18N
+        
         javax.swing.GroupLayout pnlVmButtonsLayout = new javax.swing.GroupLayout(pnlVmButtons);
         pnlVmButtons.setLayout(pnlVmButtonsLayout);
         pnlVmButtonsLayout.setHorizontalGroup(
@@ -1145,7 +1580,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(btnVmNext)
                 .addComponent(btnVmBack, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
-
+        
         javax.swing.GroupLayout virtualMetricWizardDialogLayout = new javax.swing.GroupLayout(virtualMetricWizardDialog.getContentPane());
         virtualMetricWizardDialog.getContentPane().setLayout(virtualMetricWizardDialogLayout);
         virtualMetricWizardDialogLayout.setHorizontalGroup(
@@ -1173,38 +1608,47 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(pnlVmButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        thresholdWizardDialog.setTitle(resourceMap.getString("thresholdWizardDialog.title")); // NOI18N
+	}
+	
+	public void createThresholdDialog()
+	{
+        thresholdWizardDialog = new javax.swing.JDialog();
+        thresholdWizardDialog.setTitle(resources.getString("thresholdWizardDialog.title")); // NOI18N
         thresholdWizardDialog.setAlwaysOnTop(true);
         thresholdWizardDialog.setName("thresholdWizardDialog"); // NOI18N
         thresholdWizardDialog.setResizable(false);
-
+        
+        pnlthresholdWizardMain = new javax.swing.JPanel();
         pnlthresholdWizardMain.setName("pnlthresholdWizardMain"); // NOI18N
-
+        
+        pnlThresholdSettingsCardLayout = new javax.swing.JPanel();
         pnlThresholdSettingsCardLayout.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         pnlThresholdSettingsCardLayout.setName("pnlThresholdSettingsCardLayout"); // NOI18N
         pnlThresholdSettingsCardLayout.setLayout(new java.awt.CardLayout());
-
+        
+        pnlThresholdSettings = new javax.swing.JPanel();
         pnlThresholdSettings.setName("pnlThresholdSettings"); // NOI18N
-
-        jLabel12.setText(resourceMap.getString("jLabel12.text")); // NOI18N
+        jLabel12 = new javax.swing.JLabel();
+        jLabel12.setText(resources.getString("jLabel12.text")); // NOI18N
         jLabel12.setName("jLabel12"); // NOI18N
 
-        jLabel13.setText(resourceMap.getString("jLabel13.text")); // NOI18N
+        jLabel13 = new javax.swing.JLabel();
+        jLabel13.setText(resources.getString("jLabel13.text")); // NOI18N
         jLabel13.setName("jLabel13"); // NOI18N
 
-        jLabel14.setText(resourceMap.getString("jLabel14.text")); // NOI18N
+        jLabel14 = new javax.swing.JLabel();
+        jLabel14.setText(resources.getString("jLabel14.text")); // NOI18N
         jLabel14.setName("jLabel14"); // NOI18N
 
-        jLabel15.setText(resourceMap.getString("jLabel15.text")); // NOI18N
+        jLabel15 = new javax.swing.JLabel();
+        jLabel15.setText(resources.getString("jLabel15.text")); // NOI18N
         jLabel15.setName("jLabel15"); // NOI18N
+        
+        lblThresholdOperand2 = new javax.swing.JLabel();
+        lblThresholdOperand2.setText(resources.getString("lblThresholdOperand2.text")); // NOI18N
+        lblThresholdOperand2.setName("lblThresholdOperand2"); // NOI18N
 
-        cmbThresholdMetricList.setToolTipText(resourceMap.getString("cmbThresholdMetricList.toolTipText")); // NOI18N
-        cmbThresholdMetricList.setName("cmbThresholdMetricList"); // NOI18N
-
-        cmbThresholdOperator1.setEnabled(false);
-        cmbThresholdOperator1.setName("cmbThresholdOperator1"); // NOI18N
-
+        cmbThresholdOperator = new javax.swing.JComboBox();
         cmbThresholdOperator.setName("cmbThresholdOperator"); // NOI18N
         cmbThresholdOperator.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -1212,29 +1656,32 @@ public class PrestGuiView extends FrameView implements WindowListener {
             }
         });
 
-        btngFirstOperand.add(rbtnThresholdOperatorOneTxt);
+        cmbThresholdMetricList = new javax.swing.JComboBox();
+        cmbThresholdMetricList.setToolTipText(resources.getString("cmbThresholdMetricList.toolTipText")); // NOI18N
+        cmbThresholdMetricList.setName("cmbThresholdMetricList"); // NOI18N
+        
+        cmbRiskLevels = new javax.swing.JComboBox();
+        cmbRiskLevels.setName("cmbRiskLevels"); // NOI18N
+        
+        rbtnThresholdOperatorOneTxt = new javax.swing.JRadioButton();
         rbtnThresholdOperatorOneTxt.setSelected(true);
-        rbtnThresholdOperatorOneTxt.setText(resourceMap.getString("rbtnThresholdOperatorOneTxt.text")); // NOI18N
+        rbtnThresholdOperatorOneTxt.setText(resources.getString("rbtnThresholdOperatorOneTxt.text")); // NOI18N
         rbtnThresholdOperatorOneTxt.setName("rbtnThresholdOperatorOneTxt"); // NOI18N
         rbtnThresholdOperatorOneTxt.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 rbtnThresholdOperatorOneTxtStateChanged(evt);
             }
         });
-
-        btngFirstOperand.add(rbtnThresholdOperator1Cmb);
-        rbtnThresholdOperator1Cmb.setText(resourceMap.getString("rbtnThresholdOperator1Cmb.text")); // NOI18N
-        rbtnThresholdOperator1Cmb.setName("rbtnThresholdOperator1Cmb"); // NOI18N
-
-        txtThresholdOperator1.setText(resourceMap.getString("txtThresholdOperator1.text")); // NOI18N
+        
+        txtThresholdOperator1 = new javax.swing.JTextField();
+        txtThresholdOperator1.setText(resources.getString("txtThresholdOperator1.text")); // NOI18N
         txtThresholdOperator1.setName("txtThresholdOperator1"); // NOI18N
-
-        cmbRiskLevels.setName("cmbRiskLevels"); // NOI18N
-
-        lblThresholdOperand2.setText(resourceMap.getString("lblThresholdOperand2.text")); // NOI18N
-        lblThresholdOperand2.setName("lblThresholdOperand2"); // NOI18N
-
-        btngSecondOperand.add(rbtnThresholdOperator2Txt);
+        
+        rbtnThresholdOperator1Cmb = new javax.swing.JRadioButton();
+        rbtnThresholdOperator1Cmb.setText(resources.getString("rbtnThresholdOperator1Cmb.text")); // NOI18N
+        rbtnThresholdOperator1Cmb.setName("rbtnThresholdOperator1Cmb"); // NOI18N
+        
+        rbtnThresholdOperator2Txt = new javax.swing.JRadioButton();
         rbtnThresholdOperator2Txt.setSelected(true);
         rbtnThresholdOperator2Txt.setName("rbtnThresholdOperator2Txt"); // NOI18N
         rbtnThresholdOperator2Txt.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -1242,14 +1689,27 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 rbtnThresholdOperator2TxtStateChanged(evt);
             }
         });
-
+        
+        txtThresholdOperator2 = new javax.swing.JTextField();
         txtThresholdOperator2.setName("txtThresholdOperator2"); // NOI18N
-
-        btngSecondOperand.add(rbtnThresholdOperator2Cmb);
+        
+        rbtnThresholdOperator2Cmb = new javax.swing.JRadioButton();
         rbtnThresholdOperator2Cmb.setName("rbtnThresholdOperator2Cmb"); // NOI18N
+        
+        cmbThresholdOperator1 = new javax.swing.JComboBox();
+        cmbThresholdOperator1.setEnabled(false);
+        cmbThresholdOperator1.setName("cmbThresholdOperator1"); // NOI18N
 
+        cmbThresholdOperator2 = new javax.swing.JComboBox();
         cmbThresholdOperator2.setEnabled(false);
         cmbThresholdOperator2.setName("cmbThresholdOperator2"); // NOI18N
+
+        btngFirstOperand = new javax.swing.ButtonGroup();
+        btngFirstOperand.add(rbtnThresholdOperatorOneTxt);
+        btngFirstOperand.add(rbtnThresholdOperator1Cmb);
+        btngSecondOperand = new javax.swing.ButtonGroup();
+        btngSecondOperand.add(rbtnThresholdOperator2Txt);
+        btngSecondOperand.add(rbtnThresholdOperator2Cmb);
 
         javax.swing.GroupLayout pnlThresholdSettingsLayout = new javax.swing.GroupLayout(pnlThresholdSettings);
         pnlThresholdSettings.setLayout(pnlThresholdSettingsLayout);
@@ -1334,23 +1794,28 @@ public class PrestGuiView extends FrameView implements WindowListener {
                         .addComponent(lblThresholdOperand2)))
                 .addGap(11, 11, 11))
         );
-
+        
         pnlThresholdSettingsCardLayout.add(pnlThresholdSettings, "card2");
-
+        
+        
+        pnlThresholdApprove = new javax.swing.JPanel();
         pnlThresholdApprove.setName("pnlThresholdApprove"); // NOI18N
-
-        jLabel18.setText(resourceMap.getString("jLabel18.text")); // NOI18N
-        jLabel18.setName("jLabel18"); // NOI18N
-
-        lblThresholdExpression.setFont(resourceMap.getFont("lblThresholdExpression.font")); // NOI18N
+        
+        lblThresholdExpression = new javax.swing.JLabel();
+        lblThresholdExpression.setFont(GUIUtilities.getResourceFont(resources, "lblThresholdExpression.font")); // NOI18N
         lblThresholdExpression.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblThresholdExpression.setText(resourceMap.getString("lblThresholdExpression.text")); // NOI18N
+        lblThresholdExpression.setText(resources.getString("lblThresholdExpression.text")); // NOI18N
         lblThresholdExpression.setName("lblThresholdExpression"); // NOI18N
 
-        lblThresholdRiskLevel.setFont(resourceMap.getFont("lblThresholdRiskLevel.font")); // NOI18N
+        lblThresholdRiskLevel = new javax.swing.JLabel();
+        lblThresholdRiskLevel.setFont(GUIUtilities.getResourceFont(resources, "lblThresholdRiskLevel.font")); // NOI18N
         lblThresholdRiskLevel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblThresholdRiskLevel.setText(resourceMap.getString("lblThresholdRiskLevel.text")); // NOI18N
+        lblThresholdRiskLevel.setText(resources.getString("lblThresholdRiskLevel.text")); // NOI18N
         lblThresholdRiskLevel.setName("lblThresholdRiskLevel"); // NOI18N
+
+        jLabel18 = new javax.swing.JLabel();
+        jLabel18.setText(resources.getString("jLabel18.text")); // NOI18N
+        jLabel18.setName("jLabel18"); // NOI18N
 
         javax.swing.GroupLayout pnlThresholdApproveLayout = new javax.swing.GroupLayout(pnlThresholdApprove);
         pnlThresholdApprove.setLayout(pnlThresholdApproveLayout);
@@ -1375,14 +1840,15 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(lblThresholdExpression, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(45, Short.MAX_VALUE))
         );
-
         pnlThresholdSettingsCardLayout.add(pnlThresholdApprove, "card3");
-
+        
+        pnlThresholdWizardHeader = new javax.swing.JPanel();
         pnlThresholdWizardHeader.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         pnlThresholdWizardHeader.setName("pnlThresholdWizardHeader"); // NOI18N
 
-        jLabel17.setFont(resourceMap.getFont("jLabel17.font")); // NOI18N
-        jLabel17.setText(resourceMap.getString("jLabel17.text")); // NOI18N
+        jLabel17 = new javax.swing.JLabel();
+        jLabel17.setFont(GUIUtilities.getResourceFont(resources, "jLabel17.font")); // NOI18N
+        jLabel17.setText(resources.getString("jLabel17.text")); // NOI18N
         jLabel17.setName("jLabel17"); // NOI18N
 
         javax.swing.GroupLayout pnlThresholdWizardHeaderLayout = new javax.swing.GroupLayout(pnlThresholdWizardHeader);
@@ -1401,22 +1867,29 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(jLabel17)
                 .addContainerGap())
         );
-
+        
+        pnlThresholdWizardButtons = new javax.swing.JPanel();
         pnlThresholdWizardButtons.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         pnlThresholdWizardButtons.setName("pnlThresholdWizardButtons"); // NOI18N
-
-        btnThresholdWizardBack.setAction(actionMap.get("thresholdWizardBackButton")); // NOI18N
-        btnThresholdWizardBack.setText(resourceMap.getString("btnThresholdWizardBack.text")); // NOI18N
+        
+        btnThresholdWizardBack = new javax.swing.JButton();
+        btnThresholdWizardBack.addActionListener(buttonExecutor);
+        btnThresholdWizardBack.setActionCommand("thresholdWizardBackButton"); // NOI18N
+        btnThresholdWizardBack.setText(resources.getString("btnThresholdWizardBack.text")); // NOI18N
         btnThresholdWizardBack.setName("btnThresholdWizardBack"); // NOI18N
 
-        btnThresholdWizardNext.setAction(actionMap.get("thresholdWizardNextButton")); // NOI18N
-        btnThresholdWizardNext.setText(resourceMap.getString("btnThresholdWizardNext.text")); // NOI18N
+        btnThresholdWizardNext = new javax.swing.JButton();
+        btnThresholdWizardNext.addActionListener(buttonExecutor);
+        btnThresholdWizardNext.setActionCommand("thresholdWizardNextButton"); // NOI18N
+        btnThresholdWizardNext.setText(resources.getString("btnThresholdWizardNext.text")); // NOI18N
         btnThresholdWizardNext.setName("btnThresholdWizardNext"); // NOI18N
 
-        btnThresholdWizardCancel.setAction(actionMap.get("closeThresholdWizardDialog")); // NOI18N
-        btnThresholdWizardCancel.setText(resourceMap.getString("btnThresholdWizardCancel.text")); // NOI18N
+        btnThresholdWizardCancel = new javax.swing.JButton();
+        btnThresholdWizardCancel.addActionListener(buttonExecutor);
+        btnThresholdWizardCancel.setActionCommand("closeThresholdWizardDialog"); // NOI18N
+        btnThresholdWizardCancel.setText(resources.getString("btnThresholdWizardCancel.text")); // NOI18N
         btnThresholdWizardCancel.setName("btnThresholdWizardCancel"); // NOI18N
-
+        
         javax.swing.GroupLayout pnlThresholdWizardButtonsLayout = new javax.swing.GroupLayout(pnlThresholdWizardButtons);
         pnlThresholdWizardButtons.setLayout(pnlThresholdWizardButtonsLayout);
         pnlThresholdWizardButtonsLayout.setHorizontalGroup(
@@ -1437,7 +1910,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(btnThresholdWizardNext)
                 .addComponent(btnThresholdWizardBack))
         );
-
+        
         javax.swing.GroupLayout pnlthresholdWizardMainLayout = new javax.swing.GroupLayout(pnlthresholdWizardMain);
         pnlthresholdWizardMain.setLayout(pnlthresholdWizardMainLayout);
         pnlthresholdWizardMainLayout.setHorizontalGroup(
@@ -1461,7 +1934,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(pnlThresholdWizardButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
+        
         javax.swing.GroupLayout thresholdWizardDialogLayout = new javax.swing.GroupLayout(thresholdWizardDialog.getContentPane());
         thresholdWizardDialog.getContentPane().setLayout(thresholdWizardDialogLayout);
         thresholdWizardDialogLayout.setHorizontalGroup(
@@ -1472,47 +1945,32 @@ public class PrestGuiView extends FrameView implements WindowListener {
             thresholdWizardDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(pnlthresholdWizardMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
-
-        filterWizardDialog.setTitle(resourceMap.getString("filterWizardDialog.title")); // NOI18N
+	}
+	
+	private void createFilterDialog()
+	{
+        filterWizardDialog = new javax.swing.JDialog();
+        filterWizardDialog.setTitle(resources.getString("filterWizardDialog.title")); // NOI18N
         filterWizardDialog.setModal(true);
         filterWizardDialog.setName("filterWizardDialog"); // NOI18N
         filterWizardDialog.setResizable(false);
-
-        pnlFilterHeader.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        pnlFilterHeader.setName("pnlFilterHeader"); // NOI18N
-
-        jLabel21.setFont(resourceMap.getFont("jLabel21.font")); // NOI18N
-        jLabel21.setText(resourceMap.getString("jLabel21.text")); // NOI18N
-        jLabel21.setName("jLabel21"); // NOI18N
-
-        javax.swing.GroupLayout pnlFilterHeaderLayout = new javax.swing.GroupLayout(pnlFilterHeader);
-        pnlFilterHeader.setLayout(pnlFilterHeaderLayout);
-        pnlFilterHeaderLayout.setHorizontalGroup(
-            pnlFilterHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlFilterHeaderLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(258, Short.MAX_VALUE))
-        );
-        pnlFilterHeaderLayout.setVerticalGroup(
-            pnlFilterHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlFilterHeaderLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel21)
-                .addContainerGap())
-        );
-
+        
+        pnlFilterButtons = new javax.swing.JPanel();
         pnlFilterButtons.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         pnlFilterButtons.setName("pnlFilterButtons"); // NOI18N
 
-        btnApplyFilter.setAction(actionMap.get("filterWizardApplyButton")); // NOI18N
-        btnApplyFilter.setText(resourceMap.getString("btnApplyFilter.text")); // NOI18N
+        btnApplyFilter = new javax.swing.JButton();
+        btnApplyFilter.addActionListener(buttonExecutor);
+        btnApplyFilter.setActionCommand("filterWizardApplyButton"); // NOI18N
+        btnApplyFilter.setText(resources.getString("btnApplyFilter.text")); // NOI18N
         btnApplyFilter.setName("btnApplyFilter"); // NOI18N
-
-        btnCancelFilter.setAction(actionMap.get("filterWizardCancelButton")); // NOI18N
-        btnCancelFilter.setText(resourceMap.getString("btnCancelFilter.text")); // NOI18N
+        
+        btnCancelFilter = new javax.swing.JButton();
+        btnCancelFilter.addActionListener(buttonExecutor);
+        btnCancelFilter.setActionCommand("filterWizardCancelButton"); // NOI18N
+        btnCancelFilter.setText(resources.getString("btnCancelFilter.text")); // NOI18N
         btnCancelFilter.setName("btnCancelFilter"); // NOI18N
-
+        
         javax.swing.GroupLayout pnlFilterButtonsLayout = new javax.swing.GroupLayout(pnlFilterButtons);
         pnlFilterButtons.setLayout(pnlFilterButtonsLayout);
         pnlFilterButtonsLayout.setHorizontalGroup(
@@ -1530,12 +1988,19 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(btnCancelFilter)
                 .addComponent(btnApplyFilter))
         );
-
+        
+        pnlFilterMain = new javax.swing.JPanel();
         pnlFilterMain.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         pnlFilterMain.setName("pnlFilterMain"); // NOI18N
+        
+        jLabel22 = new javax.swing.JLabel();
+        jLabel22.setText(resources.getString("jLabel22.text")); // NOI18N
+        jLabel22.setName("jLabel22"); // NOI18N
 
+        jScrollPane2 = new javax.swing.JScrollPane();
         jScrollPane2.setName("jScrollPane2"); // NOI18N
 
+        listAllMetrics = new javax.swing.JList();
         listAllMetrics.setName("listAllMetrics"); // NOI18N
         listAllMetrics.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -1544,8 +2009,33 @@ public class PrestGuiView extends FrameView implements WindowListener {
         });
         jScrollPane2.setViewportView(listAllMetrics);
 
+        btnTransferToFilter = new javax.swing.JButton();
+        btnTransferToFilter.addActionListener(buttonExecutor);
+        btnTransferToFilter.setActionCommand("transferHeadersToFilter"); // NOI18N
+        btnTransferToFilter.setText(resources.getString("btnTransferToFilter.text")); // NOI18N
+        btnTransferToFilter.setName("btnTransferToFilter"); // NOI18N
+        
+        btnTransferAllToFilter = new javax.swing.JButton();
+        btnTransferAllToFilter.addActionListener(buttonExecutor);
+        btnTransferAllToFilter.setActionCommand("transferAllHeadersToFilter"); // NOI18N
+        btnTransferAllToFilter.setText(resources.getString("btnTransferAllToFilter.text")); // NOI18N
+        btnTransferAllToFilter.setName("btnTransferAllToFilter"); // NOI18N
+        
+        btnTransferLeft = new javax.swing.JButton();
+        btnTransferLeft.addActionListener(buttonExecutor);
+        btnTransferLeft.setActionCommand("transferHeadersToLeft"); // NOI18N
+        btnTransferLeft.setText(resources.getString("btnTransferLeft.text")); // NOI18N
+        btnTransferLeft.setName("btnTransferLeft"); // NOI18N
+        
+        btnTransferAllToLeft = new javax.swing.JButton();
+        btnTransferAllToLeft.addActionListener(buttonExecutor);
+        btnTransferAllToLeft.setActionCommand("transferAllHeadersToLeft"); // NOI18N
+        btnTransferAllToLeft.setText(resources.getString("btnTransferAllToLeft.text")); // NOI18N
+        btnTransferAllToLeft.setName("btnTransferAllToLeft"); // NOI18N
+        
+        jScrollPane3 = new javax.swing.JScrollPane();
         jScrollPane3.setName("jScrollPane3"); // NOI18N
-
+        listFilterMetrics = new javax.swing.JList();
         listFilterMetrics.setName("listFilterMetrics"); // NOI18N
         listFilterMetrics.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -1553,26 +2043,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
             }
         });
         jScrollPane3.setViewportView(listFilterMetrics);
-
-        jLabel22.setText(resourceMap.getString("jLabel22.text")); // NOI18N
-        jLabel22.setName("jLabel22"); // NOI18N
-
-        btnTransferToFilter.setAction(actionMap.get("transferHeadersToFilter")); // NOI18N
-        btnTransferToFilter.setText(resourceMap.getString("btnTransferToFilter.text")); // NOI18N
-        btnTransferToFilter.setName("btnTransferToFilter"); // NOI18N
-
-        btnTransferLeft.setAction(actionMap.get("transferHeadersToLeft")); // NOI18N
-        btnTransferLeft.setText(resourceMap.getString("btnTransferLeft.text")); // NOI18N
-        btnTransferLeft.setName("btnTransferLeft"); // NOI18N
-
-        btnTransferAllToFilter.setAction(actionMap.get("transferAllHeadersToFilter")); // NOI18N
-        btnTransferAllToFilter.setText(resourceMap.getString("btnTransferAllToFilter.text")); // NOI18N
-        btnTransferAllToFilter.setName("btnTransferAllToFilter"); // NOI18N
-
-        btnTransferAllToLeft.setAction(actionMap.get("transferAllHeadersToLeft")); // NOI18N
-        btnTransferAllToLeft.setText(resourceMap.getString("btnTransferAllToLeft.text")); // NOI18N
-        btnTransferAllToLeft.setName("btnTransferAllToLeft"); // NOI18N
-
+        
         javax.swing.GroupLayout pnlFilterMainLayout = new javax.swing.GroupLayout(pnlFilterMain);
         pnlFilterMain.setLayout(pnlFilterMainLayout);
         pnlFilterMainLayout.setHorizontalGroup(
@@ -1616,7 +2087,33 @@ public class PrestGuiView extends FrameView implements WindowListener {
                         .addComponent(btnTransferAllToLeft)))
                 .addContainerGap())
         );
+        
+        pnlFilterHeader = new javax.swing.JPanel();
+        pnlFilterHeader.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        pnlFilterHeader.setName("pnlFilterHeader"); // NOI18N
 
+        jLabel21 = new javax.swing.JLabel();
+        jLabel21.setFont(GUIUtilities.getResourceFont(resources, "jLabel21.font")); // NOI18N
+        jLabel21.setText(resources.getString("jLabel21.text")); // NOI18N
+        jLabel21.setName("jLabel21"); // NOI18N
+
+        javax.swing.GroupLayout pnlFilterHeaderLayout = new javax.swing.GroupLayout(pnlFilterHeader);
+        pnlFilterHeader.setLayout(pnlFilterHeaderLayout);
+        pnlFilterHeaderLayout.setHorizontalGroup(
+            pnlFilterHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlFilterHeaderLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(258, Short.MAX_VALUE))
+        );
+        pnlFilterHeaderLayout.setVerticalGroup(
+            pnlFilterHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlFilterHeaderLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel21)
+                .addContainerGap())
+        );
+        
         javax.swing.GroupLayout filterWizardDialogLayout = new javax.swing.GroupLayout(filterWizardDialog.getContentPane());
         filterWizardDialog.getContentPane().setLayout(filterWizardDialogLayout);
         filterWizardDialogLayout.setHorizontalGroup(
@@ -1640,25 +2137,14 @@ public class PrestGuiView extends FrameView implements WindowListener {
                 .addComponent(pnlFilterButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        setComponent(mainPanel);
-        setMenuBar(menuBar);
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void jComboBoxChooseAlgorithmItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxChooseAlgorithmItemStateChanged
+	}
+	
+	private void jComboBoxChooseAlgorithmItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxChooseAlgorithmItemStateChanged
         wekaAlgorithmType = jComboBoxChooseAlgorithm.getItemAt(jComboBoxChooseAlgorithm.getSelectedIndex()).toString();
     }//GEN-LAST:event_jComboBoxChooseAlgorithmItemStateChanged
 
 	// <editor-fold defaultstate="collapsed" desc="Actions">
 
-	// SciDesktop Modification TA_R001	--- terminate action (for the frame menu) is introduced here 
-	@Action
-	public void terminate() {
-		PrestGuiApp app = org.jdesktop.application.Application.getInstance(prestgui.PrestGuiApp.class);
-		app.terminate();
-	}
-	
-	@Action
 	public void switchWorkspace() {
 		File repositoryFile = PrestGuiApp.getProjectDirectoryFromUser();
 		if (repositoryFile != null) {
@@ -1673,19 +2159,59 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}
 
-	private void addProjectMenuItemActionPerformed(
-			java.awt.event.ActionEvent evt) {// GEN-FIRST:
-		// event_addProjectMenuItemActionPerformed
-		// TODO add your handling code here:
+	public void switchView()
+	{
+		if (analysisResultsPanel.isVisible())
+		{
+			analysisResultsPanel.setVisible(false);
+			predictionPanel.setVisible(true);
+		}
+		else {
+				analysisResultsPanel.setVisible(true);
+				predictionPanel.setVisible(false);
+		}
+		
+		mainPanel.validate();
+	}
+	
+	public void switchMetricView(int id)
+	{
+		for (int i = 0; i < metricsPanels.length; i++)
+			metricsPanels[i].setVisible(id == i);
+		resultsDataPanel.validate();
+	}
+	
+	private void doAddProject()
+	{
 		packageExplorer.addNewProject();
-	}// GEN-LAST:event_addProjectMenuItemActionPerformed
+	}
 
+	private void doDeleteProject()
+	{
+		packageExplorer.deleteProject();
+	}
+	
+	private void doParseProject()
+	{
+		packageExplorer.parseProject();
+	}
+	
+	private void doTableTransfer()
+	{
+		packageExplorer.transferResults();
+	}
+	
+	private void doCVS2Arff()
+	{
+		packageExplorer.convertCsvToArff();
+	}
+	
 	private void rbtnSuppliedTestSetActionPerformed(
 			java.awt.event.ActionEvent evt) {// GEN-FIRST:
 		// event_rbtnSuppliedTestSetActionPerformed
 		disableAllUnnecessaryForCategorizer();
 		// btnTestSet.setEnabled(true);
-	}// GEN-LAST:event_rbtnSuppliedTestSetActionPerformed
+	}
 
 
 	private void updateCategorizerList() {
@@ -1854,17 +2380,16 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}// GEN-LAST:event_listFilterMetricsValueChanged
 
-	@Action
 	public void showAboutBox() {
-		if (aboutBox == null) {
-			JFrame mainFrame = PrestGuiApp.getApplication().getMainFrame();
-			aboutBox = new PrestGuiAboutBox(mainFrame);
-			aboutBox.setLocationRelativeTo(mainFrame);
+		if (aboutBox == null) 
+		{
+			aboutBox = new PrestGuiAboutBox(this);
+			aboutBox.setLocationRelativeTo(this);
 		}
-		PrestGuiApp.getApplication().show(aboutBox);
+		
+		aboutBox.setVisible(true);
 	}
 
-	@Action
 	public void openDataFile() {
 		JFileChooser fileChooser = new JFileChooser();
 		File currentDirectory;
@@ -1935,11 +2460,11 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		return newDataSet;
 	}
 
-	@Action
 	public void defineThreshold() {
 		if (packageExplorer.isResultsTransferred()) {
 			thresholdWizardFillComboBoxes();
 			thresholdWizardDialog.pack();
+			centerDialog(thresholdWizardDialog);
 			thresholdWizardDialog.setVisible(true);
 		} else
 			JOptionPane.showMessageDialog(null,
@@ -1947,11 +2472,11 @@ public class PrestGuiView extends FrameView implements WindowListener {
 					"Select Project", JOptionPane.ERROR_MESSAGE);
 	}
 
-	@Action
 	public void defineVirtualMetric() {
 		if (packageExplorer.isResultsTransferred()) {
 			virtualMetricWizardFillComboBoxes();
 			virtualMetricWizardDialog.pack();
+			centerDialog(virtualMetricWizardDialog);
 			virtualMetricWizardDialog.setVisible(true);
 		} else
 			JOptionPane.showMessageDialog(null,
@@ -1959,6 +2484,14 @@ public class PrestGuiView extends FrameView implements WindowListener {
 					"Select Project", JOptionPane.ERROR_MESSAGE);
 	}
 
+	private void centerDialog(JDialog dlg)
+	{
+		Dimension sDim = Toolkit.getDefaultToolkit().getScreenSize();
+		int x = (sDim.width - dlg.getWidth()) / 2;
+		int y = (sDim.height - dlg.getHeight()) / 2;
+		dlg.setLocation(new Point(x, y));
+	}
+	
 	public class ThresholdActionAdapter implements ActionListener {
 
 		private int column;
@@ -1997,69 +2530,75 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		Components.fileMetricsDataSetPanel = this.fileMetricsDataSetPanel;
 		Components.classMetricsDataSetPanel = this.classMetricsDataSetPanel;
 		Components.methodMetricsDataSetPanel = this.methodMetricsDataSetPanel;
-		Components.cmbMetricGroups = this.cmbMetricGroups;
-		Components.languageRadioButtonGroupPanel = this.pnlLanguageRadioPanel;
+		Components.mbMetricGroups = this.metricsMenuButton;
+//		Components.languageRadioButtonGroupPanel = this.pnlLanguageRadioPanel;
 		Components.languageButtonGroup = this.btngLanguageGroup;
 		Components.classMetricsThresholdPanel = this.classMetricsThresholdPanel;
 		Components.fileMetricsThresholdPanel = this.fileMetricsThresholdPanel;
 		Components.methodMetricsThresholdPanel = this.methodMetricsThresholdPanel;
 		Components.packageMetricsThresholdPanel = this.methodMetricsThresholdPanel;
-		Components.pnlDataCardLayout = this.pnlDataCardLayout;
-		Components.pnlCategorizeButtons = this.pnlCategorizeButtons;
-		Components.btnCategorize = this.btnCategorize;
-		Components.btnLoadCategorizer = this.btnLoadCategorizer;
-		Components.btnStoreCategorizer = this.btnStoreCategorizer;
+		Components.analysisToolBar = analysisToolbar;
+		Components.languageSet = null;
+		Components.categorizerActive = false;
+		Components.resultsDataPanel = this.resultsDataPanel;
+//		Components.pnlCategorizeButtons = this.pnlCategorizeButtons;
+//		Components.btnCategorize = this.btnCategorize;
+//		Components.btnLoadCategorizer = this.btnLoadCategorizer;
+//		Components.btnStoreCategorizer = this.btnStoreCategorizer;
 	}
 
 	private DataSet activeDataSet() {
-		int selectedMetricType = cmbMetricGroups.getSelectedIndex();
+		int selectedMetricType = metricsMenuButton.getActionIndex();
 		Language lang = Language.JAVA;// radioButtondan alinacak
 		return ParserExecutor.getDataSetByMetricGroup(selectedMetricType, lang,
 				Components.dataFileActive);
 	}
 
 	private JPanel activeDataSetPanel() {
-		switch (cmbMetricGroups.getSelectedIndex()) {
-		case 0:
-			return packageMetricsDataSetPanel;
-		case 1:
-			return fileMetricsDataSetPanel;
-		case 2:
-			return classMetricsDataSetPanel;
-		case 3:
-			return methodMetricsDataSetPanel;
-		default:
-			return null;
+		switch (metricsMenuButton.getActionIndex()) 
+		{
+			case 0:
+				return packageMetricsDataSetPanel;
+			case 1:
+				return fileMetricsDataSetPanel;
+			case 2:
+				return classMetricsDataSetPanel;
+			case 3:
+				return methodMetricsDataSetPanel;
+			default:
+				return null;
 		}
 	}
 
 	private JPanel activeThresholdPanel() {
-		switch (cmbMetricGroups.getSelectedIndex()) {
-		case 0:
-			return packageMetricsThresholdPanel;
-		case 1:
-			return fileMetricsThresholdPanel;
-		case 2:
-			return classMetricsThresholdPanel;
-		case 3:
-			return methodMetricsThresholdPanel;
-		default:
-			return null;
+		switch (metricsMenuButton.getActionIndex()) 
+		{
+			case 0:
+				return packageMetricsThresholdPanel;
+			case 1:
+				return fileMetricsThresholdPanel;
+			case 2:
+				return classMetricsThresholdPanel;
+			case 3:
+				return methodMetricsThresholdPanel;
+			default:
+				return null;
 		}
 	}
 
 	private JTabbedPane activeTabbedPane() {
-		switch (cmbMetricGroups.getSelectedIndex()) {
-		case 0:
-			return packageMetricsTabbedPane;
-		case 1:
-			return fileMetricsTabbedPane;
-		case 2:
-			return classMetricsTabbedPane;
-		case 3:
-			return methodMetricsTabbedPane;
-		default:
-			return null;
+		switch (metricsMenuButton.getActionIndex()) 
+		{
+			case 0:
+				return packageMetricsTabbedPane;
+			case 1:
+				return fileMetricsTabbedPane;
+			case 2:
+				return classMetricsTabbedPane;
+			case 3:
+				return methodMetricsTabbedPane;
+			default:
+				return null;
 		}
 	}
 
@@ -2094,7 +2633,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		return dir;
 	}
 
-	@Action
 	public void loadCategorizer() {
 		try {
 			File file = getCategorizerDirectoryFromUser();
@@ -2102,8 +2640,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
 					.getAbsolutePath());
 			if (storedContext != null) {
 				for (int i = 0; i < 4; i++) {
-					String selectedMetric = (String) cmbMetricGroups
-							.getItemAt(i);
+					String selectedMetric = metricsMenuButton.getActionText(i);
 					selectedMetric = selectedMetric.replace(" ", "");
 					DataContext relatedPart = storedContext
 							.getNode(selectedMetric);
@@ -2116,18 +2653,16 @@ public class PrestGuiView extends FrameView implements WindowListener {
 								ParserExecutor.getCurrentLanguage(),
 								staticCategorizer.getDataSet());
 						staticCategorizer.buildCategorizer();
-						cmbMetricGroups.setSelectedIndex(i);
-						JOptionPane.showMessageDialog(mainContentSplitPanel,
+						analysisToolbar.setMenuButtonSelection(metricsMenuButton, i, okMark);
+						switchMetricView(i);
+						JOptionPane.showMessageDialog(dataSplitPanel,
 								"Categorizer loaded successfully!",
 								"Load Result", JOptionPane.INFORMATION_MESSAGE);
-						packageExplorer.displayMetrics(activeDataSetPanel(),
-								activeDataSet());
-						JTabbedPane jTabbedPane = (JTabbedPane) activeDataSetPanel()
-								.getParent();
-						jTabbedPane.setSelectedIndex(0);
-						displayThresholds(activeThresholdPanel(),
-								activeDataSet());
-						btnCategorize.setVisible(true);
+						packageExplorer.displayMetrics(activeDataSetPanel(), activeDataSet());
+//						JTabbedPane jTabbedPane = (JTabbedPane) activeDataSetPanel().getParent();
+//						jTabbedPane.setSelectedIndex(0);
+						displayThresholds(activeThresholdPanel(),activeDataSet());
+//						btnCategorize.setVisible(true);
 						break;
 					}
 				}
@@ -2137,7 +2672,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}
 
-	@Action
 	public void categorize() {
 		try {
 
@@ -2157,11 +2691,10 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		btnStoreCategorizer.setVisible(true);
 	}
 
-	@Action
 	public void storeCategorizer() {
 		try {
 			DataContext context = new DataContext();
-			String selectedMetric = (String) cmbMetricGroups.getSelectedItem();
+			String selectedMetric = metricsMenuButton.getActionText(metricsMenuButton.getActionIndex());
 			selectedMetric = selectedMetric.replace(" ", "");
 			staticCategorizer.setTitle(selectedMetric);
 			context.add(selectedMetric, staticCategorizer.store());
@@ -2474,7 +3007,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		activeTabbedPane().setSelectedIndex(1);
 	}
 
-	@Action
 	public void thresholdWizardNextButton() {
 		doubleOperands = false;
 
@@ -2559,7 +3091,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}
 
-	@Action
 	public void thresholdWizardBackButton() {
 
 		CardLayout cards = (CardLayout) (pnlThresholdSettingsCardLayout
@@ -2577,7 +3108,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		packageExplorer.displayMetrics(panel, dataSet);
 	}
 
-	@Action
 	public void virtualMetricWizardNext() {
 		if (btnVmNext.getText().equals("Finish")) {
 			addNewMetricToTable(activeDataSetPanel(), activeDataSet());
@@ -2666,7 +3196,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}
 
-	@Action
 	public void vitualMetricBack() {
 		CardLayout cards = (CardLayout) (pnlVmCardLayout.getLayout());
 		cards.show(pnlVmCardLayout, "card3");
@@ -2674,24 +3203,18 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		btnVmNext.setText("Next");
 	}
 
-	@Action
 	public void closeVirtualMetricDialog() {
 		if (virtualMetricWizardDialog != null) {
 			virtualMetricWizardDialog.dispose();
 		}
 	}
 
-	@Action
 	public void closeThresholdWizardDialog() {
 		if (thresholdWizardDialog != null) {
 			thresholdWizardDialog.dispose();
 		}
 	}
 
-	// </editor-fold>
-
-	// <editor-fold defaultstate="collapsed" desc="Filter Operations">
-	@Action
 	public void transferHeadersToFilter() {
 		int[] indices = listAllMetrics.getSelectedIndices();
 		for (int i = indices.length - 1; i >= 0; i--) {
@@ -2701,7 +3224,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}
 
-	@Action
 	public void transferHeadersToLeft() {
 		int[] indices = listFilterMetrics.getSelectedIndices();
 		for (int i = indices.length - 1; i >= 0; i--) {
@@ -2712,25 +3234,23 @@ public class PrestGuiView extends FrameView implements WindowListener {
 
 	}
 
-	@Action
 	public void transferAllHeadersToFilter() {
 		for (int i = leftListModel.getSize() - 1; i >= 0; i--) {
 			rightListModel.addElement(leftListModel.remove(i));
 		}
 	}
 
-	@Action
 	public void transferAllHeadersToLeft() {
 		for (int i = rightListModel.getSize() - 1; i >= 0; i--) {
 			leftListModel.addElement(rightListModel.remove(i));
 		}
 	}
 
-	@Action
 	public void defineNewFilter() {
 		if (packageExplorer.isResultsTransferred()) {
 			filterWizardFillHeaderList();
 			filterWizardDialog.pack();
+			centerDialog(filterWizardDialog);
 			filterWizardDialog.setVisible(true);
 		} else {
 			JOptionPane.showMessageDialog(null,
@@ -2752,14 +3272,12 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}
 
-	@Action
 	public void filterWizardCancelButton() {
 		if (filterWizardDialog != null) {
 			filterWizardDialog.dispose();
 		}
 	}
 
-	@Action
 	public void filterWizardApplyButton() {
 		DataSet dataSet = activeDataSet();
 		LogFilter logFilter;
@@ -2784,7 +3302,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		packageExplorer.displayMetrics(activeDataSetPanel(), activeDataSet());
 	}
 
-	@Action
 	public void createClassifierWizard() {
 		JDialog frame = new JDialog(null, "Categorizer Definition Wizard",
 				Dialog.ModalityType.APPLICATION_MODAL);
@@ -2796,7 +3313,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		frame.setVisible(true);
 	}
 	
-	@Action
 	public void openTrainingFile() {
 		JFileChooser fileChooser = new JFileChooser();
 		File currentDirectory;
@@ -2831,7 +3347,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}
 	
-	@Action
 	public void openTestFile() {
 		JFileChooser fileChooser = new JFileChooser();
 		File currentDirectory;
@@ -2866,7 +3381,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 		}
 	}
 	
-	@Action
 	public void startWeka() {
 		String output  = "";
 		if(((testSetPath == null || trainingSetPath == null) &&  wekaCrossValidate == "false") ||
@@ -2875,6 +3389,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
 					"Load training and test sets first.", "Store Result",
 					JOptionPane.INFORMATION_MESSAGE);
 		} else {
+			setWekaParameters(predictionToolbar.getMenuButtonSet(wekaAtrbsMenuButton));
 			output = WekaRunner.runWeka(trainingSetPath,testSetPath,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate);
 			jTextArea1.append("\n" +output);
 		}
@@ -2966,7 +3481,6 @@ public class PrestGuiView extends FrameView implements WindowListener {
 
 	}
 
-    @Action
     public void crossValidateAction() {
     	if(chkboxCrossValidate.isSelected())
     		wekaCrossValidate = "true";
@@ -2974,190 +3488,81 @@ public class PrestGuiView extends FrameView implements WindowListener {
     		wekaCrossValidate = "false";
     }
     
-    @Action
     public void normalizeDataAction() {
-    	if(jCheckBoxNormalize.isSelected())
+    	if (jCheckBoxNormalize.isSelected())
     		wekaPreProcess = "normalize";
     	else
     		wekaPreProcess = "false";
     }
 
-	// <editor-fold defaultstate="collapsed" desc="Generated Variable
-	// Declaration">
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem addProjectMenuItem;
-    private javax.swing.JPanel analysisResultsPanel;
-    private javax.swing.JMenu analyzeMenu;
-    private javax.swing.JButton btnApplyFilter;
-    private javax.swing.JButton btnCancelFilter;
-    private javax.swing.JButton btnCategorize;
-    private javax.swing.JButton btnLoadCategorizer;
-    private javax.swing.JButton btnLoadTest;
-    private javax.swing.JButton btnLoadTraining;
-    private javax.swing.JButton btnStartWeka;
-    private javax.swing.JButton btnStoreCategorizer;
-    private javax.swing.JButton btnThresholdWizardBack;
-    private javax.swing.JButton btnThresholdWizardCancel;
-    private javax.swing.JButton btnThresholdWizardNext;
-    private javax.swing.JButton btnTransferAllToFilter;
-    private javax.swing.JButton btnTransferAllToLeft;
-    private javax.swing.JButton btnTransferLeft;
-    private javax.swing.JButton btnTransferToFilter;
-    private javax.swing.JButton btnVmBack;
-    private javax.swing.JButton btnVmNext;
-    private javax.swing.ButtonGroup btngFirstOperand;
-    private javax.swing.ButtonGroup btngLanguageGroup;
-    private javax.swing.ButtonGroup btngRiskLevel;
-    private javax.swing.ButtonGroup btngSecondOperand;
-    private javax.swing.ButtonGroup btngVmOperand1;
-    private javax.swing.ButtonGroup btngVmOperand2;
-    private javax.swing.JButton cancelVirtualMetricButton;
-    private javax.swing.JCheckBox chkboxCrossValidate;
-    private javax.swing.JPanel classMetricsDataSetPanel;
-    private javax.swing.JTabbedPane classMetricsTabbedPane;
-    private javax.swing.JPanel classMetricsThresholdPanel;
-    private javax.swing.JComboBox cmbMetricGroups;
-    private javax.swing.JComboBox cmbRiskLevels;
-    private javax.swing.JComboBox cmbThresholdMetricList;
-    private javax.swing.JComboBox cmbThresholdOperator;
-    private javax.swing.JComboBox cmbThresholdOperator1;
-    private javax.swing.JComboBox cmbThresholdOperator2;
-    private javax.swing.JComboBox cmbVmMetricOperator;
-    private javax.swing.JComboBox cmbVmOperand1;
-    private javax.swing.JComboBox cmbVmOperand2;
-    private javax.swing.JPanel fileMetricsDataSetPanel;
-    private javax.swing.JTabbedPane fileMetricsTabbedPane;
-    private javax.swing.JPanel fileMetricsThresholdPanel;
-    private javax.swing.JMenuItem filterMenuItem;
-    private javax.swing.JDialog filterWizardDialog;
-    private javax.swing.JCheckBox jCheckBoxNormalize;
-    private javax.swing.JComboBox jComboBoxChooseAlgorithm;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
-    private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel21;
-    private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JLabel lblThresholdExpression;
-    private javax.swing.JLabel lblThresholdOperand2;
-    private javax.swing.JLabel lblThresholdRiskLevel;
-    private javax.swing.JLabel lblVirtualMetricEquation;
-    private javax.swing.JLabel lblVirtualMetricName;
-    private javax.swing.JLabel lblVmOperand2;
-    private javax.swing.JList listAllMetrics;
-    private javax.swing.JList listFilterMetrics;
-    private javax.swing.JSplitPane mainContentSplitPanel;
-    private javax.swing.JPanel mainPanel;
-    private javax.swing.JMenuBar menuBar;
-    private javax.swing.JPanel methodMetricsDataSetPanel;
-    private javax.swing.JTabbedPane methodMetricsTabbedPane;
-    private javax.swing.JPanel methodMetricsThresholdPanel;
-    private javax.swing.JPanel metricsCardLayoutPanel;
-    private javax.swing.JPanel packageMetricsDataSetPanel;
-    private javax.swing.JTabbedPane packageMetricsTabbedPane;
-    private javax.swing.JPanel packageMetricsThresholdPanel;
-    private javax.swing.JPanel pnlCategorizeButtons;
-    private javax.swing.JPanel pnlDataCardLayout;
-    private javax.swing.JPanel pnlDataFile;
-    private javax.swing.JPanel pnlDataFileAnalyze;
-    private javax.swing.JPanel pnlDataTab;
-    private javax.swing.JPanel pnlFilterButtons;
-    private javax.swing.JPanel pnlFilterHeader;
-    private javax.swing.JPanel pnlFilterMain;
-    private javax.swing.JPanel pnlLanguageRadioPanel;
-    private javax.swing.JPanel pnlParseResultsAnalyze;
-    private javax.swing.JPanel pnlThresholdApprove;
-    private javax.swing.JPanel pnlThresholdSettings;
-    private javax.swing.JPanel pnlThresholdSettingsCardLayout;
-    private javax.swing.JPanel pnlThresholdWizardButtons;
-    private javax.swing.JPanel pnlThresholdWizardHeader;
-    private javax.swing.JPanel pnlVmApproval;
-    private javax.swing.JPanel pnlVmButtons;
-    private javax.swing.JPanel pnlVmCardLayout;
-    private javax.swing.JPanel pnlVmHeader;
-    private javax.swing.JPanel pnlVmSettings;
-    private javax.swing.JPanel pnlthresholdWizardMain;
-    private javax.swing.JRadioButton rbtnThresholdOperator1Cmb;
-    private javax.swing.JRadioButton rbtnThresholdOperator2Cmb;
-    private javax.swing.JRadioButton rbtnThresholdOperator2Txt;
-    private javax.swing.JRadioButton rbtnThresholdOperatorOneTxt;
-    private javax.swing.JRadioButton rbtnVmOperand1Cmb;
-    private javax.swing.JRadioButton rbtnVmOperand1Txt;
-    private javax.swing.JRadioButton rbtnVmOperand2Cmb;
-    private javax.swing.JRadioButton rbtnVmOperand2Txt;
-    private javax.swing.JMenuItem switchWorkspaceMenuItem;
-    private javax.swing.JTabbedPane tabPaneAnalysisResults;
-    private javax.swing.JTabbedPane tabPaneDataFileAnalyze;
-    private javax.swing.ButtonGroup testOptionsButtonGroup;
-    private javax.swing.JMenuItem thresholdMenuItem;
-    private javax.swing.JDialog thresholdWizardDialog;
-    private javax.swing.JTextField txtThresholdOperator1;
-    private javax.swing.JTextField txtThresholdOperator2;
-    private javax.swing.JTextField txtVmMetricName;
-    private javax.swing.JTextField txtVmOperand1;
-    private javax.swing.JTextField txtVmOperand2;
-    private javax.swing.JMenuItem virtualMetricMenuItem;
-    private javax.swing.JDialog virtualMetricWizardDialog;
-    // End of variables declaration//GEN-END:variables
-	// </editor-fold>
+    private void setWekaParameters(int[] parSet)
+    {
+    	wekaPreProcess = "false";
+    	wekaCrossValidate = "false";
+    	if (parSet != null)
+    		for (int i = 0; i < parSet.length; i++)
+    			switch (parSet[i])
+    			{
+    				case WA_CRSVALD:
+    					wekaCrossValidate = "true";
+    					break;
+    				case WA_NORMALIZE:
+    					wekaPreProcess = "normalize";
+    					break;
+    			}
+    }
+    
+	public void actionPerformed(ActionEvent evt)
+	{
+		Object src = evt.getSource();
+		if (src instanceof JComponent)
+		{
+			Integer tag = (Integer) ((JComponent) src).getClientProperty(TAGPROPERTY);
+			if (tag != null)
+				handleAction(tag.intValue());
+		}
+	}
 
-	// <editor-fold defaultstate="collapsed" desc="Added variable declarations">
-	private StaticCategorizer staticCategorizer;
-	private DefaultListModel leftListModel;
-	private DefaultListModel rightListModel;
-	private boolean doubleOperands;
-	private MetricOperator virtualMetricOperator;
-	private String virtualMetricName;
-	private Operand[] virtualMetricOperands;
-	private String virtualMetricOperand1;
-	private String virtualMetricOperand2;
-	private ThresholdOperator thresholdOperator;
-	private String thresholdSelectedMetric;
-	private String thresholdOperand1;
-	private String thresholdOperand2;
-	private Operand[] thresholdOperands;
-	private PackageExplorer packageExplorer;
-	private DataHeader thresholdDataHeader;
-	private Operand[] operands;
-	private MetricOperator metricOperator;
-	private List<MetricGroup> packageMetrics;
-	private List<MetricGroup> fileMetrics;
-	private List<MetricGroup> classMetrics;
-	private List<MetricGroup> methodMetrics;
-	private DataSet arffDataSet;
-	private CategorizerExecutor categorizerExecutor;
-	private String trainingSetPath;
-	private String testSetPath;
-	private String wekaAlgorithmType = "Naive Bayes";
-	private String wekaCrossValidate = "false";
-	private String wekaPreProcess = "false";
-	private final Timer messageTimer;
-	private final Timer busyIconTimer;
-	private final Icon idleIcon;
-	private final Icon[] busyIcons = new Icon[15];
-	private int busyIconIndex = 0;
-	private JDialog aboutBox;
-	// </editor-fold>
+	private void handleAction(int id)
+	{
+		switch (id)
+		{
+			case MI_ADDPROJECT:
+				doAddProject();
+				break;
+			case MI_PARSEPROJECT:
+				doParseProject();
+				break;
+			case MI_TABLETRANSFER:
+				doTableTransfer();
+				break;
+			case MI_CVS2ARFF:
+				doCVS2Arff();
+				break;
+			case MI_DELETEPROJECT:
+				doDeleteProject();
+				break;
+			case MI_SWITCHWS:
+				switchWorkspace();
+				break;
+			case MI_EXIT:
+				disposeView();
+				break;
+			case MI_NEWTHRESHOLD:
+				defineThreshold();
+				break;
+			case MI_NEWVMETRIC:
+				defineVirtualMetric();
+				break;
+			case MI_FILTER:
+				defineNewFilter();
+				break;
+			case MI_ABOUT:
+				showAboutBox();
+				break;
+		}
+	}
 
-	// SciDesktop Modification TA_R001	--- window listener methods start here 
 	public void windowActivated(WindowEvent arg0)
 	{
 	}
@@ -3168,7 +3573,7 @@ public class PrestGuiView extends FrameView implements WindowListener {
 
 	public void windowClosing(WindowEvent arg0)
 	{
-		terminate();
+		disposeView();
 	}
 
 	public void windowDeactivated(WindowEvent arg0)
@@ -3185,5 +3590,170 @@ public class PrestGuiView extends FrameView implements WindowListener {
 
 	public void windowOpened(WindowEvent arg0)
 	{
+	}
+
+	public void popupMenuCanceled(PopupMenuEvent e)
+	{
+	}
+
+	public void popupMenuWillBecomeInvisible(PopupMenuEvent e)
+	{
+	}
+
+	public void popupMenuWillBecomeVisible(PopupMenuEvent e)
+	{
+		Object source = e.getSource();
+		if (source instanceof JPopupMenu)
+		{
+			JPopupMenu menu = (JPopupMenu) source;
+			for (int i = 0; i < menu.getComponentCount(); i++)
+			{
+				Component item = menu.getComponent(i);
+				if (item instanceof JMenuItem)
+				{
+					JMenuItem mItem = (JMenuItem) item;
+					Integer id = (Integer) mItem.getClientProperty(TAGPROPERTY);
+					boolean enabled = (id != null) ? isMenuItemEnabled(id.intValue()) : true;
+					item.setEnabled(enabled);
+				}
+			}
+		}
+		
+	}
+
+	private boolean isMenuItemEnabled(int id)
+	{
+		switch (id)
+		{
+			case MI_ADDPROJECT:
+			case MI_TABLETRANSFER:
+			case MI_CVS2ARFF:
+			case MI_DELETEPROJECT:
+			case MI_SWITCHWS:
+			case MI_NEWTHRESHOLD:
+			case MI_NEWVMETRIC:
+			case MI_FILTER:
+			case MI_PARSEPROJECT:
+				return analysisResultsPanel.isVisible();
+		}
+		
+		return true;
+	}
+
+	public boolean checkControlStatus(JComponent source, int ctrlID, JComponent component, int itemID)
+	{
+		switch (ctrlID)
+		{
+			case MI_ADDPROJECT:
+			case MI_PARSEPROJECT:
+			case MI_DELETEPROJECT:
+			case MI_SWITCHWS:
+			case MI_NEWTHRESHOLD:
+			case MI_NEWVMETRIC:
+			case MI_FILTER:
+				return isMenuItemEnabled(ctrlID);
+				
+			case MI_LANGUAGES:
+				return isLanguageAvailable(itemID);
+			
+			case MI_LOADSTORE:
+				return Components.categorizerActive;
+			
+		}
+		
+		return true;
+	}
+
+	private boolean isLanguageAvailable(int lIndex)
+	{
+		if (Components.languageSet != null)
+			for (int i = 0; i < Components.languageSet.length; i++)
+				if (lIndex == Components.languageSet[i])
+					return true;
+		
+		return false;
+	}
+	
+	public void controlAction(JComponent source, int ctrlID, JComponent component, int itemID)
+	{
+		switch (ctrlID)
+		{
+			case MI_ADDPROJECT:
+			case MI_PARSEPROJECT:
+			case MI_DELETEPROJECT:
+			case MI_SWITCHWS:
+			case MI_NEWTHRESHOLD:
+			case MI_NEWVMETRIC:
+			case MI_FILTER:
+				handleAction(ctrlID);
+				break;
+				
+			case MI_METRICS:
+				switchMetricView(itemID);
+				break;
+				
+			case MI_LOADSTORE:
+				switch (itemID)
+				{
+					case 1:
+						categorize();
+						break;
+					case 2:
+						loadCategorizer();
+						break;
+					case 3:
+						storeCategorizer();
+						break;
+				}
+				break;
+				
+			case MI_SWITCHVW:
+				switchView();
+				break;
+				
+			case MI_LANGUAGES:
+				packageExplorer.setCurrentLanguage(itemID);
+				break;
+				
+			case MI_LOADDATA:
+				switch (itemID)
+				{
+					case 1:
+						openTrainingFile();
+						break;
+					case 2:
+						openTestFile();
+						break;
+				}
+				break;
+				
+			case MI_PREDOPTS:
+				break;
+				
+			case MI_ALGORITHM:
+				wekaAlgorithmType = ((MenuButton) component).getActionText(itemID);
+				break;
+				
+			case MI_RUNPRED:
+				startWeka();
+				break;
+				
+			case MI_SOFTLAB:
+				showAboutBox();
+				break;
+		}
+	}
+
+	public void controlContentChange(JComponent source, int ctrlID, JComponent component)
+	{
+	}
+
+	public void controlContentProcess(JComponent source, int ctrlID, JComponent component)
+	{
+	}
+
+	public boolean filterControl(JComponent source, int ctrlID, JComponent component, int itemID)
+	{
+		return true;
 	}
 }

@@ -5,7 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/antlr-2.7.5.jar"/>
-	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/appframework-1.0.3.jar"/>
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/jcommon-1.0.0.jar"/>
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/jericho-html-2.6.jar"/>
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/jfreechart-1.0.1.jar"/>
@@ -15,8 +14,8 @@
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/poi-contrib-3.0.2-FINAL-20080204.jar"/>
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/poi-scratchpad-3.0.2-FINAL-20080204.jar"/>
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/SDToolDev.jar"/>
-	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/swing-worker-1.1.jar"/>
-	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/swingx.jar"/>
 	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/weka.jar"/>
-	<classpathentry kind="output" path="build/classes/weka"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/liquidlnf.jar"/>
+	<classpathentry kind="lib" path="D:/Work/SOFTLABProjects/Prest/lib/ilf-gpl.jar"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

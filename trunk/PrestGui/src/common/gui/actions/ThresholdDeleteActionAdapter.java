@@ -42,7 +42,7 @@ public class ThresholdDeleteActionAdapter implements ActionListener {
 			ThresholdTableModel model = (ThresholdTableModel)table.getModel();
 			ThresholdContent thresholdDetails = model.getRowDetailsOfTable(row);
 			
-			int selectedMetricType = Components.cmbMetricGroups.getSelectedIndex();
+			int selectedMetricType = Components.getSelectedMetricGroupIndex();
 			// TODO
 			//Language lang = Language.JAVA;//radioButtondan alinacak
 			//activeDataSet = ParserExecutor.getDataSetByMetricGroup(selectedMetricType, lang);
@@ -61,7 +61,7 @@ public class ThresholdDeleteActionAdapter implements ActionListener {
 			                }
 			        }
 			}
-			switch (Components.cmbMetricGroups.getSelectedIndex()) {
+			switch (Components.getSelectedMetricGroupIndex()) {
 			    case 0:
 			        displayThresholds(Components.packageMetricsThresholdPanel);
 			        break;

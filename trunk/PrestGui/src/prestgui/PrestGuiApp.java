@@ -5,15 +5,11 @@
 package prestgui;
 
 import java.io.File;
-import java.util.EventObject;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.Application.ExitListener;
+import javax.swing.UIManager;
 
 import com.sd.dev.lib.ISDContext;
 import common.gui.packageexplorer.CommandLineExplorer;
@@ -23,7 +19,8 @@ import definitions.application.ApplicationProperties;
 /**
  * The main class of the application.
  */
-public class PrestGuiApp extends SingleFrameApplication implements ExitListener {
+public class PrestGuiApp implements IPrestViewListener
+{
 
 	// SciDesktop Modification TA_R001	--- Local folder to be created for settings under member home
 	private static final String PRESTHOME = "PREST";
@@ -31,16 +28,20 @@ public class PrestGuiApp extends SingleFrameApplication implements ExitListener 
 	private static boolean fromCommandLine = false;
 	private static String [] cmdArguments;
 	
+	private static PrestGuiApp appInstance;
+	
 	// SciDesktop Modification TA_R001	--- additional variables are needed for the created instance
 	private static ISDContext sdContext;
+	
 	private PrestGuiView prestView;
 	private boolean disposed;
 	
 	/**
 	 * At startup create and show the main frame of the application.
 	 */
-	@Override
-	protected void startup() {
+	
+	public void startup() 
+	{
 		// SciDesktop Modification TA_R001	--- Changes to startup call
 		// application.properties file is directed to member home folder
 		// prestView is initialized with the context variable
@@ -60,18 +61,16 @@ public class PrestGuiApp extends SingleFrameApplication implements ExitListener 
 		}
 		
 		// if command line option is chosen, change working style to command line
-		if(fromCommandLine){
+		if(fromCommandLine)
+		{
 			System.out.println("Prest is selected to work from command line");
 			CommandLineExplorer cmdLineExplorer = new CommandLineExplorer();
 			cmdLineExplorer.startExecFromCmdLine(cmdArguments);
 		}
-		else
-		{
-			addExitListener(this);
-			prestView = new PrestGuiView(this, sdContext); 
-			show(prestView);
+		else {
+				prestView = new PrestGuiView(sdContext); 
+				prestView.setViewListener(this);
 		}
-		
 	}
 
 	// SciDesktop Modification TA_R001	--- getPropertiesPath is added to get full path of application.properties
@@ -97,42 +96,45 @@ public class PrestGuiApp extends SingleFrameApplication implements ExitListener 
 		return ApplicationProperties.getPropertiesFileName();
 	}
 
-	/**
-	 * This method is to initialize the specified window by injecting resources.
-	 * Windows shown in our application come fully initialized from the GUI
-	 * builder, so this additional configuration is not needed.
-	 */
-	@Override
-	protected void configureWindow(java.awt.Window root) {
-	}
-
-	/**
-	 * A convenient static getter for the application instance.
-	 * 
-	 * @return the instance of PrestApp
-	 */
-	public static PrestGuiApp getApplication() {
-		return Application.getInstance(PrestGuiApp.class);
-	}
-	
 	public static void changeWorkStyle(String[] args)
 	{
 		fromCommandLine = true;
 		cmdArguments = args;
 	}
-	
 
+	public static PrestGuiApp getInstance()
+	{
+		return appInstance;
+	}
+	
+	public static PrestGuiApp createInstance(String[] args)
+	{
+		if (appInstance != null)
+			return appInstance;
+		
+		appInstance = new PrestGuiApp();
+		if (args != null && args.length != 0)
+			changeWorkStyle(args);
+		appInstance.startup();
+		
+		return appInstance;
+	}
+	
 	/**
 	 * Main method launching the application.
 	 */
-	public static void main(String[] args) {
-
-		launch(PrestGuiApp.class, args);
-		if(args.length != 0)
+	public static void main(String[] args) 
+	{
+		try
 		{
-			changeWorkStyle(args);
+			// UIManager.setLookAndFeel("net.infonode.gui.laf.InfoNodeLookAndFeel");
+			UIManager.setLookAndFeel("com.birosoft.liquid.LiquidLookAndFeel");
 		}
-
+		catch (Exception e)
+		{
+		}
+		
+		createInstance(args);
 	}
 
 	public static File getProjectDirectoryFromUser() {
@@ -151,16 +153,6 @@ public class PrestGuiApp extends SingleFrameApplication implements ExitListener 
 		return dir;
 	}
 
-	// SciDesktop Modification TA_R001	--- added to ensure that proper termination occurs with user interaction (exit from the menu or closing the frame) 
-	public void terminate()
-	{
-		if (sdContext == null || sdContext.getMode() == ISDContext.MODE_OFFLINE)
-			end();
-		else
-			prestView.getFrame().dispose();
-		disposed = true;
-	}
-	
 	// SciDesktop Modification TA_R001	--- added to externally set the static SciDesktop context 
 	public static void setContext(ISDContext ctx)
 	{
@@ -176,17 +168,13 @@ public class PrestGuiApp extends SingleFrameApplication implements ExitListener 
 	// SciDesktop Modification TA_R001	--- added to externally get the active frame of instance 
 	public JFrame getFrameInstance()
 	{
-		return prestView != null ? prestView.getFrame() : null;
+		return prestView != null ? prestView : null;
+	}
+
+	public void viewDisposed()
+	{
+		appInstance = null;
+		disposed = true;
 	}
 	
-	// SciDesktop Modification TA_R001	--- exit listener methods start here 
-	public boolean canExit(EventObject arg0)
-	{
-		return false;
-	}
-
-	public void willExit(EventObject arg0)
-	{
-	}
-
 }
