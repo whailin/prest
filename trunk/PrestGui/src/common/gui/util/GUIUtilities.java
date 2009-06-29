@@ -4,8 +4,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
@@ -102,13 +104,24 @@ public class GUIUtilities
 		return count;
 	}
 	
-	public static ImageIcon getIcon(Class cls, String icnURL)
+	public static ImageIcon getIcon(Class cls, String imgFile)
 	{
+		Image image = null;			
 		try
 		{
-			URL url = cls.getResource(icnURL);
-			ImageIcon img = new ImageIcon(url);
-			return img;
+			InputStream stream = cls.getResourceAsStream(imgFile);
+			if (stream != null)
+			{
+				ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+				byte []buffer = new byte[4096];
+				int read;
+				while ((read = stream.read(buffer, 0, buffer.length)) > 0)
+					outStream.write(buffer, 0, read);
+				image = Toolkit.getDefaultToolkit().createImage(outStream.toByteArray());
+				stream.close();
+				
+				return new ImageIcon(image);
+			}
 		}
 		catch (Exception e)
 		{
@@ -135,10 +148,8 @@ public class GUIUtilities
 	{
 		try
 		{
-			String icnURL = resources.getString(key);
-			URL url = resources.getClass().getResource(root+"/"+icnURL);
-			ImageIcon img = new ImageIcon(url);
-			return img;
+			String icnFile = resources.getString(key);
+			return getIcon(resources.getClass(), root+"/"+icnFile);
 		}
 		catch (Exception e)
 		{
