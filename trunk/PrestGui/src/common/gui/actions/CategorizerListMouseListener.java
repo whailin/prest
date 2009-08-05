@@ -15,10 +15,8 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-/**
- *
- * @author Gürhan
- */
+
+
 public class CategorizerListMouseListener extends MouseAdapter {
         
     public CategorizerListMouseListener() {
