@@ -8,4 +8,5 @@ package prestgui;
 public interface IPrestViewListener
 {
 	public void viewDisposed();
+	
 }
