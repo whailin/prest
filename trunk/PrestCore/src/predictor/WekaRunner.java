@@ -8,7 +8,7 @@ import weka.classifiers.trees.j48.*;
 import weka.core.Instances;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import weka.classifiers.Evaluation;
+import weka.classifiers.evaluation.*;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.*;
 
@@ -59,9 +59,17 @@ public class WekaRunner {
 			
 			Date now = new Date();
 		    DateFormat df = DateFormat.getDateTimeInstance();
-		    
 		    //show output on screen
-			output = "Experiment Results\n" +  df.format(now) + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString();
+			output = "Experiment Results\n" +  df.format(now) + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString() + "\n\n";
+			
+			// output the ID, actual value and predicted value for each instance
+			for (int i = 0; i < testData.numInstances(); i++) {
+				   double pred = cls.classifyInstance(testData.instance(i));
+				   output += ("ID: " + testData.instance(i).value(0));
+				   output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
+				   output += (", predicted: " + testData.classAttribute().value((int) pred)+ "\n");
+			}
+			
 
 		} catch (Exception e) {
 			//should be extended to handle other exceptions
