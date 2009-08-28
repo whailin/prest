@@ -154,6 +154,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 	
 	private static final int WA_CRSVALD     = 1;
 	private static final int WA_NORMALIZE   = 2;
+	private static final int WA_LOGFILTER 	= 3;
 	
 	private IPrestViewListener viewListener;
 	
@@ -199,6 +200,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
     private javax.swing.ButtonGroup btngVmOperand2;
     private javax.swing.JButton cancelVirtualMetricButton;
     private javax.swing.JCheckBox chkboxCrossValidate;
+    private javax.swing.JCheckBox chkboxLogFilter;
     private javax.swing.JPanel classMetricsDataSetPanel;
     private javax.swing.JTabbedPane classMetricsTabbedPane;
     private javax.swing.JPanel classMetricsThresholdPanel;
@@ -328,11 +330,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 	private String wekaAlgorithmType = "Naive Bayes";
 	private String wekaCrossValidate = "false";
 	private String wekaPreProcess = "false";
-//	private final Timer messageTimer;
-//	private final Timer busyIconTimer;
-//	private final Icon idleIcon;
-//	private final Icon[] busyIcons = new Icon[15];
-//	private int busyIconIndex = 0;
+	private String wekaLogFilter = "false";
 	private JDialog aboutBox;
 	// </editor-fold>
 	
@@ -357,66 +355,6 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 		initExecutor();
 		initMenu();
 		initComponents();
-
-		// status bar initialization - message timeout, idle icon and busy
-		// animation, etc
-//		int messageTimeout = GUIUtilities.getResourceInt(resources, "StatusBar.messageTimeout", 0);
-//		messageTimer = new Timer(messageTimeout, new ActionListener() {
-//
-//			public void actionPerformed(ActionEvent e) {
-//				//statusMessageLabel.setText("");
-//			}
-//		});
-//		messageTimer.setRepeats(false);
-//		int busyAnimationRate = GUIUtilities.getResourceInt(resources, "StatusBar.busyAnimationRate", 0);
-//		for (int i = 0; i < busyIcons.length; i++) {
-//			busyIcons[i] = GUIUtilities.getIcon(resources, "StatusBar.busyIcons[" + i + "]", "/prestgui/resources/");
-//		}
-//		busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
-//
-//			public void actionPerformed(ActionEvent e) {
-//				busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
-//				//statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
-//			}
-//		});
-//		idleIcon = GUIUtilities.getIcon(resources, "StatusBar.idleIcon", "/prestgui/resources/");
-		//statusAnimationLabel.setIcon(idleIcon);
-		//progressBar.setVisible(false);
-
-		// connecting action tasks to status bar via TaskMonitor
-//		TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
-//		taskMonitor
-//				.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-//
-//					public void propertyChange(
-//							java.beans.PropertyChangeEvent evt) {
-//						String propertyName = evt.getPropertyName();
-//						if ("started".equals(propertyName)) {
-//							if (!busyIconTimer.isRunning()) {
-//								//statusAnimationLabel.setIcon(busyIcons[0]);
-//								busyIconIndex = 0;
-//								busyIconTimer.start();
-//							}
-//						//	progressBar.setVisible(true);
-//						//	progressBar.setIndeterminate(true);
-//						} else if ("done".equals(propertyName)) {
-//							busyIconTimer.stop();
-//						//	statusAnimationLabel.setIcon(idleIcon);
-//						//	progressBar.setVisible(false);
-//						//	progressBar.setValue(0);
-//						} else if ("message".equals(propertyName)) {
-//							String text = (String) (evt.getNewValue());
-//						//	statusMessageLabel.setText((text == null) ? ""
-//						//			: text);
-//							messageTimer.restart();
-//						} else if ("progress".equals(propertyName)) {
-//							int value = (Integer) (evt.getNewValue());
-//						//	progressBar.setVisible(true);
-//						//	progressBar.setIndeterminate(false);
-//						//	progressBar.setValue(value);
-//						}
-//					}
-//				});
 
 		setStaticComponents();
 		
@@ -480,21 +418,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 		Dimension size = null;
 		if (customPos != null)
 			position = customPos;
-		else {
-//				Object[] props = SDUtilities.getWindowProperties(WINDOWID);
-//				if (props != null)
-//				{
-//					Rectangle wr = SDUtilities.getWindowRectangle(props);
-//					if (wr != null)
-//					{
-//						position = wr.getLocation();
-//						int w = Math.max(wr.width, getWidth());
-//						int h = Math.max(wr.height, getHeight());
-//						setSize(w, h);
-//					}
-//				}
-		}
-	
+			
 		if (size == null)
 			size = new Dimension(VIEWWIDTH, VIEWHEIGHT);
 		setSize(size);
@@ -583,27 +507,11 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
         testOptionsButtonGroup = new javax.swing.ButtonGroup();
         btngRiskLevel = new javax.swing.ButtonGroup();
         btngLanguageGroup = new javax.swing.ButtonGroup();
-
-//        dataSplitPanel.setPreferredSize(new java.awt.Dimension(90, 80));
         
         mainPanel.add(analysisResultsPanel);
         predictionPanel.setVisible(false);
         mainPanel.add(predictionPanel);
         mainPanel.validate();
-        
-//        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
-//        mainPanel.setLayout(mainPanelLayout);
-//        mainPanelLayout.setHorizontalGroup(
-//            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addComponent(dataSplitPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 1117, javax.swing.GroupLayout.PREFERRED_SIZE)
-//        );
-//        mainPanelLayout.setVerticalGroup(
-//            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(mainPanelLayout.createSequentialGroup()
-//                .addContainerGap()
-//                .addComponent(dataSplitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
-//                .addContainerGap())
-//        );
         
         getContentPane().add(mainPanel);
         
@@ -637,30 +545,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 		packageExplorer.traverseRepository();
         
         dataSplitPanel.setRightComponent(createProjectPanel());
-        
-//        tabPaneAnalysisResults = new javax.swing.JTabbedPane();
-//        tabPaneAnalysisResults.setName("tabPaneAnalysisResults"); // NOI18N
-//        tabPaneAnalysisResults.addTab(resources.getString("resultsDataPanel.TabConstraints.tabTitle"), createDataTab()); // NOI18N
-//        tabPaneAnalysisResults.addTab(resources.getString("predictionPanel.TabConstraints.tabTitle"), createPredictionTab()); // NOI18N
-        
         analysisResultsPanel.add(dataSplitPanel, BorderLayout.CENTER);
-  
-        
-//        javax.swing.GroupLayout analysisResultsPanelLayout = new javax.swing.GroupLayout(analysisResultsPanel);
-//        
-//        analysisResultsPanelLayout.setHorizontalGroup(
-//            analysisResultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(analysisResultsPanelLayout.createSequentialGroup()
-//                .addContainerGap()
-//                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 945, Short.MAX_VALUE)
-//                .addContainerGap())
-//        );
-//        analysisResultsPanelLayout.setVerticalGroup(
-//            analysisResultsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, analysisResultsPanelLayout.createSequentialGroup()
-//                .addContainerGap()
-//                .addComponent(tabPaneAnalysisResults, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
-//        );
 	}
 
 	private Component createAnalysisToolbar()
@@ -735,31 +620,17 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 		projectInfoDisplay.setEditable(false);
 		projectInfoDisplay.setBorder(new LineBorder(Color.BLACK, 2));
 		projectInfoDisplay.setMinimumSize(new Dimension(10, 10));
-		
+				
 		header.add(projectInfoDisplay, BorderLayout.CENTER);
 		
 		projectPanel.add(header, BorderLayout.NORTH);
-        
-		
+        		
 		metricsPanels = new JTabbedPane[4];
         
 		resultsDataPanel = new javax.swing.JPanel();
         resultsDataPanel.setName("resultsDataPanel"); // NOI18N
         resultsDataPanel.setLayout(new BoxLayout(resultsDataPanel, BoxLayout.Y_AXIS));
-        
-//        pnlDataCardLayout = new javax.swing.JPanel();
-//        pnlDataCardLayout.setName("pnlDataCardLayout"); // NOI18N
-//        pnlDataCardLayout.setLayout(new java.awt.CardLayout());
-        
-//        pnlParseResultsAnalyze = new javax.swing.JPanel();
-//        pnlParseResultsAnalyze.setName("pnlParseResultsAnalyze"); // NOI18N
-//
-//        metricsCardLayoutPanel = new javax.swing.JPanel();
-//        metricsCardLayoutPanel.setName("metricsCardLayoutPanel"); // NOI18N
-//        metricsCardLayoutPanel.setLayout(new java.awt.CardLayout());
-//        CardLayout cards = (CardLayout)metricsCardLayoutPanel.getLayout();
-//        cards.show(metricsCardLayoutPanel, "card3");
-        
+                
         packageMetricsTabbedPane = new javax.swing.JTabbedPane();
         packageMetricsTabbedPane.setMinimumSize(new Dimension(30, 25));
         packageMetricsTabbedPane.setName("packageMetricsTabbedPane"); // NOI18N
@@ -905,191 +776,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
         methodMetricsTabbedPane.setSelectedIndex(0);
         methodMetricsTabbedPane.setVisible(false);
         metricsPanels[MP_METHOD] = methodMetricsTabbedPane;
-        
-//        metricsCardLayoutPanel.add(methodMetricsTabbedPane, "card4");
         resultsDataPanel.add(methodMetricsTabbedPane);
-        
-//        cmbMetricGroups = new javax.swing.JComboBox();
-//        cmbMetricGroups.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Package Metrics", "File Metrics", "Class Metrics", "Method Metrics" }));
-//        cmbMetricGroups.setName("cmbMetricGroups"); // NOI18N
-//        cmbMetricGroups.addItemListener(new java.awt.event.ItemListener() {
-//            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-//                cmbMetricGroupsItemStateChanged(evt);
-//            }
-//        });
-//
-//        pnlLanguageRadioPanel = new javax.swing.JPanel();
-//        pnlLanguageRadioPanel.setAlignmentY(0.0F);
-//        pnlLanguageRadioPanel.setName("pnlLanguageRadioPanel"); // NOI18N
-//
-//        javax.swing.GroupLayout pnlLanguageRadioPanelLayout = new javax.swing.GroupLayout(pnlLanguageRadioPanel);
-//        pnlLanguageRadioPanel.setLayout(pnlLanguageRadioPanelLayout);
-//        pnlLanguageRadioPanelLayout.setHorizontalGroup(
-//            pnlLanguageRadioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGap(0, 681, Short.MAX_VALUE)
-//        );
-//        pnlLanguageRadioPanelLayout.setVerticalGroup(
-//            pnlLanguageRadioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGap(0, 20, Short.MAX_VALUE)
-//        );
-//
-//        javax.swing.GroupLayout pnlParseResultsAnalyzeLayout = new javax.swing.GroupLayout(pnlParseResultsAnalyze);
-//        pnlParseResultsAnalyze.setLayout(pnlParseResultsAnalyzeLayout);
-//        pnlParseResultsAnalyzeLayout.setHorizontalGroup(
-//            pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
-//                .addContainerGap()
-//                .addGroup(pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//                    .addComponent(metricsCardLayoutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
-//                    .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
-//                        .addComponent(cmbMetricGroups, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-//                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-//                        .addComponent(pnlLanguageRadioPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-//                .addContainerGap())
-//        );
-//        pnlParseResultsAnalyzeLayout.setVerticalGroup(
-//            pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(pnlParseResultsAnalyzeLayout.createSequentialGroup()
-//                .addContainerGap()
-//                .addGroup(pnlParseResultsAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-//                    .addComponent(cmbMetricGroups, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-//                    .addComponent(pnlLanguageRadioPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-//                .addComponent(metricsCardLayoutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
-//        );
-//        
-//        pnlDataCardLayout.add(pnlParseResultsAnalyze, "card4");
-//
-//        pnlDataFileAnalyze = new javax.swing.JPanel();
-//        pnlDataFileAnalyze.setName("pnlDataFileAnalyze"); // NOI18N
-//
-//        tabPaneDataFileAnalyze = new javax.swing.JTabbedPane();
-//        tabPaneDataFileAnalyze.setName("tabPaneDataFileAnalyze"); // NOI18N
-//
-//        pnlDataFile = new javax.swing.JPanel();
-//        pnlDataFile.setName("pnlDataFile"); // NOI18N
-//
-//        jLabel23 = new javax.swing.JLabel();
-//        jLabel23.setText(resources.getString("jLabel23.text")); // NOI18N
-//        jLabel23.setName("jLabel23"); // NOI18N
-//
-//        javax.swing.GroupLayout pnlDataFileLayout = new javax.swing.GroupLayout(pnlDataFile);
-//        pnlDataFile.setLayout(pnlDataFileLayout);
-//        pnlDataFileLayout.setHorizontalGroup(
-//            pnlDataFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(pnlDataFileLayout.createSequentialGroup()
-//                .addContainerGap()
-//                .addComponent(jLabel23)
-//                .addContainerGap(786, Short.MAX_VALUE))
-//        );
-//        pnlDataFileLayout.setVerticalGroup(
-//            pnlDataFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(pnlDataFileLayout.createSequentialGroup()
-//                .addContainerGap()
-//                .addComponent(jLabel23)
-//                .addContainerGap(302, Short.MAX_VALUE))
-//        );
-//
-//        tabPaneDataFileAnalyze.addTab(resources.getString("pnlDataFile.TabConstraints.tabTitle"), pnlDataFile); // NOI18N
-//
-//        javax.swing.GroupLayout pnlDataFileAnalyzeLayout = new javax.swing.GroupLayout(pnlDataFileAnalyze);
-//        pnlDataFileAnalyze.setLayout(pnlDataFileAnalyzeLayout);
-//        pnlDataFileAnalyzeLayout.setHorizontalGroup(
-//            pnlDataFileAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addComponent(tabPaneDataFileAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE)
-//        );
-//        pnlDataFileAnalyzeLayout.setVerticalGroup(
-//            pnlDataFileAnalyzeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addComponent(tabPaneDataFileAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
-//        );
-//
-//        pnlDataCardLayout.add(pnlDataFileAnalyze, "card3");
-//        
-//        javax.swing.JLabel imageLabel = new javax.swing.JLabel();
-//        imageLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-//        imageLabel.setIcon(GUIUtilities.getIcon(resources, "imageLabel.icon", "/prestgui/resources")); // NOI18N
-//        imageLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-//        imageLabel.setMaximumSize(new java.awt.Dimension(50, 50));
-//        imageLabel.setMinimumSize(new java.awt.Dimension(50, 50));
-//        imageLabel.setName("imageLabel"); // NOI18N
-//        imageLabel.setPreferredSize(new java.awt.Dimension(50, 50));
-//        
-//        
-//        pnlCategorizeButtons = new javax.swing.JPanel();
-//        pnlCategorizeButtons.setName("pnlCategorizeButtons"); // NOI18N
-//        
-//        btnLoadCategorizer = new javax.swing.JButton();
-//        btnLoadCategorizer.addActionListener(buttonExecutor);
-//        btnLoadCategorizer.setActionCommand("loadCategorizer"); // NOI18N
-//        btnLoadCategorizer.setText(resources.getString("btnLoadCategorizer.text")); // NOI18N
-//        btnLoadCategorizer.setName("btnLoadCategorizer"); // NOI18N
-//        btnLoadCategorizer.setVisible(false);
-//
-//        btnCategorize = new javax.swing.JButton();
-//        btnCategorize.addActionListener(buttonExecutor);
-//        btnCategorize.setActionCommand("categorize"); // NOI18N
-//        btnCategorize.setText(resources.getString("btnCategorize.text")); // NOI18N
-//        btnCategorize.setName("btnCategorize"); // NOI18N
-//        btnCategorize.setVisible(false);
-//
-//        btnStoreCategorizer = new javax.swing.JButton();
-//        btnStoreCategorizer.addActionListener(buttonExecutor);
-//        btnStoreCategorizer.setActionCommand("storeCategorizer"); // NOI18N
-//        btnStoreCategorizer.setText(resources.getString("btnStoreCategorizer.text")); // NOI18N
-//        btnStoreCategorizer.setName("btnStoreCategorizer"); // NOI18N
-//        btnStoreCategorizer.setVisible(false);
-//        
-//        javax.swing.GroupLayout pnlCategorizeButtonsLayout = new javax.swing.GroupLayout(pnlCategorizeButtons);
-//        pnlCategorizeButtons.setLayout(pnlCategorizeButtonsLayout);
-//        pnlCategorizeButtonsLayout.setHorizontalGroup(
-//            pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(pnlCategorizeButtonsLayout.createSequentialGroup()
-//                .addGap(17, 17, 17)
-//                .addComponent(btnLoadCategorizer)
-//                .addGap(28, 28, 28)
-//                .addComponent(btnCategorize)
-//                .addGap(29, 29, 29)
-//                .addComponent(btnStoreCategorizer)
-//                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-//        );
-//        pnlCategorizeButtonsLayout.setVerticalGroup(
-//            pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(pnlCategorizeButtonsLayout.createSequentialGroup()
-//                .addGroup(pnlCategorizeButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-//                    .addComponent(btnLoadCategorizer)
-//                    .addComponent(btnCategorize)
-//                    .addComponent(btnStoreCategorizer))
-//                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-//        );
-//        
-//        javax.swing.GroupLayout pnlDataTabLayout = new javax.swing.GroupLayout(resultsDataPanel);
-//        resultsDataPanel.setLayout(pnlDataTabLayout);
-//        pnlDataTabLayout.setHorizontalGroup(
-//            pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(pnlDataTabLayout.createSequentialGroup()
-//                .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//                    .addGroup(pnlDataTabLayout.createSequentialGroup()
-//                        .addContainerGap()
-//                        .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE))
-//                    .addGroup(pnlDataTabLayout.createSequentialGroup()
-//                        .addGap(128, 128, 128)
-//                        .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-//                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 351, Short.MAX_VALUE)
-//                        .addComponent(imageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-//                .addContainerGap())
-//        );
-//        pnlDataTabLayout.setVerticalGroup(
-//            pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(pnlDataTabLayout.createSequentialGroup()
-//                .addContainerGap()
-//                .addGroup(pnlDataTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-//                    .addComponent(pnlCategorizeButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-//                    .addComponent(imageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-//                .addGap(7, 7, 7)
-//                .addComponent(pnlDataCardLayout, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
-//                .addContainerGap())
-//        );
-		
         projectPanel.add(resultsDataPanel, BorderLayout.CENTER);
         
         return projectPanel;
@@ -1099,95 +786,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 	{
         predictionPanel = new javax.swing.JPanel();
         predictionPanel.setName("predictionPanel"); // NOI18N
-        predictionPanel.setLayout(new BorderLayout());
-
-//        jPanel2 = new javax.swing.JPanel();
-//        jPanel2.setName("jPanel2"); // NOI18N
-//
-//        jLabel1 = new javax.swing.JLabel();
-//        jLabel1.setText(resources.getString("jLabel1.text")); // NOI18N
-//        jLabel1.setName("jLabel1"); // NOI18N
-//        btnLoadTraining = new javax.swing.JButton();
-//        btnLoadTraining.addActionListener(buttonExecutor);
-//        btnLoadTraining.setActionCommand("openTrainingFile"); // NOI18N
-//        btnLoadTraining.setText(resources.getString("btnLoadTraining.text")); // NOI18N
-//        btnLoadTraining.setName("btnLoadTraining"); // NOI18N
-//        btnLoadTest = new javax.swing.JButton();
-//        btnLoadTest.addActionListener(buttonExecutor);
-//        btnLoadTest.setActionCommand("openTestFile"); // NOI18N
-//        btnLoadTest.setName("btnLoadTest"); // NOI18N
-//        btnLoadTest.setText(resources.getString("btnLoadTest.text"));
-//        btnStartWeka = new javax.swing.JButton();
-//        btnStartWeka.addActionListener(buttonExecutor);
-//        btnStartWeka.setActionCommand("startWeka"); // NOI18N
-//        btnStartWeka.setText(resources.getString("btnStartWeka.text")); // NOI18N
-//        btnStartWeka.setName("btnStartWeka"); // NOI18N
-//        jComboBoxChooseAlgorithm = new javax.swing.JComboBox();
-//        jComboBoxChooseAlgorithm.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Naive Bayes", "J48" }));
-//        jComboBoxChooseAlgorithm.setName("jComboBoxChooseAlgorithm"); // NOI18N
-//        jComboBoxChooseAlgorithm.addItemListener(new java.awt.event.ItemListener() {
-//          public void itemStateChanged(java.awt.event.ItemEvent evt) {
-//              jComboBoxChooseAlgorithmItemStateChanged(evt);
-//          }
-//        });
-//        chkboxCrossValidate = new javax.swing.JCheckBox();
-//        chkboxCrossValidate.addActionListener(buttonExecutor);
-//        chkboxCrossValidate.setActionCommand("crossValidateAction"); // NOI18N
-//        chkboxCrossValidate.setName("chkboxCrossValidate"); // NOI18N
-//        chkboxCrossValidate.setText(resources.getString("crossValidateAction.text")); // NOI18N
-//        jCheckBoxNormalize = new javax.swing.JCheckBox();
-//        jCheckBoxNormalize.setText(resources.getString("jCheckBoxNormalize.text")); // NOI18N
-//        jCheckBoxNormalize.setName("jCheckBoxNormalize"); // NOI18N
-//        
-//        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-//        jPanel2.setLayout(jPanel2Layout);
-//        jPanel2Layout.setHorizontalGroup(
-//            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(jPanel2Layout.createSequentialGroup()
-//                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//                    .addGroup(jPanel2Layout.createSequentialGroup()
-//                        .addContainerGap()
-//                        .addComponent(chkboxCrossValidate))
-//                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-//                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-//                            .addContainerGap()
-//                            .addComponent(btnLoadTest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-//                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-//                            .addGap(10, 10, 10)
-//                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-//                                .addComponent(btnLoadTraining, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-//                                .addComponent(btnStartWeka, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-//                    .addGroup(jPanel2Layout.createSequentialGroup()
-//                        .addContainerGap()
-//                        .addComponent(jCheckBoxNormalize, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
-//                    .addGroup(jPanel2Layout.createSequentialGroup()
-//                        .addContainerGap()
-//                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
-//                    .addGroup(jPanel2Layout.createSequentialGroup()
-//                        .addContainerGap()
-//                        .addComponent(jComboBoxChooseAlgorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-//                .addContainerGap(8, Short.MAX_VALUE))
-//        );
-//        jPanel2Layout.setVerticalGroup(
-//            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(jPanel2Layout.createSequentialGroup()
-//                .addContainerGap()
-//                .addComponent(btnLoadTraining)
-//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-//                .addComponent(btnLoadTest)
-//                .addGap(14, 14, 14)
-//                .addComponent(chkboxCrossValidate)
-//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-//                .addComponent(jCheckBoxNormalize)
-//                .addGap(75, 75, 75)
-//                .addComponent(jLabel1)
-//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-//                .addComponent(jComboBoxChooseAlgorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-//                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 130, Short.MAX_VALUE)
-//                .addComponent(btnStartWeka)
-//                .addContainerGap())
-//        );
-        
+        predictionPanel.setLayout(new BorderLayout());       
         jScrollPane4 = new javax.swing.JScrollPane();
         jScrollPane4.setName("jScrollPane4"); // NOI18N
         jTextArea1 = new javax.swing.JTextArea();
@@ -1216,44 +815,10 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 		
 		jPanel3.add(predictionTitleDisplay, BorderLayout.NORTH);
 		jPanel3.add(jScrollPane4, BorderLayout.CENTER);
-        
-//        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-//        jPanel3.setLayout(jPanel3Layout);
-//        jPanel3Layout.setHorizontalGroup(
-//            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-//                .addContainerGap(62, Short.MAX_VALUE)
-//                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 589, javax.swing.GroupLayout.PREFERRED_SIZE)
-//                .addGap(108, 108, 108))
-//        );
-//        jPanel3Layout.setVerticalGroup(
-//            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
-//        );
-        
-        
+       
         predictionPanel.add(createPredictionToolbar(), BorderLayout.NORTH);
-//        predictionPanel.add(jPanel2, BorderLayout.WEST);
         predictionPanel.add(jPanel3, BorderLayout.CENTER);
-        
-//        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(predictionPanel);
-//        predictionPanel.setLayout(jPanel1Layout);
-//        jPanel1Layout.setHorizontalGroup(
-//            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(jPanel1Layout.createSequentialGroup()
-//                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-//                .addGap(30, 30, 30)
-//                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-//                .addContainerGap())
-//        );
-//        jPanel1Layout.setVerticalGroup(
-//            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-//                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-//                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-//                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-//                .addContainerGap())
-//        );
+
 
 		return predictionPanel;
 	}
@@ -2150,7 +1715,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 		if (repositoryFile != null) {
 			ApplicationProperties.set("repositorylocation", repositoryFile
 					.getAbsolutePath());
-			ApplicationProperties.reCreatePropertiesFile();
+			ApplicationProperties.reCreatePropertiesFile(repositoryFile.getAbsolutePath().toString());
 			JOptionPane
 					.showMessageDialog(
 							analysisResultsPanel,
@@ -2549,6 +2114,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 
 	private DataSet activeDataSet() {
 		int selectedMetricType = metricsMenuButton.getActionIndex();
+		// TODO: RADIO BUTTON'DAN ALMA OLAYINI YAP
 		Language lang = Language.JAVA;// radioButtondan alinacak
 		return ParserExecutor.getDataSetByMetricGroup(selectedMetricType, lang,
 				Components.dataFileActive);
@@ -2601,21 +2167,6 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 				return null;
 		}
 	}
-
-	// @Action
-	// public void staticCategorizeButton() {
-	// try {
-	// StaticCategorizer staticCategorizer = new StaticCategorizer();
-	// //DataContext dataContext = staticCategorizer.store();
-	// //dataContext.
-	// staticCategorizer.loadDataSet(activeDataSet());
-	// staticCategorizer.buildCategorizer();
-	// packageExplorer.displayMetrics(activeDataSetPanel(), activeDataSet());
-	// } catch (Exception ex) {
-	// Logger.getLogger(PrestGuiView.class.getName()).log(Level.SEVERE, null,
-	// ex);
-	// }
-	// }
 
 	public File getCategorizerDirectoryFromUser() {
 		File currentDirectory = new File(ApplicationProperties
@@ -3390,7 +2941,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 					JOptionPane.INFORMATION_MESSAGE);
 		} else {
 			setWekaParameters(predictionToolbar.getMenuButtonSet(wekaAtrbsMenuButton));
-			output = WekaRunner.runWeka(trainingSetPath,testSetPath,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate);
+			output = WekaRunner.runWeka(trainingSetPath,testSetPath,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate,wekaLogFilter);
 			jTextArea1.append("\n" +output);
 		}
 	}
@@ -3494,11 +3045,21 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
     	else
     		wekaPreProcess = "false";
     }
+    
+    public void logFilterAction() {
+    	if(chkboxLogFilter.isSelected())
+    		wekaLogFilter = "true";
+    	else
+    		wekaLogFilter = "false";
+    }
 
     private void setWekaParameters(int[] parSet)
     {
+    	// set parameters to initial values
     	wekaPreProcess = "false";
     	wekaCrossValidate = "false";
+    	wekaLogFilter = "false";
+    	
     	if (parSet != null)
     		for (int i = 0; i < parSet.length; i++)
     			switch (parSet[i])
@@ -3509,6 +3070,8 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
     				case WA_NORMALIZE:
     					wekaPreProcess = "normalize";
     					break;
+    				case WA_LOGFILTER:
+    					wekaLogFilter = "true";
     			}
     }
     
@@ -3522,7 +3085,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 				handleAction(tag.intValue());
 		}
 	}
-
+	
 	private void handleAction(int id)
 	{
 		switch (id)
@@ -3532,6 +3095,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 				break;
 			case MI_PARSEPROJECT:
 				doParseProject();
+				updateProjectInfoDisplay();
 				break;
 			case MI_TABLETRANSFER:
 				doTableTransfer();
@@ -3561,6 +3125,18 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 				showAboutBox();
 				break;
 		}
+		
+	}
+	
+	public void updateProjectInfoDisplay()
+	{
+		String toDisplay = "";
+		String currProj = ApplicationProperties.get("CurrentProject");
+		if(currProj.compareTo("") == 0)
+			toDisplay = toDisplay + "Current Project: " + " No project has been parsed in this session yet!";
+		else
+			toDisplay = toDisplay + "Current Project: " + ApplicationProperties.get("CurrentProject");
+		projectInfoDisplay.setText(toDisplay);
 	}
 
 	public void windowActivated(WindowEvent arg0)

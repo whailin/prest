@@ -15,9 +15,9 @@ import weka.filters.*;
 public class WekaRunner {
 
 	public static String runWeka(String trainPath, String testPath,
-			String algorithm, String preProcess, String CrossValidate) {
+			String algorithm, String preProcess, String CrossValidate, String logFilter) {
 		String output = "";
-		try {
+		try { 
 			//first load training set 
 			Instances trainData = new Instances(new BufferedReader(
 					new FileReader(trainPath)));
@@ -27,12 +27,21 @@ public class WekaRunner {
 			//first load test set 
 			//note: if cross validation is to be done than it is not used.
 			Instances testData = new Instances(new BufferedReader(
-					new FileReader(trainPath)));
+					new FileReader(testPath)));
 			
 			//normalize data if option selected
 			if (preProcess == "Normalize") {
 				trainData = Filter.useFilter(trainData, new Normalize());
 				testData = Filter.useFilter(testData, new Normalize());
+			}
+			
+			//apply log filter to data if option selected
+			//TODO: Find the log filter option from weka api and replace it with 
+			if (logFilter == "true") {
+				System.out.println("UNCOMPLETED CODE SNIPPLET!");
+//				trainData = Filter.useFilter(trainData, new Normalize());
+//				
+//				testData = Filter.useFilter(testData, new Normalize());
 			}
 
 			// setting class attribute

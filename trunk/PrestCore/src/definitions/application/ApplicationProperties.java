@@ -10,10 +10,6 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Properties;
 
-/**
- * 
- * @author Gürhan
- */
 public class ApplicationProperties {
 
     private static final String propertiesFileName = "application.properties";
@@ -108,8 +104,9 @@ public class ApplicationProperties {
             //FileWriter always assumes default encoding is OK!
             output = new BufferedWriter(
                     new FileWriter(
-                    new File(propFilePath != null ? propFilePath : propertiesFileName)));
+                    new File(propFilePath != null ? fullPath + "\\\\\\\\" + propFilePath : (fullPath + "\\\\\\\\" + propertiesFileName))));
             output.write("repositorylocation = " + fullPath);
+            output.write("\nCurrentProject = ");
         } catch (Exception ex) {
             Logger.error(ApplicationProperties.class.getName() + 
                     " set repository location " + ex.getMessage());
@@ -124,10 +121,10 @@ public class ApplicationProperties {
         }
     }
 
-	public static void reCreatePropertiesFile() {
+	public static void reCreatePropertiesFile(String workspaceLocation) {
 		
         try {
-            OutputStream os = new java.io.FileOutputStream(propertiesFileName);
+            OutputStream os = new java.io.FileOutputStream(workspaceLocation + "\\\\" + propertiesFileName);
             
             prop.store(os, "");
 

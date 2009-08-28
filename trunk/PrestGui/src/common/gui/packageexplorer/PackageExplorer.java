@@ -363,6 +363,7 @@ public class PackageExplorer {
 						JOptionPane.INFORMATION_MESSAGE);
 				lastParsedProjectPath = projectDirectory.getAbsolutePath();
 				displayAllMetrics();
+				ApplicationProperties.set("CurrentProject", projectDirectory.getName());
 			} else {
 				JOptionPane.showMessageDialog(null,
 						"There was an error while parsing the project.",
@@ -596,10 +597,10 @@ public class PackageExplorer {
 							popup.show(e.getComponent(), e.getX(), e.getY());
 						} else if (selectedNode.isIsProjectNode()) {
 							JPopupMenu popup = new JPopupMenu();
-							JMenuItem menuItem1 = new JMenuItem("Parse");
-							menuItem1
-									.addActionListener(new ParseProjectAdapter());
-							popup.add(menuItem1);
+//							JMenuItem menuItem1 = new JMenuItem("Parse");
+//							menuItem1
+//									.addActionListener(new ParseProjectAdapter());
+//							popup.add(menuItem1);
 							JMenuItem menuItem2 = new JMenuItem(
 									"Transfer Results To Table");
 							menuItem2
@@ -751,13 +752,13 @@ public class PackageExplorer {
 		return dir.delete();
 	}
 	
-	public class ParseProjectAdapter implements ActionListener {
-
-		public void actionPerformed(ActionEvent e) {
-			parseProject();
-		}
-
-	}
+//	public class ParseProjectAdapter implements ActionListener {
+//
+//		public void actionPerformed(ActionEvent e) {
+//			parseProject();
+//		}
+//
+//	}
 
 	public void parseProject()
 	{

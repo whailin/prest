@@ -55,10 +55,13 @@ public class PrestGuiApp implements IPrestViewListener
 					"Create Repository", JOptionPane.INFORMATION_MESSAGE);
 			File repositoryFile = getProjectDirectoryFromUser();
 			if (repositoryFile != null) {
+				//TODO: HERE TAKE THE PROB PATH FROM THE USER!
 				ApplicationProperties.setRepositoryLocation(propPath, repositoryFile.getAbsolutePath().replace("\\", "\\\\"));
 				ApplicationProperties.initiate();
 			}
 		}
+		
+		
 		
 		// if command line option is chosen, change working style to command line
 		if(fromCommandLine)
@@ -70,6 +73,7 @@ public class PrestGuiApp implements IPrestViewListener
 		else {
 				prestView = new PrestGuiView(sdContext); 
 				prestView.setViewListener(this);
+				prestView.updateProjectInfoDisplay();
 		}
 	}
 
