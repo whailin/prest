@@ -102,9 +102,14 @@ public class ApplicationProperties {
         Writer output = null;
         try {
             //FileWriter always assumes default encoding is OK!
-            output = new BufferedWriter(
+//            output = new BufferedWriter(
+//                    new FileWriter(
+//                    new File(propFilePath != null ? fullPath + "\\\\\\\\" + propFilePath : (fullPath + "\\\\\\\\" + propertiesFileName))));
+        	
+        	output = new BufferedWriter(
                     new FileWriter(
-                    new File(propFilePath != null ? fullPath + "\\\\\\\\" + propFilePath : (fullPath + "\\\\\\\\" + propertiesFileName))));
+                    new File(propFilePath != null ? propFilePath : (propertiesFileName))));
+        	
             output.write("repositorylocation = " + fullPath);
             output.write("\nCurrentProject = ");
         } catch (Exception ex) {

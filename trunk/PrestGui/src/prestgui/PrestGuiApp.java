@@ -62,7 +62,7 @@ public class PrestGuiApp implements IPrestViewListener
 		}
 		
 		
-		
+		System.out.println("trial trial trial\n");
 		// if command line option is chosen, change working style to command line
 		if(fromCommandLine)
 		{
