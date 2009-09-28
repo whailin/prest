@@ -15,6 +15,7 @@ import parser.C.CParser;
 import parser.Cpp.cppParser.CPPParserExecutor;
 import parser.Java.JavaParserRelatedFiles.JavaParser;
 import parser.Jsp.JspToJavaConvertor;
+import parser.PLSql.PLSqlParserRelatedFiles.PLSqlParserExecuter;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;
 import parser.parserinterface.ParserInterfaceAndFileList;
@@ -173,6 +174,8 @@ public class ParserExecutor {
 			return new CPPParserExecutor();
 		} else if (lang.equals(Language.JSP)) {
 			return new JavaParser(System.in);
+		} else if (lang.equals(Language.PLSQL)) {
+			return new PLSqlParserExecuter();
 		} else {
 			return null;
 		}
