@@ -505,14 +505,6 @@ public class PackageExplorer {
 				TableColumn column = null;
 				column = table.getColumnModel().getColumn(0);
 				int maxSize = (((String) column.getHeaderValue()).length() * 7);
-				// for (int j = 0; j < table.getRowCount(); j++) {
-				// int cellSize = ((String.valueOf(table.getValueAt(j, 0)))
-				// .length() * 7);
-				// if (cellSize > maxSize) {
-				// maxSize = cellSize;
-				// }
-				// }
-				// column.setPreferredWidth(maxSize);
 
 				for (int i = 1; i < table.getColumnModel().getColumnCount(); i++) {
 					column = table.getColumnModel().getColumn(i);
@@ -558,7 +550,6 @@ public class PackageExplorer {
 		
 		Components.categorizerActive = true;
 		Components.analysisToolBar.checkControls();
-//		Components.btnLoadCategorizer.setVisible(true);
 		panel.repaint();
 	}
 

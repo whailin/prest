@@ -32,16 +32,10 @@ public class ThresholdTableMouseListener extends MouseAdapter {
 
             JPopupMenu popup = new JPopupMenu();
             JMenuItem deleteThresholdItem = new JMenuItem("Delete Threshold");
-            //JMenuItem editThresholdItem = new JMenuItem("Edit Threshold");
-            //JMenuItem newThresholdItem = new JMenuItem("Add Threshold");
             
             deleteThresholdItem.addActionListener(new ThresholdDeleteActionAdapter(row,table));
-            //editThresholdItem.addActionListener(new ThresholdEditActionAdapter(row,table));
-            //newThresholdItem.addActionListener(new ThresholdAddActionAdapter(row,table));
             
             popup.add(deleteThresholdItem);
-            //popup.add(editThresholdItem);
-            //popup.add(newThresholdItem);
 
             popup.show(e.getComponent(), e.getX(), e.getY());
         }

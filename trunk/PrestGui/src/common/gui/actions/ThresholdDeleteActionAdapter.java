@@ -44,8 +44,8 @@ public class ThresholdDeleteActionAdapter implements ActionListener {
 			
 			int selectedMetricType = Components.getSelectedMetricGroupIndex();
 			// TODO
-			//Language lang = Language.JAVA;//radioButtondan alinacak
-			//activeDataSet = ParserExecutor.getDataSetByMetricGroup(selectedMetricType, lang);
+			Language lang = Language.JAVA;//radioButtondan alinacak
+//			activeDataSet = ParserExecutor.getDataSetByMetricGroup(selectedMetricType, lang);
 			activeDataSet = ParserExecutor.getDataSetByMetricGroup(selectedMetricType, ParserExecutor.getCurrentLanguage(),Components.dataFileActive);
 			
 			DataHeader dataHeader = activeDataSet.getDataHeader(thresholdDetails.getThresholdDataHeader());

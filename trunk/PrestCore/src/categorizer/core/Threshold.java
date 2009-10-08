@@ -154,9 +154,14 @@ public class Threshold implements ContextBuilder{
 		{
 			DataField dataField = dataItem.getDataFields()[i];
 			
-			if(dataField.getDataHeader().getLabel().equalsIgnoreCase(dataHeader.getLabel()))
-			{
-				value = dataField.getValue();
+			try {
+				if(dataField.getDataHeader().getLabel().equalsIgnoreCase(dataHeader.getLabel()))
+				{
+					value = dataField.getValue();
+					break;
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 			
 		}

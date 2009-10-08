@@ -287,12 +287,12 @@ public class ParseDataSets {
 						dummy[k] = new DataField();
 						dummy[k].setValue("");
 					}
-					DataItem realEnd = new DataItem();
-					realEnd.setItemName("--END OF METHODS--");
-					realEnd.setDataFields(dummy);
-					realEnd.setDataHeaders(dataHeaderList
-							.toArray(new DataHeader[0]));
-					dataItemList.add(realEnd);
+//					DataItem realEnd = new DataItem();
+//					realEnd.setItemName("--END OF METHODS--");
+//					realEnd.setDataFields(dummy);
+//					realEnd.setDataHeaders(dataHeaderList
+//							.toArray(new DataHeader[0]));
+//					dataItemList.add(realEnd);
 				} else if (mgIndex == end - 1) {// group end
 					DataField[] dummy = new DataField[dataFieldList
 							.toArray(new DataField[0]).length];

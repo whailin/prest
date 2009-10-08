@@ -2239,7 +2239,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 			Logger.getLogger(PrestGuiView.class.getName()).log(Level.SEVERE,
 					null, ex);
 		}
-		btnStoreCategorizer.setVisible(true);
+		//btnStoreCategorizer.setVisible(true);
 	}
 
 	public void storeCategorizer() {
@@ -2563,7 +2563,7 @@ public class PrestGuiView extends JFrame implements ActionListener, WindowListen
 
 		if (btnThresholdWizardNext.getText().equals("Finish")) {
 			createNewThreshold(activeThresholdPanel(), activeDataSet());
-			btnCategorize.setVisible(true);
+			//btnCategorize.setVisible(true);
 			thresholdWizardDialog.dispose();
 		} else {
 			thresholdOperands = new Operand[2];

@@ -35,15 +35,6 @@ public class WekaRunner {
 				testData = Filter.useFilter(testData, new Normalize());
 			}
 			
-			//apply log filter to data if option selected
-			//TODO: Find the log filter option from weka api and replace it with 
-			if (logFilter == "true") {
-				System.out.println("UNCOMPLETED CODE SNIPPLET!");
-//				trainData = Filter.useFilter(trainData, new Normalize());
-//				
-//				testData = Filter.useFilter(testData, new Normalize());
-			}
-
 			// setting class attribute
 			testData.setClassIndex(testData.numAttributes() - 1);
 			Classifier cls = null;
