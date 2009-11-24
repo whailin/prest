@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/swing-layout-1.0.3.jar"/>
+	<classpathentry kind="src" path="PrestGui/src"/>
+	<classpathentry kind="src" path="PrestCore/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/antlr-2.7.5.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/ilf-gpl.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/jcommon-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/jericho-html-2.6.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/jfreechart-1.0.1.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/liquidlnf.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/log4j-1.2.11.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/MetricCollectorJavaParser.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/poi-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/poi-contrib-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/poi-scratchpad-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/SDToolDev.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/weka.jar"/>
+	<classpathentry kind="lib" path="/home/bora/repos/softlab/Prest/lib/xercesImpl.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
