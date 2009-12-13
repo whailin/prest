@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="PrestGui/src"/>
+	<classpathentry kind="src" path="PrestCore/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/antlr-2.7.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/ilf-gpl.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/jcommon-1.0.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/jericho-html-2.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/jfreechart-1.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/liquidlnf.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/log4j-1.2.11.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/MetricCollectorJavaParser.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/poi-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/poi-contrib-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/poi-scratchpad-3.0.2-FINAL-20080204.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/SDToolDev.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/swing-layout-1.0.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/weka.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ekrem/Documents/Workspaces/Eclipse Workspace/PrestTrunk/lib/DefectMatcher.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
