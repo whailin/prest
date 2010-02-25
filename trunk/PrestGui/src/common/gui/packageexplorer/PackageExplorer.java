@@ -44,7 +44,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import parser.enumeration.Language;
 import categorizer.core.DataSet;
-import com.turkcelltech.prest.defect.DefectMatcher;
+//import com.turkcelltech.prest.defect.DefectMatcher;
 import common.DirectoryListing;
 import common.ExcelOutput;
 import common.ExcelSheet;
@@ -387,11 +387,11 @@ public class PackageExplorer {
 			if (result == ParserExecutor.PARSING_SUCCESSFUL) {
 				System.out.println("Project parsed successfully.");
 				lastParsedProjectPath = projectDirectory.getAbsolutePath();
-				DefectMatcher.main(new String[] {projectDirectory.getName(), releaseLabel, ApplicationProperties
+/*				DefectMatcher.main(new String[] {projectDirectory.getName(), releaseLabel, ApplicationProperties
 						.get("repositorylocation")
 						+ "/"
 						+ projectDirectory.getName()
-						+ "/"+ "parse_results"});
+						+ "/"+ "parse_results"});*/
 								
 			} else {
 				System.out
