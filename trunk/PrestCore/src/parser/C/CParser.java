@@ -30,7 +30,6 @@ public class CParser implements IParser {
 
 	}
 
-	// added by ekrem
 	// the following linked list will keep all the modules
 	// in all the source files
 	public LinkedList<Module> allModules = new LinkedList<Module>();
@@ -69,8 +68,6 @@ public class CParser implements IParser {
 									CConstants.MODULE_METRICS_HEADER);
 					currentFileDataContext.add(className + "/" + m.getName(),
 							moduleMetrics);
-
-					// added by ekrem
 					// this module is a function module
 					// so add it to allModules
 					allModules.add(m);
@@ -78,7 +75,6 @@ public class CParser implements IParser {
 			}
 		}
 
-		// added by ekrem
 		// the following function will make a csv file
 		// which will contain the function call matrix
 		buildFunctionCallMatrix(CALLGRAPHFILE);
@@ -110,14 +106,12 @@ public class CParser implements IParser {
 
 		// assign * to 0*0 position of the 2D array
 		functionCallMatrix[0][0] = "*";
-		// copy the names of the modues to the edges of the 2D array
+		// copy the names of the modules to the edges of the 2D array
 		for (int i = 1; i <= dimension; i++) {
 			functionCallMatrix[i][0] = allModulesItr.next().getName();
 			functionCallMatrix[0][i] = functionCallMatrix[i][0];
 		}
 
-		// FUNCT�ON CALL MATRIXI TARAYIPO 0 VE 1 LE DOLDURCAM
-		// SONRA DA ONU DOSYAYA YAZCAM
 		Iterator<Module> allModulesItr2 = allModules.iterator();
 
 		for (int i = 1; i <= dimension; i++) {

@@ -12,6 +12,7 @@ import java.util.Properties;
 
 public class ApplicationProperties {
 
+	static final String lineSeparator = System.getProperty ( "line.separator" );
     private static final String propertiesFileName = "application.properties";
     private static Properties prop;
     public static String environment = null;
@@ -106,7 +107,7 @@ public class ApplicationProperties {
                     new File(propFilePath != null ? propFilePath : (propertiesFileName))));
         	
             output.write("repositorylocation = " + fullPath);
-            output.write("\nCurrentProject = ");
+            output.write(lineSeparator +"CurrentProject = ");
         } catch (Exception ex) {
             Logger.error(ApplicationProperties.class.getName() + 
                     " set repository location " + ex.getMessage());

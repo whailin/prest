@@ -60,14 +60,13 @@ public class WekaRunner {
 			Date now = new Date();
 		    DateFormat df = DateFormat.getDateTimeInstance();
 		    //show output on screen
-			output = "Experiment Results\n" +  df.format(now) + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString() + "\n\n";
-			
+			//output = "Experiment Results\n" +  df.format(now) + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString() + "\n\n";
+			//output = "fileName,actual,prediction \n";
 			// output the ID, actual value and predicted value for each instance
 			for (int i = 0; i < testData.numInstances(); i++) {
 				   double pred = cls.classifyInstance(testData.instance(i));
-				   output += ("ID: " + testData.instance(i).value(0));
-				   output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
-				   output += (", predicted: " + testData.classAttribute().value((int) pred)+ "\n");
+				   output += (testData.instance(i).stringValue(0));
+				   output += ("," + testData.classAttribute().value((int) pred)+ "\n");
 			}
 			
 

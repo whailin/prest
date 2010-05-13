@@ -28,6 +28,28 @@ public class CsvToArff {
 
     }
 
+    public int csvToArffCommand(String csvFilePath) {
+    	try {
+    	    CSVLoader loader = new CSVLoader();
+    	    loader.setSource(new File(csvFilePath));
+    	    Instances data = loader.getDataSet();
+    	    String path = csvFilePath.substring(0, csvFilePath
+    				    .lastIndexOf(File.separator));
+    	    String fileName = csvFilePath.substring(csvFilePath.lastIndexOf(File.separator)+1);    	    
+    	    BufferedWriter writer = new BufferedWriter(new FileWriter(
+    		    path.substring(0,path.lastIndexOf(File.separator))
+    			    + File.separator +"arff_files" + File.separator
+    			    + fileName.substring(0, fileName
+    				    .lastIndexOf('.')) + ".arff"));
+    	    writer.write(data.toString());
+    	    writer.flush();
+    	    writer.close();
+
+    	} catch (Exception e) {
+    	    System.out.println(e.getMessage());
+    	}
+    	return 1;
+        }
     private int csvToArff(String csvFilePath, String csvFileName,
 	    String projectPath) {
 	try {
