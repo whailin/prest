@@ -1,9 +1,6 @@
 package executor;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +10,6 @@ import javax.swing.JOptionPane;
 import parser.C.CParser;
 import parser.Cpp.cppParser.CPPParserExecutor;
 import parser.Java.JavaParserRelatedFiles.JavaParser;
-import parser.Jsp.JspToJavaConvertor;
 //import parser.PLSql.PLSqlParserRelatedFiles.PLSqlParserExecuter;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;

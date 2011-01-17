@@ -21,7 +21,6 @@ import parser.parserinterface.IParser;
 
 import common.DataContext;
 
-import definitions.application.ApplicationProperties;
 
 /**
  * Grammar to parse Java version 1.5
