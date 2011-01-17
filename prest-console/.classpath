@@ -8,6 +8,6 @@
 	<classpathentry kind="lib" path="lib/MetricCollectorJavaParser.jar"/>
 	<classpathentry kind="lib" path="lib/poi-3.0.2-FINAL-20080204.jar"/>
 	<classpathentry kind="lib" path="lib/weka.jar"/>
-	<classpathentry kind="lib" path="/home/bora/repos/softlab/prest/lib/DefectMatcher.jar"/>
+	<classpathentry kind="lib" path="lib/DefectMatcher.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
