@@ -10,21 +10,12 @@ import java.util.List;
 
 public class SparseMatrix {
 
-	private int lastIndex = 0;
 
-	// bu listelerdeki elemanlar farklý farklý objeler degil.
-	// ayný objeye point eden pointerlar.
-	// bu yuzden fazla yer kaplamýyor.
 	private List<NameAndIdTreeNode> nameList = new ArrayList<NameAndIdTreeNode>();
-	// id'den name'e en hýzlý arrayde ulasýlýr (1 zamanda)
 
 	private NameAndIdTreeNode nameAndIdTreeRoot = null;
-	// name'den id'ye treeden (logN zamanda)
-
 	private HashMap<Integer, HashSet<Integer>> matchList = new HashMap<Integer, HashSet<Integer>>();
 
-	// call listesi name listesine göre cok daha kucuk. hashmap daha avantajlý
-	// (N/15 zamanda) (hatta bazen 1 zamanda)
 
 	public void addItem(String name, int myId) {
 		NameAndIdTreeNode newNode = new NameAndIdTreeNode();
@@ -39,8 +30,6 @@ public class SparseMatrix {
 		}
 		if (added) {
 			nameList.add(newNode);
-			// 0 1 2 3 sýrayla eklemeli
-			//lastIndex++;
 		}
 	}
 
@@ -63,8 +52,6 @@ public class SparseMatrix {
 	}
 
 	public void writeToFile(String fileName, ClassContainer conta) throws Exception { 
-		// class container is imported so as to get the id's of functions
-		// those id's are required while finding the callees of a caller function in function call graph
 		
 		String func_call_graph = fileName;
 		FileWriter func_call_graph_fstream = new FileWriter(func_call_graph);
