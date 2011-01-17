@@ -1,6 +1,5 @@
 package categorizer.core;
 
-import java.util.ArrayList;
 import java.util.Vector;
 
 import common.DataContext;

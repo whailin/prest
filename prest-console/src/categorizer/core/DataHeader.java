@@ -1,6 +1,5 @@
 package categorizer.core;
 
-import java.lang.reflect.Constructor;
 import java.util.Vector;
 
 import common.DataContext;

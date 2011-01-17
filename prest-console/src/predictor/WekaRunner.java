@@ -8,7 +8,6 @@ import weka.classifiers.trees.j48.*;
 import weka.core.Instances;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import weka.classifiers.evaluation.*;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.*;
 
@@ -73,7 +72,7 @@ public class WekaRunner {
 
 		} catch (Exception e) {
 			//should be extended to handle other exceptions
-			output = "error in parser, examine your datasets...";
+			output = "error in parsing, examine your datasets...";
 		}
 
 		return output;
