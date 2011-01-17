@@ -8,12 +8,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-
 import common.DataContext;
 import common.NodePair;
 
@@ -411,8 +405,7 @@ public class ClassContainer {
 	public void addMethodInfo(DataContext dataContext,
 			MethodMetrics methodMetricsToAdd, NodePair packageId,
 			NodePair fileId, NodePair classId, NodePair className,
-			ClassContainer container) {// TODO container wasn't used
-		int callee = -1;
+			ClassContainer container) {
 		if (methodMetricsToAdd.name.contains("implicitConstructor"))
 			return;
 
@@ -794,7 +787,7 @@ public class ClassContainer {
 			FileOutputStream fosC = new FileOutputStream(classCsvFileName);
 			FileOutputStream fosF = new FileOutputStream(fileCsvFileName);
 			FileOutputStream fosM = new FileOutputStream(methodCsvFileName);
-			
+
 			outP = new BufferedOutputStream(fosP);
 			outF = new BufferedOutputStream(fosF);
 			outC = new BufferedOutputStream(fosC);
@@ -986,9 +979,11 @@ public class ClassContainer {
 								methodCount++;
 								List<String> methodMetricList = getMethodMetrics(mm);
 
-								outM.write((fileName.substring((fileName
-										.lastIndexOf(File.separator) + 1)) + ",")
-										.getBytes());
+								outM
+										.write((fileName
+												.substring((fileName
+														.lastIndexOf(File.separator) + 1)) + ",")
+												.getBytes());
 								outM.write((fileMetricList.get(1) + ",")
 										.getBytes());
 								for (int z = 0; z < methodMetricList.size(); z++) {
