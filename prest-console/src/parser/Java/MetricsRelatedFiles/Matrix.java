@@ -25,48 +25,16 @@ public class Matrix {
 		}
 	}
 
-	private String padding(String r) {
-		String retval = "";
-
-		if (cellSize == 0)
-			cellSize = getCellSize();
-
-		for (int i = 0; i < (cellSize - r.length()) / 2; i++) {
-			retval += " ";
-		}
-		retval += r;
-		for (int i = retval.length(); i < cellSize; i++) {
-			retval += " ";
-		}
-		return retval;
-	}
-
-	private String padding(String r, String pad) {
-		String retval = "";
-
-		if (cellSize == 0)
-			cellSize = getCellSize();
-
-		for (int i = 0; i < (cellSize - r.length()) / 2; i++) {
-			retval += pad;
-		}
-		retval += r;
-		for (int i = retval.length(); i < cellSize; i++) {
-			retval += pad;
-		}
-		return retval;
-	}
-
 	@Override
 	public String toString() {
 
 		cellSize = getCellSize();
 		String outPut = "";
 		int identity = 0; // will be used to identify the functions that in
-							// function call graph
+		// function call graph
 
 		try {
-			String func_call_graph = "C:\\callGraphWithIds.csv";//TODO file name parametrik yap�la
+			String func_call_graph = "C:\\callGraphWithIds.csv";
 			FileWriter func_call_graph_fstream = new FileWriter(func_call_graph);
 			BufferedWriter func_call_graph_writer = new BufferedWriter(
 					func_call_graph_fstream);
@@ -205,4 +173,3 @@ public class Matrix {
 		}
 	}
 }
-
