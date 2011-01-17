@@ -8,19 +8,12 @@ import au.id.jericho.lib.html.StartTagType;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.List;
 
-
-import executor.ParserExecutor;
 
 public class JspToJavaConvertor {
 
 	private String script = "";
-	private String fileName;
 
 	public JspToJavaConvertor() {
 	}
