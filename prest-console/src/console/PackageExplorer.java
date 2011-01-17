@@ -22,8 +22,6 @@ import executor.ParserExecutor;
 import common.CsvToArff;
 import predictor.WekaRunner;
 
-import com.turkcelltech.prest.defect.model.*;
-
 public class PackageExplorer {
 
 	private HashMap<String, File> projectNamesHashMap = new HashMap<String, File>();
