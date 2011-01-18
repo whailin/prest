@@ -7,11 +7,18 @@ import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.trees.j48.*;
 import weka.core.Instances;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.*;
 
 public class WekaRunner {
+	
+	public static String findPredResultPath(String trainPath){
+		String cut = trainPath.substring(0,trainPath.lastIndexOf(File.separator) - 1);	
+		cut = cut.substring(0, cut.lastIndexOf(File.separator) - 1);	
+		return cut + File.separator + "prediction_results" + File.separator;
+	}
 
 	public static String runWeka(String trainPath, String testPath,
 			String algorithm, String preProcess, String CrossValidate, String logFilter) {
