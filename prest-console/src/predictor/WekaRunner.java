@@ -23,16 +23,18 @@ public class WekaRunner
 
 	private static String findPredResultPath(String trainPath)
 	{
-		String cut = trainPath.substring(0, trainPath.lastIndexOf(File.separator) - 1);
-		cut = cut.substring(0, cut.lastIndexOf(File.separator) - 1);
-		return cut + File.separator + "prediction_results" + File.separator;
+		String cut = trainPath.substring(0, trainPath.lastIndexOf(File.separator));
+		return cut + File.separator;
 	}
 
-	private static int writeToFile(String file, String data)
+	private static int writeToFile(String fileName, String nowStr, String data)
 	{
+		nowStr = nowStr.replaceAll(" ","-");
+		nowStr = nowStr.replaceAll(":",".");
 		try
 		{
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file + "results.log"));
+			System.out.println(fileName + "results" + nowStr + ".res");
+			BufferedWriter writer = new BufferedWriter(new FileWriter(fileName + "results-" + nowStr + ".res"));
 			writer.write(data);
 			writer.flush();
 			writer.close();
@@ -49,8 +51,13 @@ public class WekaRunner
 			String logFilter)
 	{
 		String output = "";
+		output += "train file: " + trainPath + "\n";
+		output += "test file: " + testPath + "\n";
 		try
 		{
+			Date now = new Date();
+			DateFormat df = DateFormat.getDateTimeInstance();
+			String nowStr =  df.format(now);
 			//first load training set 
 			Instances trainData = new Instances(new BufferedReader(new FileReader(trainPath)));
 			// setting class attribute
@@ -95,10 +102,8 @@ public class WekaRunner
 				eval.evaluateModel(cls, testData);
 			}
 
-			Date now = new Date();
-			DateFormat df = DateFormat.getDateTimeInstance();
 			//show output on screen
-			output = "Experiment Results\n" + df.format(now) + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString()
+			output += "Experiment Results\n"+ nowStr + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString()
 					+ "\n\n";
 
 			// output the ID, actual value and predicted value for each instance
@@ -109,7 +114,7 @@ public class WekaRunner
 				output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
 				output += (", predicted: " + testData.classAttribute().value((int) pred) + "\n");
 			}
-			writeToFile(findPredResultPath(trainPath), output);
+			writeToFile(findPredResultPath(trainPath), nowStr, output);
 
 		}
 		catch (Exception e)
