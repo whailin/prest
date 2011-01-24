@@ -169,6 +169,9 @@ public class PackageExplorer {
 		String wekaPreProcess = "none";
 		String wekaCrossValidate = "no";
 		String wekaLogFilter = "no";
-		return WekaRunner.runWeka(trainFile,testFile,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate,wekaLogFilter);
+		String retStr = "";
+		retStr = WekaRunner.runWeka(trainFile,testFile,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate,wekaLogFilter); 
+		
+		return retStr;
 	}
 }
