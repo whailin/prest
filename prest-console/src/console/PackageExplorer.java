@@ -171,7 +171,6 @@ public class PackageExplorer {
 		String wekaLogFilter = "no";
 		String retStr = "";
 		retStr = WekaRunner.runWeka(trainFile,testFile,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate,wekaLogFilter); 
-		
 		return retStr;
 	}
 }
