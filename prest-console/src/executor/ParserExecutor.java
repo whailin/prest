@@ -1,16 +1,28 @@
 package executor;
 
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
 
 import parser.C.CParser;
 import parser.Cpp.cppParser.CPPParserExecutor;
 import parser.Java.JavaParserRelatedFiles.JavaParser;
-//import parser.PLSql.PLSqlParserRelatedFiles.PLSqlParserExecuter;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;
 import parser.parserinterface.ParserInterfaceAndFileList;
@@ -18,18 +30,8 @@ import parser.parserinterface.ParserInterfaceAndFileList;
 import common.DataContext;
 import common.DirectoryListing;
 import common.ParseResult;
+
 import definitions.application.ApplicationProperties;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Calendar;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SpringLayout;
-import javax.swing.SwingConstants;
 
 public class ParserExecutor {
 
@@ -181,6 +183,12 @@ public class ParserExecutor {
 
 			DataContext metrics = null;
 			try {
+				Date now = new Date();
+				DateFormat df = DateFormat.getDateTimeInstance();
+				String nowStr =  df.format(now);
+				nowStr = nowStr.replaceAll(" ","-");
+				nowStr = nowStr.replaceAll(":",".");
+				
 				String xmlFileName = ApplicationProperties
 						.get("repositorylocation")
 						+ File.separator
@@ -190,7 +198,7 @@ public class ParserExecutor {
 						+ "_"
 						+ aParser.getLanguage().getLangName()
 						+ "_"
-						+ Calendar.getInstance().getTimeInMillis() + ".xml";
+						+ nowStr + ".xml";
 				String packageCsvFileName = ApplicationProperties
 						.get("repositorylocation")
 						+ File.separator
@@ -200,7 +208,7 @@ public class ParserExecutor {
 						+ "_"
 						+ aParser.getLanguage().getLangName()
 						+ "_"
-						+ Calendar.getInstance().getTimeInMillis()
+						+ nowStr
 						+ "PACKAGE.csv";
 				String fileCsvFileName = ApplicationProperties
 						.get("repositorylocation")
@@ -211,7 +219,7 @@ public class ParserExecutor {
 						+ "_"
 						+ aParser.getLanguage().getLangName()
 						+ "_"
-						+ Calendar.getInstance().getTimeInMillis() + "FILE.csv";
+						+ nowStr + "FILE.csv";
 				String classCsvFileName = ApplicationProperties
 						.get("repositorylocation")
 						+ File.separator
@@ -221,7 +229,7 @@ public class ParserExecutor {
 						+ "_"
 						+ aParser.getLanguage().getLangName()
 						+ "_"
-						+ Calendar.getInstance().getTimeInMillis()
+						+ nowStr
 						+ "CLASS.csv";
 				String methodCsvFileName = ApplicationProperties
 						.get("repositorylocation")
@@ -232,7 +240,7 @@ public class ParserExecutor {
 						+ "_"
 						+ aParser.getLanguage().getLangName()
 						+ "_"
-						+ Calendar.getInstance().getTimeInMillis()
+						+ nowStr
 						+ "METHOD.csv";
 
 				metrics = aParser.startExecution(fileNames, projectName,
