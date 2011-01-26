@@ -56,8 +56,8 @@ public class ApplicationProperties {
         } catch (Exception e) {
             e.printStackTrace();
 
-            System.out.println("Could not read or find file '" + propertiesFileFullPath + "'");
-            System.out.println("This property file is needed for the application to operate.");
+            logger.error("Could not read or find file '" + propertiesFileFullPath + "'");
+            logger.error("Property file is needed for the application to operate.");
 
             isInitializationSuccess = false;
             initErrorDescription = "Could not read or find application.properties";
