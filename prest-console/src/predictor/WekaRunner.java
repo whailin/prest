@@ -27,14 +27,13 @@ public class WekaRunner
 		return cut + File.separator;
 	}
 
-	private static int writeToFile(String fileName, String nowStr, String data)
+	private static int writeToFile(String folder, String fileNames, String nowStr, String data)
 	{
-		nowStr = nowStr.replaceAll(" ","-");
-		nowStr = nowStr.replaceAll(":",".");
+		nowStr = nowStr.replaceAll(" ", "-");
+		nowStr = nowStr.replaceAll(":", ".");
 		try
 		{
-			System.out.println(fileName + "results" + nowStr + ".res");
-			BufferedWriter writer = new BufferedWriter(new FileWriter(fileName + "results-" + nowStr + ".res"));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(folder + "results-"+ fileNames  + "-" + nowStr + ".res"));
 			writer.write(data);
 			writer.flush();
 			writer.close();
@@ -50,6 +49,8 @@ public class WekaRunner
 	public static String runWeka(String trainPath, String testPath, String algorithm, String preProcess, String CrossValidate,
 			String logFilter)
 	{
+		String fileNames = trainPath.substring(trainPath.lastIndexOf(File.separator) + 1) + "-"
+		                   + trainPath.substring(testPath.lastIndexOf(File.separator) +  1);
 		String output = "";
 		output += "train file: " + trainPath + "\n";
 		output += "test file: " + testPath + "\n";
@@ -57,7 +58,7 @@ public class WekaRunner
 		{
 			Date now = new Date();
 			DateFormat df = DateFormat.getDateTimeInstance();
-			String nowStr =  df.format(now);
+			String nowStr = df.format(now);
 			//first load training set 
 			Instances trainData = new Instances(new BufferedReader(new FileReader(trainPath)));
 			// setting class attribute
@@ -103,8 +104,7 @@ public class WekaRunner
 			}
 
 			//show output on screen
-			output += "Experiment Results\n"+ nowStr + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString()
-					+ "\n\n";
+			output += "Experiment Results\n" + nowStr + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString() + "\n\n";
 
 			// output the ID, actual value and predicted value for each instance
 			for (int i = 0; i < testData.numInstances(); i++)
@@ -114,7 +114,7 @@ public class WekaRunner
 				output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
 				output += (", predicted: " + testData.classAttribute().value((int) pred) + "\n");
 			}
-			writeToFile(findPredResultPath(trainPath), nowStr, output);
+			writeToFile(findPredResultPath(trainPath), fileNames,  nowStr, output);
 
 		}
 		catch (Exception e)
