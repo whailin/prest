@@ -22,8 +22,11 @@ import executor.ParserExecutor;
 import common.CsvToArff;
 import predictor.WekaRunner;
 
+import org.apache.log4j.Logger;
+
 public class PackageExplorer {
 
+	static Logger logger = Logger.getLogger(PrestConsoleApp.class.getName());
 	private HashMap<String, File> projectNamesHashMap = new HashMap<String, File>();
 	private File projectDirectory;
 
@@ -88,7 +91,7 @@ public class PackageExplorer {
 		if (dirList != null) {
 			for (File projectDir : dirList) {
 				if (projectDir.getName().equals(newDirectory.getName())) {
-					System.out.println(" *** " + projectDir.getName() + " "
+					logger.info(" *** " + projectDir.getName() + " "
 							+ newDirectory.getName());
 					return true;
 				}
@@ -110,7 +113,7 @@ public class PackageExplorer {
 						+ projectDirectory.getName() + File.separator +"arff_files").mkdirs();
 				createMetadataForProject(projectDirectory);
 			} else {
-				System.out.println("ERROR: The project you tried to add has already been added!");
+				logger.warn("The project you tried to add has already been added!");
 			}
 		}
 	}
@@ -121,15 +124,14 @@ public class PackageExplorer {
 			File projectDirectory = new File(projectDirectoryStr);
 			result = ParserExecutor.parseDirectoryCmd(projectDirectory);
 			if (result == ParserExecutor.PARSING_SUCCESSFUL) {
-				System.out.println("Project parsed successfully.");
+				logger.info("Project parsed successfully.");
 //				DefectMatcher.main(new String[] {projectDirectory.getName(), releaseLabel, ApplicationProperties
 //						.get("repositorylocation")
 //						+ File.separator
 //						+ projectDirectory.getName()
 //						+ File.separator + "parse_results"});
 			} else {
-				System.out
-						.println("There was an error while parsing the project.");
+				logger.error("There was an error while parsing the project.");
 			}
 		} catch (Exception ex) {
 
@@ -141,9 +143,9 @@ public class PackageExplorer {
 		try {
 			CsvToArff cCommand = new CsvToArff();
 			cCommand.csvToArffCommand(fileName);
-			System.out.println(fileName + "converted successfully...");
+			logger.info(fileName + "converted successfully...");
 		} catch (Exception eCtoArff) {
-			System.out.println("Error: File name wrong or file corrupt!");
+			logger.error("csv File name wrong or file corrupt!");
 		}
 	}
 

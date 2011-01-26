@@ -17,7 +17,7 @@ public class CommandLineExplorer {
 			packageExplorer.convertCsvToArff(args[1]);
 		}
 		else if (args[0].equalsIgnoreCase("-predict")) {
-			System.out.println(packageExplorer.predict(args[1], args[2]));
+			packageExplorer.predict(args[1], args[2]);
 		}
 		else {
 			listCommandLineOptions();

@@ -39,18 +39,6 @@ public class ParserExecutor {
 	public static final int PARSING_SUCCESSFUL = 0;
 	public static final int PARSING_CANCELLED = 1;
 
-	public static void main(String[] args) {
-
-		File projectDirectory = getProjectDirectoryFromUser();
-
-		try {
-			parseDirectory(projectDirectory);
-		} catch (Exception e) {
-			System.out.println("exception");
-		}
-
-		System.out.println("done");
-	}
 
 	public static int parseDirectory(File projectDirectory) throws Exception {
 
