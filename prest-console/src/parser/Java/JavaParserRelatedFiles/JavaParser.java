@@ -18,8 +18,11 @@ import parser.Java.MetricsRelatedFiles.Symbols;
 import parser.Jsp.JspToJavaConvertor;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;
+import org.apache.log4j.Logger;
+
 
 import common.DataContext;
+import console.PrestConsoleApp;
 
 
 /**
@@ -40,6 +43,7 @@ public class JavaParser implements JavaParserConstants, IParser {
 
 	// public static final String func_call_file =
 	// "C:\\callGraphWithActualNames.csv";
+	static Logger logger = Logger.getLogger(PrestConsoleApp.class.getName());
 	Language language = Language.JAVA;
 	CurrentState currentState;
 	ClassContainer container = new ClassContainer();
@@ -152,12 +156,12 @@ public class JavaParser implements JavaParserConstants, IParser {
 				}
 				currentFile = filesToTraverse[i];
 				this.CompilationUnit();
-				System.out.println("Java Parser Version 1.1:  Java source <"
+				logger.info("Java Parser Version 1.1:  Java source <"
 						+ filesToTraverse[i]
 						+ ">  successfully parsed for module identification.");
 			} catch (ParseException e) {
-				System.out.println(e.getMessage());
-				System.out.println("Java Parser Version 1.1:  Java source <"
+				logger.error(e.getMessage());
+				logger.error("Java Parser Version 1.1:  Java source <"
 						+ filesToTraverse[i]
 						+ "> Encountered errors during parse.");
 			} catch (Exception e) {
@@ -191,11 +195,11 @@ public class JavaParser implements JavaParserConstants, IParser {
 
 				currentFile = filesToTraverse[i];
 				this.CompilationUnit();
-				System.out.println("Java Parser Version 1.1:  Java source <"
+				logger.info("Java Parser Version 1.1:  Java source <"
 						+ filesToTraverse[i] + "> parsed successfully.");
 			} catch (ParseException e) {
-				System.out.println(e.getMessage());
-				System.out.println("Java Parser Version 1.1:  Java source <"
+				logger.error(e.getMessage());
+				logger.error("Java Parser Version 1.1:  Java source <"
 						+ filesToTraverse[i]
 						+ "> Encountered errors during parse.");
 			} catch (Exception e) {
@@ -214,9 +218,9 @@ public class JavaParser implements JavaParserConstants, IParser {
 			String methodCsvFileName) {
 
 		moduleIdentificationMethod(filesToTraverse); // identify the modules
-		System.out.println("module identification done");
+		logger.info("module identification done");
 		metricCollectionMethod(filesToTraverse); // collect the metrics
-		System.out.println("metric collection done");
+		logger.info("metric collection done");
 		// call graph will be produced later.
 		/*try {
 
@@ -234,11 +238,11 @@ public class JavaParser implements JavaParserConstants, IParser {
 		}*/
 
 		try {
-			System.out.println("writing from container to xml file");
+			logger.info("writing from container to xml file");
 			container.writeToFileAsXml(xmlFileName);
-			System.out.println("xml written");
+			logger.info("xml written");
 		} catch (Exception e) {
-			System.out.println("writing to xml file failed");
+			logger.error("writing to xml file failed");
 			e.printStackTrace();
 		}
 
@@ -258,8 +262,7 @@ public class JavaParser implements JavaParserConstants, IParser {
 			e.printStackTrace();
 		}
 
-		System.out
-				.println("DataContext dc = container.getDataContextFormat();");
+		logger.info("DataContext dc = container.getDataContextFormat();");
 		DataContext dc = container.getDataContextFormat();
 		container = null;
 
@@ -295,7 +298,7 @@ public class JavaParser implements JavaParserConstants, IParser {
 			sparseMatrix.writeToFile(csvFileName, container);
 
 		} catch (Exception ex) {
-			System.out.println(ex.getMessage());
+			logger.error(ex.getMessage());
 			ex.printStackTrace();
 		}
 
@@ -1048,7 +1051,7 @@ public class JavaParser implements JavaParserConstants, IParser {
 						fileMetrics.getClass(classTrace).increaseData();
 					}
 				} catch (Exception e) {
-					System.out.println(e.getMessage());
+					logger.error(e.getMessage());
 				}
 			}
 		}
