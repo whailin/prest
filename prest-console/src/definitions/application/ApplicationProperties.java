@@ -8,6 +8,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Properties;
+import org.apache.log4j.Logger;
+
+import console.PrestConsoleApp;
 
 public class ApplicationProperties {
 
@@ -16,7 +19,7 @@ public class ApplicationProperties {
     public static String environment = null;
     public static boolean isInitializationSuccess = true;
     public static String initErrorDescription;
-
+    static Logger logger = Logger.getLogger(PrestConsoleApp.class.getName());
     public static void initiate() {
         initiate(propertiesFileName);
     }
@@ -43,7 +46,7 @@ public class ApplicationProperties {
             return;
         }
 
-        System.out.println("Setting properties file name to " + propertiesFileFullPath);
+        logger.info("Setting properties file name to " + propertiesFileFullPath);
         
         try {
             InputStream is = new java.io.FileInputStream(propertiesFileFullPath);
@@ -103,7 +106,6 @@ public class ApplicationProperties {
                     new File(propFilePath != null ? propFilePath : (propertiesFileName))));
         	
             output.write("repositorylocation = " + fullPath);
-            output.write("\nCurrentProject = ");
         } catch (Exception ex) {
         } finally {
             try {

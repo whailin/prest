@@ -1,67 +1,64 @@
 package console;
 
+import java.io.File;
+
+import org.apache.log4j.Logger;
+
 import definitions.application.ApplicationProperties;
 
 public class PrestConsoleApp {
 
 	private static PrestConsoleApp appInstance;
 	private static boolean fromCommandLine = false;
-	private static String [] cmdArguments;
-	
+	private static String[] cmdArguments;
+	static Logger logger = null;
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		/**
 		 * Main method launching the application.
-		 */			
-			createInstance(args);
+		 */
+		ApplicationProperties.initiateManual(ApplicationProperties.getPropertiesFileName());
+		System.setProperty("log.home", ApplicationProperties
+				.get("repositorylocation")
+				+ File.separator);
+		logger = Logger.getLogger(PrestConsoleApp.class.getName());
+		
+		startup(args);
 
 	}
-	
-	public static PrestConsoleApp createInstance(String[] args)
-	{
-		if (appInstance != null)
-			return appInstance;
+
+
+	public static void startup(String[] args) {
 		
-		appInstance = new PrestConsoleApp();
-		if (args != null && args.length != 0)
-			System.out.println("No arguments provided.");
-		if (args != null && args.length != 0)
+		if (args == null || args.length == 0)
+		{
+			logger.error("No arguments provided.");
+		}
+		else
+		{
 			changeWorkStyle(args);
-		appInstance.startup();
-		
-		return appInstance;
-	}
-	
-	public void startup() 
-	{
-		String propPath = getPropertiesPath();
-		ApplicationProperties.initiateManual(propPath);
-		String repository = ApplicationProperties.get("repositorylocation");
-		if (repository == null) {
-			System.out.println("check your application.properties file no repository location selected");
 		}
 		
-		if(fromCommandLine)
-		{
+		String repository = ApplicationProperties.get("repositorylocation");
+		if (repository == null) {
+			logger.error("check your application.properties file no repository location selected");
+		}
+
+		if (fromCommandLine) {
 			System.out.println("Prest is selected to work from command line");
 			CommandLineExplorer cmdLineExplorer = new CommandLineExplorer();
 			cmdLineExplorer.startExecFromCmdLine(cmdArguments);
 		}
 	}
-	
-	// SciDesktop Modification TA_R001	--- getPropertiesPath is added to get full path of application.properties
-	private String getPropertiesPath()
-	{
-					
-		return ApplicationProperties.getPropertiesFileName();
-	}
-	
-	public static void changeWorkStyle(String[] args)
-	{
+
+
+
+	public static void changeWorkStyle(String[] args) {
 		fromCommandLine = true;
 		cmdArguments = args;
 	}
-	
+
 }
