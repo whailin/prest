@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,6 +22,11 @@ import definitions.application.ApplicationProperties;
 import executor.ParserExecutor;
 import common.CsvToArff;
 import predictor.WekaRunner;
+import weka.core.FastVector;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.Attribute;
+import weka.core.converters.CSVLoader;
 
 import org.apache.log4j.Logger;
 
@@ -148,7 +154,113 @@ public class PackageExplorer {
 			logger.error("csv File name wrong or file corrupt!");
 		}
 	}
+	/* This function applies log filtering on metric values.
+	 * input: filename (at file level) 
+	 * output: (true) if new file with log-filtered attributes
+	 * IMPORTANT!!: Due to hard-coded attribute indices, this function works for file level only.
+	 * */
+	public boolean logFiltering(String filename)
+	{
+				
+		CSVLoader loader = new CSVLoader();
+		Instances data;
+		BufferedWriter writer = null;
+	    try 
+	    {
+			loader.setSource(new File(filename));
+			data = loader.getDataSet();
+			data.setClassIndex(data.numAttributes()-1);
+			Instances newdata = new Instances(data, data.numInstances());
+			
+			for(int j=0; j<data.numAttributes(); j++)
+			{
+				System.out.println("Attribute: " + j);
+				for(int i=0; i<data.numInstances(); i++)
+				{
+					System.out.println("Instance: " + i);
+					if(j==0) //Filename
+					{
+						newdata.add(data.instance(i));
+						newdata.instance(i).setValue(j, data.instance(i).stringValue(j));
+					}
+					else if (j==1) //File ID
+						newdata.instance(i).setValue(j, data.instance(i).value(j));
+					else if (j==data.numAttributes()-1) //Class attribute
+						newdata.instance(i).setClassValue(data.instance(i).stringValue(j));
+					else //numeric attributes
+					{
+						if(data.instance(i).value(j) != 0)
+							newdata.instance(i).setValue(j, Math.log(data.instance(i).value(j)));
+						else
+							newdata.instance(i).setValue(j, Math.log(0.0001));
+					}
+				}
+			}
+			System.out.println("Writing to new file...");
+			String path = filename.substring(0, filename.lastIndexOf("/"));
+			String fileName = filename.substring(filename.lastIndexOf("/")+1);
+			writer = new BufferedWriter(new FileWriter(
+	    		    path.substring(0,path.lastIndexOf("/"))
+	    			    + "/" +"parse_results" + "/"
+	    			    + fileName.substring(0, fileName
+	    				    .lastIndexOf('.')) + "_LogFiltered.arff"));
+						
+			writer.write(newdata.toString());
+    	    writer.flush();
+    	    writer.close();
+    	    logger.info("Log filter is applied to " + filename + " successfully");
+		} 
+	    catch (IOException e) {
+			// TODO Auto-generated catch block
+			logger.info("Log filter could not be processed due to IOException");
+			e.printStackTrace();
+			return false;
+		}
+	    
+	    return true;  
+	}
 
+	/* this function takes values at method level 
+	 * and aggregates them up to file level.
+	 * input: filename (method level)
+	 * output: (true) if new file with aggregated values
+	 * */
+	public boolean aggregateFromMethod2File(String filename)
+	{
+		Instances data = null;
+		CSVLoader cl = new CSVLoader();
+		try
+		{
+			cl.setSource(new File(filename));
+			data = cl.getDataSet();
+			data.setClassIndex(data.numAttributes()-1);
+			
+			//0:fileName, 1:fileId, 2:methodName, 3:methodId
+			double initialFileId = data.instance(0).value(1);
+			double[] FileValues = data.instance(0).toDoubleArray();
+			
+			for(int i=1; i<data.numInstances(); i++)
+			{
+				if(initialFileId == data.instance(i).value(1))
+				{
+					double[] temp = data.instance(i).toDoubleArray();
+					//take all instances with same file id
+					//apply min,max,avg,sum operations
+				}
+				else
+				{
+					FileValues = data.instance(i).toDoubleArray();
+					initialFileId = data.instance(i).value(1);
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 
 	public HashMap<String, File> getProjectNamesHashMap() {
 		return projectNamesHashMap;
