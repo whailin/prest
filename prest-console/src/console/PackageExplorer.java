@@ -167,6 +167,7 @@ public class PackageExplorer {
 		BufferedWriter writer = null;
 	    try 
 	    {
+	    	logger.info(filename);
 			loader.setSource(new File(filename));
 			data = loader.getDataSet();
 			data.setClassIndex(data.numAttributes()-1);
@@ -197,13 +198,9 @@ public class PackageExplorer {
 				}
 			}
 			logger.info("Writing to new file...");
-			String path = filename.substring(0, filename.lastIndexOf(File.separator));
-			String fileName = filename.substring(filename.lastIndexOf(File.separator)+1);
-			writer = new BufferedWriter(new FileWriter(
-	    		    path.substring(0,path.lastIndexOf(File.separator))
-	    			    + File.separator +"parse_results" + File.separator
-	    			    + fileName.substring(0, fileName
-	    				    .lastIndexOf('.')) + "_LogFiltered.arff"));
+			String outFile = filename.substring(0, filename.lastIndexOf(".")); 
+			logger.info(outFile);
+			writer = new BufferedWriter(new FileWriter(outFile + "_LogFiltered.arff"));
 						
 			writer.write(newdata.toString());
     	    writer.flush();
