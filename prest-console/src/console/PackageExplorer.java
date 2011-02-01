@@ -196,12 +196,12 @@ public class PackageExplorer {
 					}
 				}
 			}
-			System.out.println("Writing to new file...");
-			String path = filename.substring(0, filename.lastIndexOf("/"));
-			String fileName = filename.substring(filename.lastIndexOf("/")+1);
+			logger.info("Writing to new file...");
+			String path = filename.substring(0, filename.lastIndexOf(File.separator));
+			String fileName = filename.substring(filename.lastIndexOf(File.separator)+1);
 			writer = new BufferedWriter(new FileWriter(
-	    		    path.substring(0,path.lastIndexOf("/"))
-	    			    + "/" +"parse_results" + "/"
+	    		    path.substring(0,path.lastIndexOf(File.separator))
+	    			    + File.separator +"parse_results" + File.separator
 	    			    + fileName.substring(0, fileName
 	    				    .lastIndexOf('.')) + "_LogFiltered.arff"));
 						
@@ -212,7 +212,7 @@ public class PackageExplorer {
 		} 
 	    catch (IOException e) {
 			// TODO Auto-generated catch block
-			logger.info("Log filter could not be processed due to IOException");
+			logger.error("Log filter could not be processed due to IOException");
 			e.printStackTrace();
 			return false;
 		}
