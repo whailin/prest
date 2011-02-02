@@ -26,6 +26,7 @@ import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Attribute;
+import weka.core.converters.ArffLoader;
 import weka.core.converters.CSVLoader;
 
 import org.apache.log4j.Logger;
@@ -149,7 +150,6 @@ public class PackageExplorer {
 		try {
 			CsvToArff cCommand = new CsvToArff();
 			cCommand.csvToArffCommand(fileName);
-			logger.info(fileName + "converted successfully...");
 		} catch (Exception eCtoArff) {
 			logger.error("csv File name wrong or file corrupt!");
 		}
@@ -161,8 +161,7 @@ public class PackageExplorer {
 	 * */
 	public boolean logFiltering(String filename)
 	{
-				
-		CSVLoader loader = new CSVLoader();
+		ArffLoader loader = new ArffLoader();
 		Instances data;
 		BufferedWriter writer = null;
 	    try 
@@ -200,7 +199,7 @@ public class PackageExplorer {
 			logger.info("Writing to new file...");
 			String outFile = filename.substring(0, filename.lastIndexOf(".")); 
 			logger.info(outFile);
-			writer = new BufferedWriter(new FileWriter(outFile + "_LogFiltered.arff"));
+			writer = new BufferedWriter(new FileWriter(outFile + "_LF.arff"));
 						
 			writer.write(newdata.toString());
     	    writer.flush();
