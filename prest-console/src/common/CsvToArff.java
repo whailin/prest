@@ -5,11 +5,15 @@ import weka.core.converters.CSVLoader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
+import org.apache.log4j.Logger;
+
+import console.PrestConsoleApp;
 
 public class CsvToArff {
 
-    public CsvToArff() {
+	static Logger logger = Logger.getLogger(PrestConsoleApp.class.getName());
 
+    public CsvToArff() {
     }
 
     public void convertProject(File projectPath) throws Exception {
@@ -44,9 +48,10 @@ public class CsvToArff {
     	    writer.write(data.toString());
     	    writer.flush();
     	    writer.close();
-
+    	    logger.info(csvFilePath + " converted successfully.");
     	} catch (Exception e) {
-    	    System.out.println(e.getMessage());
+    		
+    	    logger.error(e.getMessage());
     	}
     	return 1;
         }
