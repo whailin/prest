@@ -13,7 +13,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,10 +21,7 @@ import definitions.application.ApplicationProperties;
 import executor.ParserExecutor;
 import common.CsvToArff;
 import predictor.WekaRunner;
-import weka.core.FastVector;
-import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.Attribute;
 import weka.core.converters.ArffLoader;
 import weka.core.converters.CSVLoader;
 
