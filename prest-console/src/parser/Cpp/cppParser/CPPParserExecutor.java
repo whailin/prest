@@ -1,12 +1,6 @@
 package parser.Cpp.cppParser;
 
-import java.util.Iterator;
 
-import metricCollector.Collector;
-import metricCollector.JavaClassMetrics;
-import metricCollector.JavaFileMetrics;
-import metricCollector.JavaMethodMetrics;
-import metricCollector.JavaPackageMetrics;
 import parser.Java.MetricsRelatedFiles.ClassContainer;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;
