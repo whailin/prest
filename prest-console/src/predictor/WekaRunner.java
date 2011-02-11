@@ -26,13 +26,17 @@ public class WekaRunner
 		return cut + File.separator;
 	}
 
-	private static int writeToFile(String folder, String fileNames, String nowStr, String data)
+	private static int writeToFile(String folder, String fileNames, String nowStr, String data, String outputPath)
 	{
 		nowStr = nowStr.replaceAll(" ", "-");
 		nowStr = nowStr.replaceAll(":", ".");
+		BufferedWriter writer;
 		try
 		{
-			BufferedWriter writer = new BufferedWriter(new FileWriter(folder + "results-"+ fileNames  + "-" + nowStr + ".res"));
+			if (outputPath == "")
+				writer = new BufferedWriter(new FileWriter(folder + "results-"+ fileNames  + "-" + nowStr + ".res"));
+			else
+				writer = new BufferedWriter(new FileWriter(outputPath));
 			writer.write(data);
 			writer.flush();
 			writer.close();
@@ -45,8 +49,9 @@ public class WekaRunner
 		return 1;
 	}
 
-	public static String runWeka(String trainPath, String testPath, String algorithm, String preProcess, String CrossValidate,
-			String logFilter)
+	public static String runWeka(String trainPath, String testPath, 
+			String algorithm, String preProcess, String CrossValidate,
+			String logFilter, String outputPath)
 	{
 		String fileNames = trainPath.substring(trainPath.lastIndexOf(File.separator) + 1) + "-"
 		                   + trainPath.substring(testPath.lastIndexOf(File.separator) +  1);
@@ -113,7 +118,7 @@ public class WekaRunner
 				output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
 				output += (", predicted: " + testData.classAttribute().value((int) pred) + "\n");
 			}
-			writeToFile(findPredResultPath(trainPath), fileNames,  nowStr, output);
+			writeToFile(findPredResultPath(trainPath), fileNames,  nowStr, output, outputPath);
 
 		}
 		catch (Exception e)
