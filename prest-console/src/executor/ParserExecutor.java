@@ -1,24 +1,10 @@
 package executor;
 
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SpringLayout;
-import javax.swing.SwingConstants;
 
 import parser.C.CParser;
 import parser.Cpp.cppParser.CPPParserExecutor;
@@ -37,7 +23,6 @@ public class ParserExecutor {
 
 	private static List<ParseResult> parserResultList = new ArrayList<ParseResult>();
 	private static Language currentLanguage;
-	private static JPanel mainPanel;
 	public static final int PARSING_SUCCESSFUL = 0;
 	public static final int PARSING_CANCELLED = 1;
 
@@ -47,7 +32,6 @@ public class ParserExecutor {
 		List<ParserInterfaceAndFileList> parserList = new ArrayList<ParserInterfaceAndFileList>();
 
 		parserList = findAppropriateParsers(projectDirectory);
-		showParserSelectionDialog(parserList);
 
 		if (parserList == null) {
 			return PARSING_CANCELLED;
@@ -97,24 +81,6 @@ public class ParserExecutor {
 		}
 	}
 
-	public static void confirmParserWithUser(
-			List<ParserInterfaceAndFileList> parserList) {
-
-		if (parserList != null) {
-			Object[] options = { "OK" };
-
-			String message = "Project will be parsed by ";
-			for (ParserInterfaceAndFileList pf : parserList) {
-				message += pf.getParser().getLanguage().getLangName() + ", ";
-			}
-			message = message.substring(0, message.length() - 2);
-
-			JOptionPane.showOptionDialog(null, message,
-					"Parser Language Selection", JOptionPane.OK_OPTION,
-					JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
-		}
-
-	}
 
 	public static List<ParserInterfaceAndFileList> findAppropriateParsers(
 			File projectDirectory) {
@@ -159,18 +125,7 @@ public class ParserExecutor {
 		}
 	}
 
-	public static File getProjectDirectoryFromUser() {
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setDialogTitle("Select folder to parse");
-		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fileChooser.showOpenDialog(null);
 
-		File dir = null;
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			dir = fileChooser.getSelectedFile();
-		}
-		return dir;
-	}
 
 	public static DataContext parseProject(IParser aParser,
 			List<File> fileList, String projectName) throws Exception {
@@ -281,28 +236,6 @@ public class ParserExecutor {
 		}
 	}
 
-
-
-	public static void showParserSelectionDialog(
-			List<ParserInterfaceAndFileList> parserList) {
-		final JDialog dialog = new JDialog();
-		dialog.setTitle("Parser Language Selection");
-		dialog.setModal(true);
-		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		dialog.setLocationRelativeTo(mainPanel);
-		dialog.setLocation((dialog.getX() - 50), (dialog.getY() - 10));
-		dialog.setPreferredSize(new Dimension(430, 200));
-		// Create and set up the content pane.
-		ParserLanguageCheckBoxDialog newContentPane = new ParserLanguageCheckBoxDialog(
-				parserList, dialog);
-		newContentPane.setOpaque(true); // content panes must be opaque
-		dialog.getContentPane().add(newContentPane.getJPane());
-
-		// Display the window
-		dialog.pack();
-		dialog.setVisible(true);
-	}
-
 	public static List<ParseResult> getParserResultList() {
 		return parserResultList;
 	}
@@ -311,102 +244,6 @@ public class ParserExecutor {
 		ParserExecutor.parserResultList = parserResultList;
 	}
 
-	public static JPanel getMainPanel() {
-		return mainPanel;
-	}
-
-	public static void setMainPanel(JPanel mainPanel) {
-		ParserExecutor.mainPanel = mainPanel;
-	}
-
-
-
-
-	public static class ParserLanguageCheckBoxDialog extends JPanel implements
-			ActionListener {
-
-		public JButton continueButton;
-		public List<ParserInterfaceAndFileList> parserList;
-		public List<JCheckBox> checkBoxList;
-		public JLabel selectLabel;
-		public JPanel jPane;
-		public JDialog jDialog;
-
-		public ParserLanguageCheckBoxDialog(
-				List<ParserInterfaceAndFileList> parserList, JDialog jDialog) {
-			this.jDialog = jDialog;
-			this.parserList = parserList;
-			checkBoxList = new ArrayList<JCheckBox>();
-			for (ParserInterfaceAndFileList parserInterfaceAndFileList : parserList) {
-				JCheckBox checkBox = new JCheckBox(parserInterfaceAndFileList
-						.getParser().getLanguage().getLangName());
-				checkBox.setHorizontalAlignment(SwingConstants.CENTER);
-				checkBox.setSelected(true);
-				checkBoxList.add(checkBox);
-			}
-			jPane = new JPanel();
-
-			SpringLayout layout = new SpringLayout();
-			jPane.setLayout(layout);
-
-			selectLabel = new JLabel(
-					"Please select the parser languages you want to use for the project:");
-
-			continueButton = new JButton("Continue");
-			continueButton.addActionListener(this);
-
-			jPane.add(selectLabel);
-			for (JCheckBox checkBox : checkBoxList) {
-				jPane.add(checkBox);
-			}
-			jPane.add(continueButton);
-
-			layout.putConstraint(SpringLayout.WEST, selectLabel, 20,
-					SpringLayout.WEST, jPane);
-			layout.putConstraint(SpringLayout.NORTH, selectLabel, 30,
-					SpringLayout.NORTH, jPane);
-			int initial = 10;
-			for (JCheckBox checkBox : checkBoxList) {
-				layout.putConstraint(SpringLayout.WEST, checkBox, initial,
-						SpringLayout.WEST, jPane);
-				layout.putConstraint(SpringLayout.NORTH, checkBox, 20,
-						SpringLayout.SOUTH, selectLabel);
-				initial += 60;
-			}
-			layout.putConstraint(SpringLayout.WEST, continueButton, 200,
-					SpringLayout.WEST, jPane);
-			layout.putConstraint(SpringLayout.NORTH, continueButton, 100,
-					SpringLayout.NORTH, jPane);
-		}
-
-		public JPanel getJPane() {
-			return jPane;
-		}
-
-		public void setJPane(JPanel jPane) {
-			this.jPane = jPane;
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			getSelectedParsers();
-			this.jDialog.dispose();
-		}
-
-		public void getSelectedParsers() {
-
-			List<ParserInterfaceAndFileList> returnList = new ArrayList<ParserInterfaceAndFileList>();
-			for (int i = 0; i < checkBoxList.size(); i++) {
-				if (checkBoxList.get(i).isSelected()) {
-					returnList.add(parserList.get(i));
-				}
-			}
-			parserList.clear();
-			for (ParserInterfaceAndFileList item : returnList) {
-				parserList.add(item);
-			}
-
-		}
-	}
 
 	public static Language getCurrentLanguage() {
 		return currentLanguage;

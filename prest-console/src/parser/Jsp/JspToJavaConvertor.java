@@ -72,12 +72,10 @@ public class JspToJavaConvertor {
 			this.script = this.script.trim();
 			this.script = this.script.concat("} }");
 			fis.close();
-//			System.out.println(this.script); // print out the script to see
-			// the resulting string
 
 		} catch (Exception ex) {
 			System.out
-					.println("Bunu gorduysen, Java parser JSP kodu icin kullanilirken hata verdi!");
+					.println("JSP conversion error.");
 
 		}
 		return this.script;
