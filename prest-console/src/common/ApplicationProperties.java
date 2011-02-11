@@ -1,4 +1,4 @@
-package definitions.application;
+package common;
 
 import java.io.BufferedWriter;
 import java.io.File;
