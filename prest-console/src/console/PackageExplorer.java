@@ -272,13 +272,13 @@ public class PackageExplorer {
 		this.projectDirectory = projectDirectory;
 	}
 	
-	public String predict(String trainFile,String testFile) {
+	public String predict(String trainFile,String testFile, String resultPath) {
 		String wekaAlgorithmType = "Naive Bayes";
 		String wekaPreProcess = "none";
 		String wekaCrossValidate = "no";
 		String wekaLogFilter = "no";
 		String retStr = "";
-		retStr = WekaRunner.runWeka(trainFile,testFile,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate,wekaLogFilter); 
+		retStr = WekaRunner.runWeka(trainFile,testFile,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate,wekaLogFilter, resultPath); 
 		return retStr;
 	}
 }
