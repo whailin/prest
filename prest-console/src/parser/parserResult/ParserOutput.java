@@ -5,7 +5,7 @@
 
 package parser.parserResult;
 
-import common.DataContext;
+import common.data.DataContext;
 import parser.enumeration.Language;
 
 

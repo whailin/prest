@@ -21,7 +21,7 @@ import parser.parserinterface.IParser;
 import org.apache.log4j.Logger;
 
 
-import common.DataContext;
+import common.data.DataContext;
 import console.PrestConsoleApp;
 
 

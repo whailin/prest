@@ -14,7 +14,7 @@ import parser.C.fileops.SourceFile;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;
 
-import common.DataContext;
+import common.data.DataContext;
 import definitions.application.ApplicationProperties;
 
 public class CParser implements IParser {

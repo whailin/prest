@@ -2,7 +2,7 @@ package parser.parserinterface;
 
 import parser.enumeration.Language;
 
-import common.DataContext;
+import common.data.DataContext;
 
 public interface IParser {
 

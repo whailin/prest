@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import parser.C.constants.CConstants;
 
-import common.DataContext;
 import common.NodePair;
+import common.data.DataContext;
 
 public class ConvertToDataContext {
 

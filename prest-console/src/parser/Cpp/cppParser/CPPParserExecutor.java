@@ -11,7 +11,7 @@ import parser.Java.MetricsRelatedFiles.ClassContainer;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;
 
-import common.DataContext;
+import common.data.DataContext;
 
 public class CPPParserExecutor implements IParser {
 

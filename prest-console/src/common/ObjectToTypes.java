@@ -4,7 +4,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.sql.Blob;
 
-import common.DataContext;
+import common.data.DataContext;
 
 /**
  * Insert the type's description here.
