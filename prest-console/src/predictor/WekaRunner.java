@@ -7,7 +7,6 @@ import weka.classifiers.*;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.trees.j48.*;
 import weka.core.Instances;
-import weka.core.converters.CSVLoader;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

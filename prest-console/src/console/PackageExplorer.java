@@ -121,11 +121,11 @@ public class PackageExplorer {
 		}
 	}
 
-	public void parseManualCmd(String projectDirectoryStr, String freeze) {
+	public void parseManualCmd(String projectDirectoryStr, String freeze, String fileCsvPath) {
 		int result;
 		try {
 			File projectDirectory = new File(projectDirectoryStr);
-			result = ParserExecutor.parseDirectoryCmd(projectDirectory);
+			result = ParserExecutor.parseDirectoryCmd(projectDirectory, fileCsvPath);
 			if (result == ParserExecutor.PARSING_SUCCESSFUL) {
 				logger.info("Project parsed successfully.");
 //				DefectMatcher.main(new String[] {projectDirectory.getName(), releaseLabel, ApplicationProperties
@@ -140,6 +140,8 @@ public class PackageExplorer {
 
 		}
 	}
+	
+
 	
 	public void convertCsvToArff(String fileName) {
 		CsvToArff c = new CsvToArff();

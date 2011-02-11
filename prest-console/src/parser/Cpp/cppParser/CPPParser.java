@@ -14,9 +14,6 @@ import parser.Java.MetricsRelatedFiles.FileMetrics;
 import parser.Java.MetricsRelatedFiles.MethodMetrics;
 
 public final class CPPParser implements CPPParserConstants {
-	private static void msg(String s) {
-		System.out.println(s);
-	}
 
 	static boolean isPublic = false;
 	static String lastQualifiedId = "";
