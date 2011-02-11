@@ -1,4 +1,4 @@
-package categorizer.core;
+package common.data;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -67,10 +67,6 @@ public class DataSet implements ContextBuilder, Cloneable{
 	 */
 	private DataHeader[] dataHeaders;
 	
-	/**
-	 * Holds the user defined metrics related to this dataSet
-	 */
-	private VirtualMetric[] virtualHeaders;
 	
 	/**
 	 * index of the Class Column
@@ -184,8 +180,6 @@ public class DataSet implements ContextBuilder, Cloneable{
 		loadDataItems(dataItemsContext);
 		
 		DataContext virtualHeadersContext = dataSetContext.getNode(virtualHeadersTag);
-		
-		loadVirtualHeaders(virtualHeadersContext);
 	}
 
 	/** 
@@ -201,7 +195,6 @@ public class DataSet implements ContextBuilder, Cloneable{
 		
 		dataContext.add(dataItemsTag, storeDataItems());
 		
-		dataContext.add(virtualHeaderTag, storeVirtualHeaders());
 		
 		return dataContext;
 		
@@ -252,65 +245,7 @@ public class DataSet implements ContextBuilder, Cloneable{
 		return dataContext;
 	}
 	
-	
-	
-	
-	/**
-	 * @param dataContext
-	 * @throws UnsupportedDataContextException
-	 * 
-	 * loads  only the Data Headers part of the Data Set
-	 */
-	public void loadVirtualHeaders(DataContext virtualHeadersContext) throws Exception
-	{
-		if(virtualHeadersContext != null)
-		{
-			Vector virtualHeaderNodes = virtualHeadersContext.getNodes(virtualHeaderTag);
-			
-			if(virtualHeaderNodes!=null)
-			{
-				virtualHeaders = new VirtualMetric[virtualHeaderNodes.size()];
-				for(int i=0; i<virtualHeaders.length; i++)
-				{
-					VirtualMetric virtualHeader = new VirtualMetric();
-					virtualHeader.load((DataContext)virtualHeaderNodes.get(i));	
-					virtualHeaders[i] = virtualHeader;
-				}
-			}
-		}
-	}
-	
-	
-	/**
-	 * Stores the virtual Headers of the DataSet
-	 * Notice that the data header related to a virtualHeader will be 
-	 * changed after the categorizer is built(Distributions are set). 
-	 * So before storing the virtualHeaders
-	 * we must update its dataHeader first. 
-	 * @return the DataContext of DataHeaders
-	 */
-	public DataContext storeVirtualHeaders() throws Exception
-	{
-		DataContext dataContext = new DataContext();
-		if(virtualHeaders != null)
-		{
-			for(int i=0; i<virtualHeaders.length; i++)
-			{
-				for(int j=0; i<dataHeaders.length; j++)
-				{
-					if(virtualHeaders[i].getLabel().equals(dataHeaders[j].getLabel()))
-					{	
-						virtualHeaders[i].setDataHeader(dataHeaders[j]);
-						break;
-					}
-				}
-					
-				dataContext.add(virtualHeaderTag, virtualHeaders[i].store());
-			}
-		}
-		
-		return dataContext;
-	}
+
 
 	
 	/**
@@ -377,41 +312,6 @@ public class DataSet implements ContextBuilder, Cloneable{
 		this.classIndex = classIndex;
 	}
 
-	/**
-	 * @return the virtualHeaders
-	 */
-	public VirtualMetric[] getVirtualHeaders() {
-		return virtualHeaders;
-	}
-
-	/**
-	 * @param virtualHeaders the virtualHeaders to set
-	 */
-	public void setVirtualHeaders(VirtualMetric[] virtualHeaders) {
-		this.virtualHeaders = virtualHeaders;
-	}
-	
-
-	/**
-	 * @return the hashmap containing label of the dataHeaders as the key and the according thresholds as the object
-	 */
-	public HashMap getThresholds()
-	{
-		HashMap hashMap = new LinkedHashMap();
-		
-		if(this.dataHeaders != null)
-		{
-			for(int i=0; i<dataHeaders.length; i++)
-			{
-				if(this.dataHeaders[i].getThresholds() != null && this.dataHeaders[i].getThresholds().length > 0)
-				{
-					hashMap.put(this.dataHeaders[i].getLabel(), this.dataHeaders[i].getThresholds());
-				}
-			}
-		}
-		
-		return hashMap;		
-	}
 	
 	/**
 	 * Adds one DataItem to the DataItem array
