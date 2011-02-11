@@ -11,7 +11,10 @@ public class CommandLineExplorer {
 			packageExplorer.addNewProjectCmd(args[1]);
 		}
 		else if (args[0].equalsIgnoreCase("-parse")) {
-			packageExplorer.parseManualCmd(args[1], args[2]);
+			if(args.length == 2)
+				packageExplorer.parseManualCmd(args[1], args[2], "");
+			if(args.length == 2)
+				packageExplorer.parseManualCmd(args[1], args[2], args[4]);
 		}
 		else if (args[0].equalsIgnoreCase("-logFilter")) {
 			packageExplorer.logFiltering(args[1]);
@@ -32,6 +35,7 @@ public class CommandLineExplorer {
 			System.out.println("The command line options are:");
 			System.out.println("-addProject projectDirectory");
 			System.out.println("-parse projectDirectory freezelabel");
+			System.out.println("-parse projectDirectory freezelabel -f FileLevelMetricsOutputDirectory");
 			System.out.println("-logFilter filepath");
 			System.out.println("-convertCsvToArff filepath");
 			System.out.println("-predict trainfile testfile");

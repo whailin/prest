@@ -17,7 +17,9 @@ import common.ApplicationProperties;
 import common.DirectoryListing;
 import common.ParseResult;
 import common.data.DataContext;
+import org.apache.log4j.Logger;
 
+import console.PrestConsoleApp;
 
 public class ParserExecutor {
 
@@ -25,37 +27,11 @@ public class ParserExecutor {
 	private static Language currentLanguage;
 	public static final int PARSING_SUCCESSFUL = 0;
 	public static final int PARSING_CANCELLED = 1;
-
-
-	public static int parseDirectory(File projectDirectory) throws Exception {
-
-		List<ParserInterfaceAndFileList> parserList = new ArrayList<ParserInterfaceAndFileList>();
-
-		parserList = findAppropriateParsers(projectDirectory);
-
-		if (parserList == null) {
-			return PARSING_CANCELLED;
-		} else {
-			parserResultList.clear();
-			parserResultList = new ArrayList<ParseResult>();
-			for (ParserInterfaceAndFileList parserAndFiles : parserList) {
-				DataContext thisOne = parseProject(parserAndFiles.getParser(),
-						parserAndFiles.getFileList(), projectDirectory
-								.getName());
-				if (thisOne == null) {
-
-				} else {
-					parserResultList.add(new ParseResult(parserAndFiles
-							.getParser().getLanguage(), thisOne));
-				}
-			}
-			return PARSING_SUCCESSFUL;
-		}
-	}
+	static Logger logger = Logger.getLogger(PrestConsoleApp.class.getName());
 
 	// same as the parseDirectory function, but altered for the command line
 	// execution
-	public static int parseDirectoryCmd(File projectDirectory) throws Exception {
+	public static int parseDirectoryCmd(File projectDirectory, String fileCsvPath) throws Exception {
 
 		List<ParserInterfaceAndFileList> parserList = new ArrayList<ParserInterfaceAndFileList>();
 
@@ -69,7 +45,7 @@ public class ParserExecutor {
 			for (ParserInterfaceAndFileList parserAndFiles : parserList) {
 				DataContext thisOne = parseProject(parserAndFiles.getParser(),
 						parserAndFiles.getFileList(), projectDirectory
-								.getName());
+								.getName(), fileCsvPath);
 				if (thisOne == null) {
 
 				} else {
@@ -119,7 +95,6 @@ public class ParserExecutor {
 			return new JavaParser(System.in);
 		} else if (lang.equals(Language.PLSQL)) {
 			return null;
-//			return new PLSqlParserExecuter();
 		} else {
 			return null;
 		}
@@ -128,7 +103,7 @@ public class ParserExecutor {
 
 
 	public static DataContext parseProject(IParser aParser,
-			List<File> fileList, String projectName) throws Exception {
+			List<File> fileList, String projectName, String fileCsvPath) throws Exception {
 
 		if (aParser != null && fileList != null) {
 			String[] fileNames = new String[fileList.size()];
@@ -154,6 +129,7 @@ public class ParserExecutor {
 						+ aParser.getLanguage().getLangName()
 						+ "_"
 						+ nowStr + ".xml";
+				
 				String packageCsvFileName = ApplicationProperties
 						.get("repositorylocation")
 						+ File.separator
@@ -165,16 +141,25 @@ public class ParserExecutor {
 						+ "_"
 						+ nowStr
 						+ "PACKAGE.csv";
-				String fileCsvFileName = ApplicationProperties
-						.get("repositorylocation")
-						+ File.separator
-						+ projectName
-						+ File.separator +"parse_results" 
-						+ File.separator +"parseResult"
-						+ "_"
-						+ aParser.getLanguage().getLangName()
-						+ "_"
-						+ nowStr + "FILE.csv";
+				
+				String fileCsvFileName = "";
+				
+				if(fileCsvPath == "")
+				{	
+					fileCsvFileName = ApplicationProperties
+							.get("repositorylocation")
+							+ File.separator
+							+ projectName
+							+ File.separator +"parse_results" 
+							+ File.separator +"parseResult"
+							+ "_"
+							+ aParser.getLanguage().getLangName()
+							+ "_"
+							+ nowStr + "FILE.csv";
+				} else{
+					fileCsvFileName = fileCsvPath;
+				}
+				
 				String classCsvFileName = ApplicationProperties
 						.get("repositorylocation")
 						+ File.separator
@@ -202,7 +187,7 @@ public class ParserExecutor {
 						xmlFileName, packageCsvFileName, fileCsvFileName,
 						classCsvFileName, methodCsvFileName);
 			} catch (Exception e) {
-
+				logger.error("Error while writing to files.");
 			}
 
 			return metrics;
