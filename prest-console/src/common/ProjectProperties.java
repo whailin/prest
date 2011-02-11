@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package definitions.application;
+package common;
 
 import java.io.InputStream;
 import java.util.Properties;

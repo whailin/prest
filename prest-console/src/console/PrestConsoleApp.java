@@ -4,7 +4,8 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
-import definitions.application.ApplicationProperties;
+import common.ApplicationProperties;
+
 
 public class PrestConsoleApp {
 

@@ -16,8 +16,8 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 
+import common.ApplicationProperties;
 import common.DirectoryListing;
-import definitions.application.ApplicationProperties;
 import executor.ParserExecutor;
 import common.CsvToArff;
 import predictor.WekaRunner;
