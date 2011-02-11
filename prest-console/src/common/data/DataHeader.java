@@ -1,4 +1,4 @@
-package categorizer.core;
+package common.data;
 
 import java.util.Vector;
 
@@ -114,10 +114,7 @@ public class DataHeader implements ContextBuilder {
 	 */
 	private boolean useLimits;
 	
-	/**
-	 * holds the thresholds related to this data header
-	 */
-	private Threshold[] thresholds;
+
 	
 	/**
 	 * default constructor
@@ -266,27 +263,6 @@ public class DataHeader implements ContextBuilder {
 	}
 
 
-
-
-
-	
-
-	/**
-	 * @return the thresholds
-	 */
-	public Threshold[] getThresholds() {
-		return thresholds;
-	}
-
-
-	/**
-	 * @param thresholds the thresholds to set
-	 */
-	public void setThresholds(Threshold[] thresholds) {
-		this.thresholds = thresholds;
-	}
-
-
 	/**
 	 * @param dataContext the dataContext to load the DataHeader from
 	 */
@@ -374,26 +350,6 @@ public class DataHeader implements ContextBuilder {
 		
 		DataContext tempDataContext = null ;
 		
-		tempDataContext = item.getNode(thresholdsTag);
-		
-		if(tempDataContext == null)
-			throw new UnsupportedDataContextException();
-		
-		tempVector = tempDataContext.getNodes(thresholdTag);
-		
-		if( tempVector != null && tempVector.size() > 0 )
-		{
-			thresholds = new Threshold[tempVector.size()];
-			
-			for(int i=0; i<tempVector.size(); i++)
-			{
-				thresholds[i] = new Threshold();
-				thresholds[i].load((DataContext)tempVector.get(i));
-                                thresholds[i].setDataHeader(this);
-			}
-		}
-		
-		
 		tempDataContext = item.getNode(distributionsTag);
 		
 		if(tempDataContext == null)
@@ -435,11 +391,7 @@ public class DataHeader implements ContextBuilder {
 		
 		DataContext thresholdContext = new DataContext();
 		
-		for(int i=0; thresholds != null && i<thresholds.length ; i++)
-		{
-			thresholdContext.add(thresholdTag,thresholds[i].store());
-		}
-		
+
 		dataContext.add(thresholdsTag,thresholdContext);
 		
 	
@@ -447,65 +399,4 @@ public class DataHeader implements ContextBuilder {
 	}
 	
 	
-	/**
-	 * Adds a threshold to the Threshold set
-	 * @param threshold
-	 */
-	public void addThreshold(Threshold threshold)
-	{
-		if(this.thresholds == null){
-			this.thresholds = new Threshold[1];
-			this.thresholds[0] = threshold;
-		}
-		else{
-			Threshold [] temp = new Threshold[this.thresholds.length + 1];
-			int i = 0;
-			for(i=0; i<this.thresholds.length; i++)
-				temp[i] = this.thresholds[i];
-			temp[i] = threshold;
-			
-			this.thresholds = temp;
-		}
-	}
-	
-	/**
-	 * Deletes the threshold whose id is index in the parameter
-	 * @param index
-	 */
-	public void deleteThreshold(int index)
-	{
-		Threshold[] temp = new Threshold[this.thresholds.length - 1];
-		int j=0;
-		for(int i=0; i<this.thresholds.length; i++)
-		{
-			if(i != index)
-			{
-				temp[j] = this.thresholds[i];
-				j++;
-			}
-		}
-		
-		this.thresholds = temp;
-	}
-
-	/**
-	 * Deletes the threshold in the parameter from the threshold set
-	 * @param threshold
-	 */
-	public void deleteThreshold(Threshold threshold)
-	{
-		Threshold[] temp = new Threshold[this.thresholds.length - 1];
-		int j=0;
-		for(int i=0; i<this.thresholds.length; i++)
-		{
-			if(this.thresholds[i] != threshold)
-			{
-				temp[j] = this.thresholds[i];
-				j++;
-			}
-		}
-		
-		this.thresholds = temp;
-		
-	}
 }

@@ -8,10 +8,11 @@ package common;
 import java.util.ArrayList;
 import java.util.List;
 
-import categorizer.core.DataField;
-import categorizer.core.DataHeader;
-import categorizer.core.DataItem;
-import categorizer.core.DataSet;
+import common.data.DataField;
+import common.data.DataHeader;
+import common.data.DataItem;
+import common.data.DataSet;
+
 import definitions.metrics.MetricTypeNames;
 
 public class ParseDataSets {

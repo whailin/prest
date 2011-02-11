@@ -1,4 +1,4 @@
-package categorizer.core;
+package common.data;
 
 import java.util.Vector;
 
@@ -61,10 +61,7 @@ public class DataItem implements ContextBuilder, Comparable{
 	 */
 	private String itemName;
 	
-	/**
-	 * Holds the user defined metrics related to this dataItem
-	 */
-	private VirtualMetric[] virtualHeaders;
+
 	
 	
 	/**
@@ -173,10 +170,6 @@ public class DataItem implements ContextBuilder, Comparable{
 			dataFieldsContext.add(new NodePair(dataHeaders[i].getLabel(), (dataFields[i]).getStringValue()));
 		}
 		
-		for(int i=0; virtualHeaders != null && i<virtualHeaders.length; i++)
-		{
-			dataFieldsContext.add(new NodePair(virtualHeaders[i].getLabel(), (dataFields[dataHeaders.length+i]).getStringValue()));
-		}
 		
 		dataContext.add(dataFieldsTag,dataFieldsContext);
 		
@@ -211,13 +204,6 @@ public class DataItem implements ContextBuilder, Comparable{
 		this.dataHeaders = dataHeaders;
 	}
 	
-	public VirtualMetric[] getVirtualHeaders() {
-		return virtualHeaders;
-	}
-
-	public void setVirtualHeaders(VirtualMetric[] virtualHeaders) {
-		this.virtualHeaders = virtualHeaders;
-	}
 
 	/**
 	 * @return the itemName

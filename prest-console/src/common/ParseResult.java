@@ -6,7 +6,8 @@ package common;
 
 import java.util.List;
 
-import categorizer.core.DataSet;
+import common.data.DataSet;
+
 import parser.enumeration.Language;
 
 /**

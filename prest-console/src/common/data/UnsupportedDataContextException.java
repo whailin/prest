@@ -1,13 +1,13 @@
 /**
  * 
  */
-package categorizer.core;
+package common.data;
 
 /**
  * @author secil.karagulle
  * @author ovunc.bozcan
  */
-public class UnsupportedDataContextException extends CategorizerException {
+public class UnsupportedDataContextException extends Exception {
 
 	/**
 	 * default constructor
@@ -20,8 +20,8 @@ public class UnsupportedDataContextException extends CategorizerException {
 	 * @param message
 	 */
 	public UnsupportedDataContextException(String message) {
-		super(message);
-		// TODO Auto-generated constructor stub
+		;
+		
 	}
 
 }

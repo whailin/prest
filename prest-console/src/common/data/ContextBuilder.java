@@ -1,4 +1,4 @@
-package categorizer.core;
+package common.data;
 
 import common.DataContext;
 
