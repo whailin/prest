@@ -13,9 +13,9 @@ import parser.enumeration.Language;
 import parser.parserinterface.IParser;
 import parser.parserinterface.ParserInterfaceAndFileList;
 
-import common.DataContext;
 import common.DirectoryListing;
 import common.ParseResult;
+import common.data.DataContext;
 
 import definitions.application.ApplicationProperties;
 

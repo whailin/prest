@@ -8,8 +8,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import common.DataContext;
 import common.NodePair;
+import common.data.DataContext;
 
 /*
  * this class contains all the packages of the project

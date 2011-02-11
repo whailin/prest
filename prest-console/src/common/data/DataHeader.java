@@ -2,7 +2,6 @@ package common.data;
 
 import java.util.Vector;
 
-import common.DataContext;
 import common.NodePair;
 
 /**

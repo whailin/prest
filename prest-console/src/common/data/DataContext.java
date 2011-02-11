@@ -1,4 +1,4 @@
-package common;
+package common.data;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Vector;
+
+import common.NodePair;
+import common.ObjectToTypes;
 
 import parser.Java.MetricsRelatedFiles.MetricNamesMap;
 import definitions.metrics.CommonMetricTypes;

@@ -1,6 +1,5 @@
 package common.data;
 
-import common.DataContext;
 
 /**
  * @author secil.karagulle
