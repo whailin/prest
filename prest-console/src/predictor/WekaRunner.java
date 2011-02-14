@@ -17,8 +17,13 @@ import java.io.FileWriter;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.*;
 
+import org.apache.log4j.Logger;
+
+import console.PrestConsoleApp;
+
 public class WekaRunner
 {
+	static Logger logger = Logger.getLogger(PrestConsoleApp.class.getName());
 
 	private static String findPredResultPath(String trainPath)
 	{
@@ -44,7 +49,7 @@ public class WekaRunner
 		}
 		catch (Exception e)
 		{
-			System.out.println(e.getMessage());
+			logger.error("Could not write Weka prediction results to disk.");
 		}
 		return 1;
 	}
@@ -118,13 +123,14 @@ public class WekaRunner
 				output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
 				output += (", predicted: " + testData.classAttribute().value((int) pred) + "\n");
 			}
+			
 			writeToFile(findPredResultPath(trainPath), fileNames,  nowStr, output, outputPath);
-
+			logger.info("Weka run finished successfully.");
 		}
 		catch (Exception e)
 		{
-			//should be extended to handle other exceptions
-			output = "error in parsing, examine your datasets...";
+
+			logger.error("There was a problem during the execution of Weka.");
 		}
 
 		return output;
