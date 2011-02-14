@@ -32,19 +32,26 @@ public class CsvToArff {
 
     }
 
-    public int csvToArffCommand(String csvFilePath) {
+    public int csvToArffCommand(String csvFilePath, String outputPath) {
     	try {
     	    CSVLoader loader = new CSVLoader();
     	    loader.setSource(new File(csvFilePath));
     	    Instances data = loader.getDataSet();
     	    String path = csvFilePath.substring(0, csvFilePath
     				    .lastIndexOf(File.separator));
-    	    String fileName = csvFilePath.substring(csvFilePath.lastIndexOf(File.separator)+1);    	    
-    	    BufferedWriter writer = new BufferedWriter(new FileWriter(
-    		    path.substring(0,path.lastIndexOf(File.separator))
-    			    + File.separator +"arff_files" + File.separator
-    			    + fileName.substring(0, fileName
-    				    .lastIndexOf('.')) + ".arff"));
+    	    String fileName = csvFilePath.substring(csvFilePath.lastIndexOf(File.separator)+1);
+    	    String outputFile = "";
+    	    
+    	    if(outputPath == null)
+    	    	outputFile = path.substring(0,path.lastIndexOf(File.separator))
+				    + File.separator +"arff_files" + File.separator
+				    + fileName.substring(0, fileName
+					    .lastIndexOf('.')) + ".arff";
+			else
+				outputFile = outputPath;
+    	    
+    	    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+    	    
     	    writer.write(data.toString());
     	    writer.flush();
     	    writer.close();
