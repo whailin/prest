@@ -20,7 +20,10 @@ public class CommandLineExplorer {
 			packageExplorer.logFiltering(args[1]);
 		}
 		else if (args[0].equalsIgnoreCase("-convertCsvToArff")) {
-			packageExplorer.convertCsvToArff(args[1]);
+			if(args.length == 2)
+				packageExplorer.convertCsvToArff(args[1], null);
+			if(args.length == 3)
+				packageExplorer.convertCsvToArff(args[1], args[1]);
 		}
 		else if (args[0].equalsIgnoreCase("-predict")) {
 			if(args.length == 3)
@@ -41,6 +44,7 @@ public class CommandLineExplorer {
 			System.out.println("-parse projectDirectory freezelabel -f filelevelmetricsoutputdirectory");
 			System.out.println("-logFilter filepath");
 			System.out.println("-convertCsvToArff filepath");
+			System.out.println("-convertCsvToArff filepath outfilepath");
 			System.out.println("-predict trainfile testfile");
 			System.out.println("-predict trainfile testfile resultoutputpath");
 		}

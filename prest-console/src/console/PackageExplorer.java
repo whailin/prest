@@ -143,11 +143,11 @@ public class PackageExplorer {
 	
 
 	
-	public void convertCsvToArff(String fileName) {
+	public void convertCsvToArff(String fileName, String outputPath) {
 		CsvToArff c = new CsvToArff();
 		try {
 			CsvToArff cCommand = new CsvToArff();
-			cCommand.csvToArffCommand(fileName);
+			cCommand.csvToArffCommand(fileName, outputPath);
 		} catch (Exception eCtoArff) {
 			logger.error("csv File name wrong or file corrupt!");
 		}

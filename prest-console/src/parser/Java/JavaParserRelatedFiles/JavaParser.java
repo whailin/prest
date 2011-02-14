@@ -247,18 +247,12 @@ public class JavaParser implements JavaParserConstants, IParser {
 		}
 
 		try {
-			System.out.println("writing from container to csv files");
+			logger.info("writing from container to csv files");
 			container.writeToFileAsXls(xmlFileName, packageCsvFileName,
 					fileCsvFileName, classCsvFileName, methodCsvFileName); // converts
-			// the
-			// given
-			// xml
-			// to
-			// csv
-			// file
-			System.out.println("csv files written");
+			logger.info("csv files written");
 		} catch (Exception e) {
-			System.out.println("writing to csv file failed");
+			logger.error("writing to csv file failed");
 			e.printStackTrace();
 		}
 
