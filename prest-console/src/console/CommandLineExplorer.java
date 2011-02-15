@@ -5,7 +5,7 @@ public class CommandLineExplorer {
 
 	public void startExecFromCmdLine(String[] args) {
 		packageExplorer = new PackageExplorer();
-		//packageExplorer.traverseRepository();
+		//packafgeExplorer.traverseRepository();
 		//console run format change
 		if (args[0].equalsIgnoreCase("-addProject")) {
 			packageExplorer.addNewProjectCmd(args[1]);
@@ -25,6 +25,9 @@ public class CommandLineExplorer {
 			if(args.length == 3)
 				packageExplorer.convertCsvToArff(args[1], args[1]);
 		}
+		else if (args[0].equalsIgnoreCase("-aggregateMethod2File")) {
+			packageExplorer.aggregateMethod2File(args[1]);
+		}
 		else if (args[0].equalsIgnoreCase("-predict")) {
 			if(args.length == 3)
 				packageExplorer.predict(args[1], args[2], "");
@@ -42,6 +45,7 @@ public class CommandLineExplorer {
 			System.out.println("-addProject projectDirectory");
 			System.out.println("-parse projectDirectory freezelabel");
 			System.out.println("-parse projectDirectory freezelabel -f filelevelmetricsoutputdirectory");
+			System.out.println("aggregateMethod2File methodpath");
 			System.out.println("-logFilter filepath");
 			System.out.println("-convertCsvToArff filepath");
 			System.out.println("-convertCsvToArff filepath outfilepath");

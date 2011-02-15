@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,6 +22,8 @@ import common.DirectoryListing;
 import executor.ParserExecutor;
 import common.CsvToArff;
 import predictor.WekaRunner;
+import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
 import weka.core.converters.CSVLoader;
@@ -219,37 +222,138 @@ public class PackageExplorer {
 	 * input: filename (method level)
 	 * output: (true) if new file with aggregated values
 	 * */
-	public boolean aggregateFromMethod2File(String filename)
+	public boolean aggregateMethod2File(String file)
 	{
-		Instances data = null;
-		CSVLoader cl = new CSVLoader();
+		Instances data;
+		CSVLoader loader = new CSVLoader();
+		BufferedWriter writer = null;
 		try
 		{
-			cl.setSource(new File(filename));
-			data = cl.getDataSet();
+			logger.info(file);
+			loader.setSource(new File(file));
+			data = loader.getDataSet();
 			data.setClassIndex(data.numAttributes()-1);
+			Instances newdata = new Instances(data, data.numInstances());
 			
-			//0:fileName, 1:fileId, 2:methodName, 3:methodId
-			double initialFileId = data.instance(0).value(1);
-			double[] FileValues = data.instance(0).toDoubleArray();
-			
-			for(int i=1; i<data.numInstances(); i++)
+			String filename = "";
+			String temp="";
+			double minValue = -1;
+			double maxValue = 0;
+			double totalValue = 0;
+			double avgValue;
+
+			/*put distinct file names into newdata */
+			int count = 0;
+			for(int i=0; i<data.numInstances(); i++)
 			{
-				if(initialFileId == data.instance(i).value(1))
+				temp = data.instance(i).stringValue(0);
+				if(i==0)
 				{
-					double[] temp = data.instance(i).toDoubleArray();
-					//take all instances with same file id
-					//apply min,max,avg,sum operations
+					filename = temp;
+					newdata.add(data.instance(i));
+					newdata.instance(count).setValue(0, data.instance(i).stringValue(0));
+					count ++;
+				}
+				if(temp.equals(filename))
+				{		
 				}
 				else
 				{
-					FileValues = data.instance(i).toDoubleArray();
-					initialFileId = data.instance(i).value(1);
+					filename = temp;
+					newdata.add(data.instance(i));
+					newdata.instance(count).setValue(0, data.instance(i).stringValue(0));
+					count++;
+				}	
+			}
+			
+			ArrayList<ArrayList<String>> valueArray = new ArrayList<ArrayList<String>>();
+			ArrayList<String> tempArray = null;
+			int index = 4;
+			int index2 = newdata.numAttributes()-1;
+			boolean firstinst = true;
+			Instance tempinst;
+			int lastpos = -1;
+			for(int j=0; j<newdata.numInstances(); j++)
+			{
+				filename = newdata.instance(j).stringValue(0);
+			//	System.out.println(filename);
+				tempArray = new ArrayList<String>();
+				for(int k=lastpos+1; k<data.numInstances(); k++)
+				{
+					tempinst = data.instance(k);
+					if(filename.equals(tempinst.stringValue(0)))
+					{
+					//	System.out.println(tempinst.stringValue(0));
+						for(int y=4; y<data.numAttributes(); y++)
+						{
+							tempArray.add(""+tempinst.value(y));
+						}
+						valueArray.add(tempArray);
+						tempArray = new ArrayList<String>();
+						lastpos = k;
+					}
+					else
+					{
+					//	System.out.println("New File: " + tempinst.stringValue(0));
+						/*compute new attributes for each (distinct) file */
+						for(int x=0; x<valueArray.get(0).size(); x++)
+						{
+							//iterate for attributes
+							for(int y=0; y< valueArray.size(); y++)
+							{
+								//iterate for instances (transpose)
+								tempArray.add(valueArray.get(y).get(x));
+							}
+							for(int z=0; z < tempArray.size(); z++)
+							{
+								if(Double.parseDouble(tempArray.get(z)) < minValue || minValue <0)
+									minValue = Double.parseDouble(tempArray.get(z));
+								if(Double.parseDouble(tempArray.get(z)) > maxValue)
+									maxValue = Double.parseDouble(tempArray.get(z));
+								totalValue = totalValue + Double.parseDouble(tempArray.get(z));
+							}
+							avgValue = totalValue / valueArray.size();
+							if(firstinst)
+							{
+								newdata.insertAttributeAt(new Attribute("MaxValue"),index2);
+								newdata.insertAttributeAt(new Attribute("TotalValue"), index2+1);
+								newdata.insertAttributeAt(new Attribute("AvgValue"), index2+2);
+							}
+							newdata.instance(j).setValue(index, minValue);
+							index++;
+							newdata.instance(j).setValue(index2, maxValue);
+							index2++;
+							newdata.instance(j).setValue(index2, totalValue);
+							index2++;
+							newdata.instance(j).setValue(index2, avgValue);
+							index2++;
+							minValue = -1;maxValue=0;totalValue=0; avgValue=0;
+							tempArray = new ArrayList<String>();
+						}
+						firstinst = false;
+						valueArray = new ArrayList<ArrayList<String>>();
+						tempArray = null;
+						index = 4;
+						index2 = data.numAttributes()-1;
+						break;
+					}
 				}
 			}
+			/*final touch: remove method name and method id from the dataset*/
+			newdata.deleteAttributeAt(2);
+			newdata.deleteAttributeAt(2);
+			logger.info("Writing to new file...");
+			String outFile = file.substring(0, file.lastIndexOf(".")); 
+			logger.info(outFile);
+			writer = new BufferedWriter(new FileWriter(outFile + "_AGGR2FILE.csv"));
+			writer.write(newdata.toString());
+    	    writer.flush();
+    	    writer.close();
+    	    logger.info("Aggregation is applied to " + file + " successfully");
 		}
 		catch(Exception e)
 		{
+			logger.error("Aggregation function could not be processed due to IOException");
 			e.printStackTrace();
 			return false;
 		}
