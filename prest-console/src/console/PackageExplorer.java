@@ -165,20 +165,24 @@ public class PackageExplorer {
 		ArffLoader loader = new ArffLoader();
 		Instances data;
 		BufferedWriter writer = null;
+		boolean methodLevel = false;
 	    try 
 	    {
 	    	logger.info(filename);
 			loader.setSource(new File(filename));
 			data = loader.getDataSet();
 			data.setClassIndex(data.numAttributes()-1);
+			if(data.attribute(2).name().equals("Method Name"))
+				methodLevel = true;
+			
 			Instances newdata = new Instances(data, data.numInstances());
 			
 			for(int j=0; j<data.numAttributes(); j++)
 			{
-				System.out.println("Attribute: " + j);
+			//	System.out.println("Attribute: " + j);
 				for(int i=0; i<data.numInstances(); i++)
 				{
-					System.out.println("Instance: " + i);
+			//		System.out.println("Instance: " + i);
 					if(j==0) //Filename
 					{
 						newdata.add(data.instance(i));
@@ -188,15 +192,29 @@ public class PackageExplorer {
 						newdata.instance(i).setValue(j, data.instance(i).value(j));
 					else if (j==data.numAttributes()-1) //Class attribute
 						newdata.instance(i).setClassValue(data.instance(i).stringValue(j));
-					else //numeric attributes
+					else
 					{
-						if(data.instance(i).value(j) != 0)
-							newdata.instance(i).setValue(j, Math.log(data.instance(i).value(j)));
+						if(methodLevel)
+						{
+							if(j!= 2 && j!=3)
+							{
+								if(data.instance(i).value(j) != 0)
+									newdata.instance(i).setValue(j, Math.log(data.instance(i).value(j)));
+								else
+									newdata.instance(i).setValue(j, Math.log(0.0001));
+							}
+						}
 						else
-							newdata.instance(i).setValue(j, Math.log(0.0001));
+						{
+							if(data.instance(i).value(j) != 0)
+								newdata.instance(i).setValue(j, Math.log(data.instance(i).value(j)));
+							else
+								newdata.instance(i).setValue(j, Math.log(0.0001));
+						}
 					}
 				}
 			}
+		
 			logger.info("Writing to new file...");
 			String outFile = filename.substring(0, filename.lastIndexOf(".")); 
 			logger.info(outFile);
@@ -225,7 +243,7 @@ public class PackageExplorer {
 	public boolean aggregateMethod2File(String file)
 	{
 		Instances data;
-		CSVLoader loader = new CSVLoader();
+		ArffLoader loader = new ArffLoader();
 		BufferedWriter writer = null;
 		try
 		{
@@ -345,7 +363,7 @@ public class PackageExplorer {
 			logger.info("Writing to new file...");
 			String outFile = file.substring(0, file.lastIndexOf(".")); 
 			logger.info(outFile);
-			writer = new BufferedWriter(new FileWriter(outFile + "_AGGR2FILE.csv"));
+			writer = new BufferedWriter(new FileWriter(outFile + "_AG.arff"));
 			writer.write(newdata.toString());
     	    writer.flush();
     	    writer.close();
