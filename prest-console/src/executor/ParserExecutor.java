@@ -21,7 +21,8 @@ import org.apache.log4j.Logger;
 
 import console.PrestConsoleApp;
 
-public class ParserExecutor {
+public class ParserExecutor
+{
 
 	private static List<ParseResult> parserResultList = new ArrayList<ParseResult>();
 	private static Language currentLanguage;
@@ -31,47 +32,55 @@ public class ParserExecutor {
 
 	// same as the parseDirectory function, but altered for the command line
 	// execution
-	public static int parseDirectoryCmd(File projectDirectory, String fileCsvPath) throws Exception {
+	public static int parseDirectoryCmd(File projectDirectory, String fileCsvPath, String methodCsvPath) throws Exception
+	{
 
 		List<ParserInterfaceAndFileList> parserList = new ArrayList<ParserInterfaceAndFileList>();
 
 		parserList = findAppropriateParsers(projectDirectory);
 
-		if (parserList == null) {
+		if (parserList == null)
+		{
 			return PARSING_CANCELLED;
-		} else {
+		}
+		else
+		{
 			parserResultList.clear();
 			parserResultList = new ArrayList<ParseResult>();
-			for (ParserInterfaceAndFileList parserAndFiles : parserList) {
-				DataContext thisOne = parseProject(parserAndFiles.getParser(),
-						parserAndFiles.getFileList(), projectDirectory
-								.getName(), fileCsvPath);
-				if (thisOne == null) {
+			for (ParserInterfaceAndFileList parserAndFiles : parserList)
+			{
+				DataContext thisOne = parseProject(parserAndFiles.getParser(), parserAndFiles.getFileList(), projectDirectory
+						.getName(), fileCsvPath, methodCsvPath);
+				if (thisOne == null)
+				{
 
-				} else {
-					parserResultList.add(new ParseResult(parserAndFiles
-							.getParser().getLanguage(), thisOne));
+				}
+				else
+				{
+					parserResultList.add(new ParseResult(parserAndFiles.getParser().getLanguage(), thisOne));
 				}
 			}
 			return PARSING_SUCCESSFUL;
 		}
 	}
 
-
-	public static List<ParserInterfaceAndFileList> findAppropriateParsers(
-			File projectDirectory) {
+	public static List<ParserInterfaceAndFileList> findAppropriateParsers(File projectDirectory)
+	{
 		List<ParserInterfaceAndFileList> parserList = new ArrayList<ParserInterfaceAndFileList>();
 
-		for (Language lang : Language.LIST) {
+		for (Language lang : Language.LIST)
+		{
 			DirectoryListing dl = new DirectoryListing();
 			List<File> fileList = new ArrayList<File>();
 			dl.visitAllFiles_Filtered(projectDirectory, lang.getExtension());
 			fileList.addAll(dl.getFilteredFileNames());
-			if (fileList != null && fileList.size() > 0) {
+			if (fileList != null && fileList.size() > 0)
+			{
 
 				IParser parser = constructParser(lang);
 
-				if (parser != null) {
+				if (parser != null)
+				{
 					parser.setLanguage(lang);
 					ParserInterfaceAndFileList pf = new ParserInterfaceAndFileList();
 					pf.setParser(parser);
@@ -83,158 +92,159 @@ public class ParserExecutor {
 		return parserList;
 	}
 
-	public static IParser constructParser(Language lang) {
-		if (lang.equals(Language.JAVA)) {
+	public static IParser constructParser(Language lang)
+	{
+		if (lang.equals(Language.JAVA))
+		{
 
 			return new JavaParser(System.in);
-		} else if (lang.equals(Language.C)) {
+		}
+		else if (lang.equals(Language.C))
+		{
 			return new CParser();
-		} else if (lang.equals(Language.CPP)) {
+		}
+		else if (lang.equals(Language.CPP))
+		{
 			return new CPPParserExecutor();
-		} else if (lang.equals(Language.JSP)) {
+		}
+		else if (lang.equals(Language.JSP))
+		{
 			return new JavaParser(System.in);
-		} else if (lang.equals(Language.PLSQL)) {
+		}
+		else if (lang.equals(Language.PLSQL))
+		{
 			return null;
-		} else {
+		}
+		else
+		{
 			return null;
 		}
 	}
 
+	public static DataContext parseProject(IParser aParser, List<File> fileList, String projectName, String fileCsvPath, String methodCsvPath)
+			throws Exception
+	{
 
-
-	public static DataContext parseProject(IParser aParser,
-			List<File> fileList, String projectName, String fileCsvPath) throws Exception {
-
-		if (aParser != null && fileList != null) {
+		if (aParser != null && fileList != null)
+		{
 			String[] fileNames = new String[fileList.size()];
-			for (int index = 0; index < fileList.size(); index++) {
+			for (int index = 0; index < fileList.size(); index++)
+			{
 				fileNames[index] = fileList.get(index).getAbsolutePath();
 			}
 
 			DataContext metrics = null;
-			try {
+			try
+			{
 				Date now = new Date();
 				DateFormat df = DateFormat.getDateTimeInstance();
-				String nowStr =  df.format(now);
-				nowStr = nowStr.replaceAll(" ","-");
-				nowStr = nowStr.replaceAll(":",".");
+				String nowStr = df.format(now);
+				nowStr = nowStr.replaceAll(" ", "-");
+				nowStr = nowStr.replaceAll(":", ".");
+
+				String xmlFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
+						+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
+						+ aParser.getLanguage().getLangName() + "_" + nowStr + ".xml";
+
+				String packageCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
+						+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
+						+ aParser.getLanguage().getLangName() + "_" + nowStr + "PACKAGE.csv";
+
 				
-				String xmlFileName = ApplicationProperties
-						.get("repositorylocation")
-						+ File.separator
-						+ projectName
-						+ File.separator +"parse_results" 
-						+ File.separator +"parseResult"
-						+ "_"
-						+ aParser.getLanguage().getLangName()
-						+ "_"
-						+ nowStr + ".xml";
-				
-				String packageCsvFileName = ApplicationProperties
-						.get("repositorylocation")
-						+ File.separator
-						+ projectName
-						+ File.separator +"parse_results" 
-						+ File.separator +"parseResult"
-						+ "_"
-						+ aParser.getLanguage().getLangName()
-						+ "_"
-						+ nowStr
-						+ "PACKAGE.csv";
-				
+				String methodCsvFileName = "";
+				if (methodCsvPath == "")
+				{
+					methodCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
+							+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
+							+ aParser.getLanguage().getLangName() + "_" + nowStr + "METHOD.csv";
+				}
+				else
+				{
+					methodCsvFileName = methodCsvPath;
+				}
+
 				String fileCsvFileName = "";
+
 				
-				if(fileCsvPath == "")
-				{	
-					fileCsvFileName = ApplicationProperties
-							.get("repositorylocation")
-							+ File.separator
-							+ projectName
-							+ File.separator +"parse_results" 
-							+ File.separator +"parseResult"
-							+ "_"
-							+ aParser.getLanguage().getLangName()
-							+ "_"
-							+ nowStr + "FILE.csv";
-				} else{
+				if (fileCsvPath == "")
+				{
+					fileCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
+							+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
+							+ aParser.getLanguage().getLangName() + "_" + nowStr + "FILE.csv";
+				}
+				else
+				{
 					fileCsvFileName = fileCsvPath;
 				}
-				
-				String classCsvFileName = ApplicationProperties
-						.get("repositorylocation")
-						+ File.separator
-						+ projectName
-						+ File.separator +"parse_results" 
-						+ File.separator +"parseResult"
-						+ "_"
-						+ aParser.getLanguage().getLangName()
-						+ "_"
-						+ nowStr
-						+ "CLASS.csv";
-				String methodCsvFileName = ApplicationProperties
-						.get("repositorylocation")
-						+ File.separator
-						+ projectName
-						+ File.separator +"parse_results" 
-						+ File.separator +"parseResult"
-						+ "_"
-						+ aParser.getLanguage().getLangName()
-						+ "_"
-						+ nowStr
-						+ "METHOD.csv";
 
-				metrics = aParser.startExecution(fileNames, projectName,
-						xmlFileName, packageCsvFileName, fileCsvFileName,
+				String classCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
+						+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
+						+ aParser.getLanguage().getLangName() + "_" + nowStr + "CLASS.csv";
+
+				metrics = aParser.startExecution(fileNames, projectName, xmlFileName, packageCsvFileName, fileCsvFileName,
 						classCsvFileName, methodCsvFileName);
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				logger.error("Error while writing to files.");
 			}
 
 			return metrics;
 
-		} else {
+		}
+		else
+		{
 			return null;
 		}
 	}
 
-	public static void fillWithOldResults(List<String> oldParseResultFiles,
-			List<Language> langList) {
-		for (int l = 0; l < parserResultList.size(); l++) {
+	public static void fillWithOldResults(List<String> oldParseResultFiles, List<Language> langList)
+	{
+		for (int l = 0; l < parserResultList.size(); l++)
+		{
 			parserResultList.set(l, null);
 		}
 		parserResultList.clear();
 		parserResultList = new ArrayList<ParseResult>();
-		for (int i = 0; i < oldParseResultFiles.size(); i++) {
+		for (int i = 0; i < oldParseResultFiles.size(); i++)
+		{
 			DataContext metrics = null;
-			try {
+			try
+			{
 				metrics = DataContext.readFromFile(oldParseResultFiles.get(i));
-			} catch (Exception e) {
-				System.out.println("Error reading "
-						+ oldParseResultFiles.get(i));
 			}
-			if (metrics != null) {
+			catch (Exception e)
+			{
+				System.out.println("Error reading " + oldParseResultFiles.get(i));
+			}
+			if (metrics != null)
+			{
 				ParseResult result = new ParseResult(langList.get(i), metrics);
-				if (result != null) {
+				if (result != null)
+				{
 					parserResultList.add(result);
 				}
 			}
 		}
 	}
 
-	public static List<ParseResult> getParserResultList() {
+	public static List<ParseResult> getParserResultList()
+	{
 		return parserResultList;
 	}
 
-	public static void setParserResultList(List<ParseResult> parserResultList) {
+	public static void setParserResultList(List<ParseResult> parserResultList)
+	{
 		ParserExecutor.parserResultList = parserResultList;
 	}
 
-
-	public static Language getCurrentLanguage() {
+	public static Language getCurrentLanguage()
+	{
 		return currentLanguage;
 	}
 
-	public static void setCurrentLanguage(Language currentLanguage) {
+	public static void setCurrentLanguage(Language currentLanguage)
+	{
 		ParserExecutor.currentLanguage = currentLanguage;
 	}
 }
