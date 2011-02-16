@@ -23,9 +23,9 @@ public class CommandLineExplorer {
 			if(args.length == 2)
 				packageExplorer.convertCsvToArff(args[1], null);
 			if(args.length == 3)
-				packageExplorer.convertCsvToArff(args[1], args[1]);
+				packageExplorer.convertCsvToArff(args[1], args[2]);
 		}
-		else if (args[0].equalsIgnoreCase("-aggregateMethod2File")) {
+		else if (args[0].equalsIgnoreCase("-aggregateMethodToFile")) {
 			packageExplorer.aggregateMethod2File(args[1]);
 		}
 		else if (args[0].equalsIgnoreCase("-predict")) {
