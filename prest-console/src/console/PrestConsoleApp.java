@@ -49,7 +49,6 @@ public class PrestConsoleApp {
 		}
 
 		if (fromCommandLine) {
-			logger.info("Prest is selected to work from command line");
 			CommandLineExplorer cmdLineExplorer = new CommandLineExplorer();
 			cmdLineExplorer.startExecFromCmdLine(cmdArguments);
 		}
