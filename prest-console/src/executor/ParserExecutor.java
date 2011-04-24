@@ -9,6 +9,7 @@ import java.util.List;
 import parser.C.CParser;
 import parser.Cpp.cppParser.CPPParserExecutor;
 import parser.Java.JavaParserRelatedFiles.JavaParser;
+import parser.PLSql.PLSqlParserRelatedFiles.PLSqlParserExecuter;
 import parser.enumeration.Language;
 import parser.parserinterface.IParser;
 import parser.parserinterface.ParserInterfaceAndFileList;
@@ -113,7 +114,7 @@ public class ParserExecutor
 		}
 		else if (lang.equals(Language.PLSQL))
 		{
-			return null;
+			return new PLSqlParserExecuter();
 		}
 		else
 		{

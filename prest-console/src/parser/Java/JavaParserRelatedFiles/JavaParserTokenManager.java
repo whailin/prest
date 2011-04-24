@@ -1893,7 +1893,7 @@ public class JavaParserTokenManager implements JavaParserConstants {
 		EOFLoop: for (;;) {
 			try {
 				curChar = input_stream.BeginToken();
-				if (curChar == '\r')
+				if (curChar == '\n')
 					lineNo++;
 			} catch (java.io.IOException e) {
 				jjmatchedKind = 0;
@@ -1912,7 +1912,7 @@ public class JavaParserTokenManager implements JavaParserConstants {
 						while (curChar <= 32
 								&& (0x100003600L & (1L << curChar)) != 0L) {
 							curChar = input_stream.BeginToken();
-							if (curChar == '\r')
+							if (curChar == '\n')
 								lineNo++;
 						}
 					} catch (java.io.IOException e1) {
