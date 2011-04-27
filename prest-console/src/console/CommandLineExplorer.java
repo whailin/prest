@@ -16,16 +16,19 @@ public class CommandLineExplorer
 		else if (args[0].equalsIgnoreCase("-parse"))
 		{
 			if (args.length == 3)
-				packageExplorer.parseManualCmd(args[1], args[2], "", "");
+				packageExplorer.parseManualCmd(args[1], args[2], "", "",  "");
 			if (args.length > 3)
 			{
 				if (args[3].equals("-f"))
-					packageExplorer.parseManualCmd(args[1], args[2], args[4], "");
+					packageExplorer.parseManualCmd(args[1], args[2], args[4], "", "");
 				if (args[3].equals("-m"))
-					packageExplorer.parseManualCmd(args[1], args[2], "", args[5]);
+					packageExplorer.parseManualCmd(args[1], args[2], "", args[5], "");
 				if (args[3].equals("-fm") || args[3].equals("-mf"))
 					if (args.length == 6)
-						packageExplorer.parseManualCmd(args[1], args[2], args[4], args[5]);
+						packageExplorer.parseManualCmd(args[1], args[2], args[4], args[5] , "");
+				if (args[3].equals("-fcm"))
+					if (args.length == 7)
+						packageExplorer.parseManualCmd(args[1], args[2], args[4], args[5], args[6]);
 			}
 		}
 		else if (args[0].equalsIgnoreCase("-logFilter"))
@@ -65,6 +68,7 @@ public class CommandLineExplorer
 		System.out.println("-parse projectDirectory freezelabel -m methodlevelmetricsoutputdirectory");
 		System.out
 				.println("-parse projectDirectory freezelabel -fm filelevelmetricsoutputdirectory methodlevelmetricsoutputdirectory");
+		System.out.println("-parse projectDirectory freezelabel -fcm filelevelmetricsoutputdirectory methodlevelmetricsoutputdirectory classlevelmetricsoutputdirectory");
 		System.out.println("aggregateMethod2File methodpath");
 		System.out.println("-logFilter filepath");
 		System.out.println("-convertCsvToArff filepath");

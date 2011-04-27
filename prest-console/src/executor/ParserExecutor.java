@@ -33,7 +33,8 @@ public class ParserExecutor
 
 	// same as the parseDirectory function, but altered for the command line
 	// execution
-	public static int parseDirectoryCmd(File projectDirectory, String fileCsvPath, String methodCsvPath) throws Exception
+	public static int parseDirectoryCmd(File projectDirectory, String fileCsvPath, String methodCsvPath, String classCsvPath)
+			throws Exception
 	{
 
 		List<ParserInterfaceAndFileList> parserList = new ArrayList<ParserInterfaceAndFileList>();
@@ -51,7 +52,7 @@ public class ParserExecutor
 			for (ParserInterfaceAndFileList parserAndFiles : parserList)
 			{
 				DataContext thisOne = parseProject(parserAndFiles.getParser(), parserAndFiles.getFileList(), projectDirectory
-						.getName(), fileCsvPath, methodCsvPath);
+						.getName(), fileCsvPath, methodCsvPath, classCsvPath);
 				if (thisOne == null)
 				{
 
@@ -122,8 +123,8 @@ public class ParserExecutor
 		}
 	}
 
-	public static DataContext parseProject(IParser aParser, List<File> fileList, String projectName, String fileCsvPath, String methodCsvPath)
-			throws Exception
+	public static DataContext parseProject(IParser aParser, List<File> fileList, String projectName, String fileCsvPath,
+			String methodCsvPath, String classCsvPath) throws Exception
 	{
 
 		if (aParser != null && fileList != null)
@@ -151,7 +152,6 @@ public class ParserExecutor
 						+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
 						+ aParser.getLanguage().getLangName() + "_" + nowStr + "PACKAGE.csv";
 
-				
 				String methodCsvFileName = "";
 				if (methodCsvPath == "")
 				{
@@ -166,7 +166,6 @@ public class ParserExecutor
 
 				String fileCsvFileName = "";
 
-				
 				if (fileCsvPath == "")
 				{
 					fileCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
@@ -178,9 +177,18 @@ public class ParserExecutor
 					fileCsvFileName = fileCsvPath;
 				}
 
-				String classCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
-						+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
-						+ aParser.getLanguage().getLangName() + "_" + nowStr + "CLASS.csv";
+				String classCsvFileName = "";
+
+				if (classCsvPath == "")
+				{
+					classCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
+							+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
+							+ aParser.getLanguage().getLangName() + "_" + nowStr + "CLASS.csv";
+				}
+				else
+				{
+					classCsvFileName = classCsvPath;
+				}
 
 				metrics = aParser.startExecution(fileNames, projectName, xmlFileName, packageCsvFileName, fileCsvFileName,
 						classCsvFileName, methodCsvFileName);
