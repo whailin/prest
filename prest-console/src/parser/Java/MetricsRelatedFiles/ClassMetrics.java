@@ -388,6 +388,27 @@ public class ClassMetrics {
 		LOC = loc;
 
 	}
+	
+	// returns the starting line
+	public int getStartLine() {
+		return startLine;
+	}
+
+	// the set function for the starting line of code
+	public void setStartLine(int start) {
+		this.startLine = start;
+	}
+	
+	// returns the number of end line of code
+	public int getEndLine() {
+		return endLine;
+	}
+
+	// the set function for the end line of code
+
+	public void setEndLine(int end) {
+		this.endLine = end;
+	}
 
 	public NodePair getCyclomaticComplexityNode() {
 		return new NodePair(CommonMetricTypes.CYCLOMATICCOMPLEXITY.getLabel(),
@@ -408,7 +429,8 @@ public class ClassMetrics {
 	protected int uniqueOperatorsCount;
 	protected int cyclomaticComplexity;
 	protected int essentialComplexity;
-
+	private int startLine = 0;
+	private int endLine = 0;
 	// below are the set functions of the common metrics
 	public void setName(String myName) {
 		this.name = myName;
@@ -459,6 +481,16 @@ public class ClassMetrics {
 	public NodePair getLOCNode() {
 		return new NodePair(CommonMetricTypes.LOC.getLabel(), String
 				.valueOf(getLOC()));
+	}
+	
+	public NodePair getEndLineNode() {
+		return new NodePair(CommonMetricTypes.ENDLINE.getLabel(), String
+				.valueOf(getEndLine()));
+	}
+	
+	public NodePair getStartLineNode() {
+		return new NodePair(CommonMetricTypes.STARTLINE.getLabel(), String
+				.valueOf(getStartLine()));
 	}
 
 	public NodePair getBranchCountNode() {

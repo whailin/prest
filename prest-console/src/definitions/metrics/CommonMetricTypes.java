@@ -9,6 +9,8 @@ public class CommonMetricTypes extends BaseMetric {
 			"global_id_counter", false);
 	public static final BaseMetric ID = new BaseMetric("id", false);
 	public static final BaseMetric LOC = new BaseMetric("lines_of_code", false);
+	public static final BaseMetric STARTLINE = new BaseMetric("start_line", false);
+	public static final BaseMetric ENDLINE = new BaseMetric("end_line", false);
 	public static final BaseMetric BRANCHCOUNT = new BaseMetric("branch_count",
 			false);
 	public static final BaseMetric DECISIONCOUNT = new BaseMetric(

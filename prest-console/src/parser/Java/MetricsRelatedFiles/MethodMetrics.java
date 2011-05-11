@@ -22,6 +22,9 @@ public class MethodMetrics {
 	private int formalParameters = 0;
 	private HashSet<String> callPairs = new HashSet<String>();
 
+	private int startLine = 0;
+	private int endLine = 0;
+	
 	// below is the builder for the class
 	// that initializes the name
 	public MethodMetrics(String name) {
@@ -194,6 +197,27 @@ public class MethodMetrics {
 	public void setLOC(int loc) {
 		this.LOC = loc;
 	}
+	
+	// returns the starting line
+	public int getStartLine() {
+		return startLine;
+	}
+
+	// the set function for the starting line of code
+	public void setStartLine(int start) {
+		this.startLine = start;
+	}
+	
+	// returns the number of end line of code
+	public int getEndLine() {
+		return endLine;
+	}
+
+	// the set function for the end line of code
+
+	public void setEndLine(int end) {
+		this.endLine = end;
+	}
 
 	public NodePair getCyclomaticComplexityNode() {
 		return new NodePair(CommonMetricTypes.CYCLOMATICCOMPLEXITY.getLabel(),
@@ -263,6 +287,15 @@ public class MethodMetrics {
 				.valueOf(getLOC()));
 	}
 
+	public NodePair getEndLineNode() {
+		return new NodePair(CommonMetricTypes.ENDLINE.getLabel(), String
+				.valueOf(getEndLine()));
+	}
+	
+	public NodePair getStartLineNode() {
+		return new NodePair(CommonMetricTypes.STARTLINE.getLabel(), String
+				.valueOf(getStartLine()));
+	}
 	public int getBranchCount() {
 		return this.branchCount;
 	}
