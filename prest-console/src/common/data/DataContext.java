@@ -11,17 +11,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.Writer;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Vector;
 
+import parser.Java.MetricsRelatedFiles.MetricNamesMap;
+
 import common.NodePair;
 import common.ObjectToTypes;
 
-import parser.Java.MetricsRelatedFiles.MetricNamesMap;
 import definitions.metrics.CommonMetricTypes;
 
 /**
@@ -47,6 +46,7 @@ public class DataContext implements Serializable {
 	public static final String RESULTSET_ROOT_NAME = "Row";
 
 	public static final String BACKSLASH = "_BACKSLASH_";
+	public static final String SLASH = "_SLASH_";
 	public static final String DOT = "_DOT_";
 	public static final String COLON = "_COLON_";
 	public static final String SPACE = "_SPACE_";
@@ -590,6 +590,7 @@ public class DataContext implements Serializable {
 		s = s.replace("~", TILDA);
 		s = s.replace("<", LESSTHAN);
 		s = s.replace(">", GREATERTHAN);
+		s = s.replace("/", SLASH);
 		if (s.startsWith(".")) {
 			s = DOT + s.substring(1);
 		}
@@ -610,6 +611,7 @@ public class DataContext implements Serializable {
 		s = s.replace(TILDA, "~");
 		s = s.replace(LESSTHAN, "<");
 		s = s.replace(GREATERTHAN, ">");
+		s = s.replace(SLASH, "/");
 		if (s.startsWith(DOT)) {
 			s = "." + s.substring(DOT.length());
 		}

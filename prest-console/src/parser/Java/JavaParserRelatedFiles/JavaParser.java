@@ -925,6 +925,8 @@ public class JavaParser implements JavaParserConstants, IParser {
 		if (!isInterface && currentState == CurrentState.MetricCollection) {
 			fileMetrics.getClass(classTrace).setLOC(
 					token_source.lineNo - start + 1);
+			fileMetrics.getClass(classTrace).setStartLine(start);
+			fileMetrics.getClass(classTrace).setEndLine(token_source.lineNo);
 		}
 
 		jj_consume_token(RBRACE);
@@ -1303,6 +1305,8 @@ public class JavaParser implements JavaParserConstants, IParser {
 		if (!isInterface && currentState == CurrentState.MetricCollection) {
 			// methodMetrics.setLOC(token_source.lineNo - start + 1);
 			methodMetrics.setLOC(token.endLine - start + 1);
+			methodMetrics.setEndLine(token.endLine);
+			methodMetrics.setStartLine(start );
 		}
 
 	}
@@ -1525,6 +1529,8 @@ public class JavaParser implements JavaParserConstants, IParser {
 		// to method metrics
 		if (currentState == CurrentState.MetricCollection) {
 			methodMetrics.setLOC(token_source.lineNo - start + 1);
+			methodMetrics.setEndLine(token_source.lineNo);
+			methodMetrics.setStartLine(start);
 		}
 	}
 
