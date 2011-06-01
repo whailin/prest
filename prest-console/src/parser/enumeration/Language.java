@@ -5,30 +5,30 @@ import java.util.List;
 
 public enum Language {
 	
-    JAVA ("Java", "Java", ".java"),
-    C ("C", "C", ".c"),
-    CPP ("Cpp", "C++", ".cpp"),
-    JSP ("Jsp", "Jsp", ".jsp"),
-    PLSQL("PlSql","PL/SQL",".pkb")
+    JAVA ("Java", "Java", new String[]{".java",".jsp"}),
+    C ("C", "C", new String[]{".c"}),
+    CPP ("Cpp", "C++", new String[]{".cpp"}),
+    //JSP ("Jsp", "Jsp", new String[]{".java",".jsp"}),
+    PLSQL("PlSql","PL/SQL",new String[]{".pkb"})
     //CSHARP ("CSharp", "C#", ".cs")
     ;
 
-    Language(String langName, String displayName, String extension){
+    Language(String langName, String displayName, String[] extensions){
             this.langName = langName;
             this.displayName = displayName;
-            this.extension = extension;
+            this.extensions = extensions;
     }
 
     private final String langName;
     private final String displayName;
-    private final String extension;
+    private final String[] extensions;
     public static final List<Language> LIST = new ArrayList<Language>();
 
     static {
             LIST.add(JAVA);
             LIST.add(C);
             LIST.add(CPP);
-            LIST.add(JSP);
+           // LIST.add(JSP);
             LIST.add(PLSQL);
             //LIST.add(CSHARP);
     }
@@ -37,8 +37,8 @@ public enum Language {
             return langName;
     }
 
-    public String getExtension() {
-            return extension;
+    public String[] getExtensions() {
+            return extensions;
     }
     
     public String getDisplayName() {

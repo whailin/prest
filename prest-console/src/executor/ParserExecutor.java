@@ -74,8 +74,12 @@ public class ParserExecutor
 		{
 			DirectoryListing dl = new DirectoryListing();
 			List<File> fileList = new ArrayList<File>();
-			dl.visitAllFiles_Filtered(projectDirectory, lang.getExtension());
-			fileList.addAll(dl.getFilteredFileNames());
+			for (String l : lang.getExtensions())
+			{
+				dl.visitAllFiles_Filtered(projectDirectory, l);
+				fileList.addAll(dl.getFilteredFileNames());
+			}
+			
 			if (fileList != null && fileList.size() > 0)
 			{
 
@@ -109,10 +113,10 @@ public class ParserExecutor
 		{
 			return new CPPParserExecutor();
 		}
-		else if (lang.equals(Language.JSP))
-		{
-			return new JavaParser(System.in);
-		}
+//		else if (lang.equals(Language.JSP))
+//		{
+//			return new JavaParser(System.in);
+//		}
 		else if (lang.equals(Language.PLSQL))
 		{
 			return new PLSqlParserExecuter();

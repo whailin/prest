@@ -37,12 +37,7 @@ enum CurrentState {
 
 public class JavaParser implements JavaParserConstants, IParser {
 
-	// explanation:
-	// burada class trace, current method, current file, method, package
-	// ve symbol table yarat�l�yor
 
-	// public static final String func_call_file =
-	// "C:\\callGraphWithActualNames.csv";
 	static Logger logger = Logger.getLogger(PrestConsoleApp.class.getName());
 	Language language = Language.JAVA;
 	CurrentState currentState;

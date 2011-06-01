@@ -347,8 +347,7 @@ public class PackageMetrics {
 	// SciDesktop Modification TA_R001	--- getNormalized introduced to fix a localization bug when localization mandates a different decimal separator 
 	public final double getNormalized(double d)
 	{
-		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
-		return Double.parseDouble(df.format(d).replace((char) 8734, '0').replace((char) 65553,'0').replace(dp, '.'));
+		return d;
 	}
 	
 	public final double getHalsteadDifficulty() {

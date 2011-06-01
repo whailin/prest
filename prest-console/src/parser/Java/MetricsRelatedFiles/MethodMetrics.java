@@ -367,18 +367,14 @@ public class MethodMetrics {
 	// below are the calculation and get functions of more complex metrics that
 	// will be common to methods, classes and packages
 	
-	// SciDesktop Modification TA_R001	--- getNormalized introduced to fix a localization bug when localization mandates a different decimal separator 
 	public final double getNormalized(double d)
 	{
-		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
-		return Double.parseDouble(df.format(d).replace((char) 8734, '0').replace((char) 65553,'0').replace(dp, '.'));
+		return d;
 	}
 	
-	// SciDesktop Modification TA_R001	--- getNormalizedRV introduced to fix a localization bug when localization mandates a different decimal separator 
 	public final double getNormalizedRV(double d)
 	{
-		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
-		return Double.parseDouble(df.format(d).replace("?","0").replace(dp, '.'));
+		return d;
 	}
 
 	public final double getHalsteadDifficulty() {
