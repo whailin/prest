@@ -157,15 +157,13 @@ public class ClassMetrics {
 	// SciDesktop Modification TA_R001	--- getNormalized (double) introduced to fix a localization bug when localization mandates a different decimal separator 
 	public final float getNormalized(float d)
 	{
-		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
-		return Float.parseFloat(df.format(d).replace((char) 8734, '0').replace((char) 65553,'0').replace(dp, '.'));
+		return d;
 	}
 
 	// SciDesktop Modification TA_R001	--- getNormalized (float) introduced to fix a localization bug when localization mandates a different decimal separator 
 	public final double getNormalized(double d)
 	{
-		char dp = df.getDecimalFormatSymbols().getDecimalSeparator();
-		return Double.parseDouble(df.format(d).replace((char) 8734, '0').replace((char) 65553,'0').replace(dp, '.'));
+		return d;
 	}
 	
 	// returns the percentage of pub-data among data
