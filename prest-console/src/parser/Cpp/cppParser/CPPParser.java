@@ -1336,10 +1336,7 @@ public final class CPPParser implements CPPParserConstants {
 		}
 	}
 
-	static final public void using_namespace() throws ParseException {// caner:
-		// bu
-		// kullanýlmýyor
-		// ama kullanýlabilse güzel olur kanaatimce
+	static final public void using_namespace() throws ParseException {
 
 		jj_consume_token(USING);
 		jj_consume_token(NAMESPACE);
