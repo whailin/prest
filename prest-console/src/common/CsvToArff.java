@@ -68,7 +68,6 @@ public class CsvToArff {
 	    CSVLoader loader = new CSVLoader();
 	    loader.setSource(new File(csvFilePath));
 	    Instances data = loader.getDataSet();
-
 	    BufferedWriter writer = new BufferedWriter(new FileWriter(
 		    projectPath
 			    + File.separator +"arff_files" + File.separator

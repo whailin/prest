@@ -91,7 +91,7 @@ public class WekaRunner
 			//choose your algorithm
 			if (algorithm == "Naive Bayes")
 			{
-				cls = new NaiveBayes();
+				cls = new J48();
 			}
 			else if (algorithm == "J48")
 			{
