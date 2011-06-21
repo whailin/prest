@@ -91,7 +91,7 @@ public class WekaRunner
 			//choose your algorithm
 			if (algorithm == "Naive Bayes")
 			{
-				cls = new J48();
+				cls = new NaiveBayes();
 			}
 			else if (algorithm == "J48")
 			{
@@ -129,7 +129,7 @@ public class WekaRunner
 		}
 		catch (Exception e)
 		{
-
+			e.printStackTrace();
 			logger.error("There was a problem during the execution of Weka.");
 		}
 
