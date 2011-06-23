@@ -120,8 +120,8 @@ public class WekaRunner
 			{
 				double pred = cls.classifyInstance(testData.instance(i));
 				output += ("ID: " + testData.instance(i).value(0));
-				output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
-				output += (", predicted: " + testData.classAttribute().value((int) pred) + "\n");
+			//	output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
+				output += (", predicted: " + trainData.classAttribute().value((int) pred) + "\n");
 			}
 			
 			writeToFile(findPredResultPath(trainPath), fileNames,  nowStr, output, outputPath);
