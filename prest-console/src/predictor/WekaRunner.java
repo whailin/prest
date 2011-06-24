@@ -72,11 +72,11 @@ public class WekaRunner
 			Instances trainData = new Instances(new BufferedReader(new FileReader(trainPath)));
 			// setting class attribute
 			trainData.setClassIndex(trainData.numAttributes() - 1);
-
+			trainData.deleteAttributeAt(0);
 			//first load test set 
 			//note: if cross validation is to be done than it is not used.
 			Instances testData = new Instances(new BufferedReader(new FileReader(testPath)));
-
+			testData.deleteAttributeAt(0);
 			//normalize data if option selected
 			if (preProcess == "Normalize")
 			{
