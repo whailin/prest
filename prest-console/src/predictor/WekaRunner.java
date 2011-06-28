@@ -1,5 +1,6 @@
 package predictor;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.text.DateFormat;
 
@@ -53,6 +54,55 @@ public class WekaRunner
 		}
 		return 1;
 	}
+	
+	public static Instances doUnderSampling(Instances data)
+	{
+		Instances newdata = null;
+		ArrayList<Integer> defective = new ArrayList<Integer>();
+		ArrayList<Integer> defectFree = new ArrayList<Integer>();
+		int defectCount = 0;
+		int defectFreeCount = 0;
+		for(int j=0; j<data.numInstances(); j++)
+		{
+			if (data.instance(j).stringValue(data.numAttributes()-1).equals("true"))
+			{
+				defectCount++;
+				defective.add(j);
+			}
+			else
+			{
+				defectFreeCount++;
+				defectFree.add(j);
+			}
+		}
+		if (defectCount == 0)
+			return null;
+		newdata = new Instances(data,defectCount*2);
+		newdata.setClassIndex(data.numAttributes()-1);
+		java.util.Random r = new java.util.Random();
+		for(int i=0; i<defectCount; i++)
+		{
+			int pos = r.nextInt(defectFreeCount);
+			newdata.add(data.instance(defectFree.get(pos)));
+			for (int k=0; k<data.numAttributes()-1; k++)
+			{
+				newdata.instance(i).setValue(k, data.instance(defectFree.get(pos)).value(k));
+			}
+			newdata.instance(i).setValue(data.numAttributes()-1, "false");
+		}
+		int dCount = 0;
+		for (int i=defectCount; i<2*defectCount; i++)
+		{
+			newdata.add(data.instance(defective.get(dCount)));
+			for (int k=0; k<data.numAttributes()-1; k++)
+			{
+				newdata.instance(i).setValue(k, data.instance(defective.get(dCount)).value(k));
+			}
+			newdata.instance(i).setValue(data.numAttributes()-1, "true");
+			dCount++;
+		}
+		return newdata;
+	}
 
 	public static String runWeka(String trainPath, String testPath, 
 			String algorithm, String preProcess, String CrossValidate,
@@ -72,6 +122,15 @@ public class WekaRunner
 			Instances trainData = new Instances(new BufferedReader(new FileReader(trainPath)));
 			// setting class attribute
 			trainData.setClassIndex(trainData.numAttributes() - 1);
+			
+			Instances newTrainData = doUnderSampling(trainData);
+			if (newTrainData != null)
+				trainData = newTrainData;			
+			else
+			{
+				//use the previous training set
+			}
+			
 			trainData.deleteAttributeAt(0);
 			//first load test set 
 			//note: if cross validation is to be done than it is not used.
