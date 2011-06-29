@@ -13,6 +13,10 @@ public class CommandLineExplorer
 		{
 			packageExplorer.addNewProjectCmd(args[1]);
 		}
+		else if (args[0].equalsIgnoreCase("-setRepository"))
+		{
+			packageExplorer.setRepoCmd(args[1]);
+		}
 		else if (args[0].equalsIgnoreCase("-parse"))
 		{
 			if (args.length == 3)
@@ -62,6 +66,7 @@ public class CommandLineExplorer
 	public void listCommandLineOptions()
 	{
 		System.out.println("The command line options are:");
+		System.out.println("-setRepository repoPath");
 		System.out.println("-addProject projectDirectory");
 		System.out.println("-parse projectDirectory freezelabel");
 		System.out.println("-parse projectDirectory freezelabel -f filelevelmetricsoutputdirectory");

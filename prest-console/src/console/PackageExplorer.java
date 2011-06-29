@@ -403,4 +403,11 @@ public class PackageExplorer {
 		retStr = WekaRunner.runWeka(trainFile,testFile,wekaAlgorithmType,wekaPreProcess,wekaCrossValidate,wekaLogFilter, resultPath); 
 		return retStr;
 	}
+
+	
+	public void setRepoCmd(String repoPath)
+	{
+		ApplicationProperties.setRepositoryLocation(null, repoPath);
+		
+	}
 }

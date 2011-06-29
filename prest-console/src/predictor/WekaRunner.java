@@ -137,7 +137,7 @@ public class WekaRunner
 			Instances testData = new Instances(new BufferedReader(new FileReader(testPath)));
 			testData.deleteAttributeAt(0);
 			//normalize data if option selected
-			if (preProcess == "Normalize")
+			if (preProcess.equals("Normalize"))
 			{
 				trainData = Filter.useFilter(trainData, new Normalize());
 				testData = Filter.useFilter(testData, new Normalize());
@@ -148,11 +148,11 @@ public class WekaRunner
 			Classifier cls = null;
 
 			//choose your algorithm
-			if (algorithm == "Naive Bayes")
+			if (algorithm.equals("Naive Bayes"))
 			{
 				cls = new NaiveBayes();
 			}
-			else if (algorithm == "J48")
+			else if (algorithm.equals("J48"))
 			{
 				cls = new J48();
 			}
@@ -162,7 +162,7 @@ public class WekaRunner
 			Evaluation eval = new Evaluation(trainData);
 
 			//if cross validate is selected use cross validation else use test data
-			if (CrossValidate == "true")
+			if (CrossValidate.equals("true"))
 			{
 				eval.crossValidateModel(cls, trainData, 10);
 			}
