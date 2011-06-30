@@ -33,14 +33,21 @@ public class ParserExecutor
 
 	// same as the parseDirectory function, but altered for the command line
 	// execution
-	public static int parseDirectoryCmd(File projectDirectory, String fileCsvPath, String methodCsvPath, String classCsvPath)
+	public static int parseDirectoryCmd(File projectDirectory, String fileCsvPath, String methodCsvPath, String classCsvPath, String freezeName)
 			throws Exception
 	{
 
 		List<ParserInterfaceAndFileList> parserList = new ArrayList<ParserInterfaceAndFileList>();
 
 		parserList = findAppropriateParsers(projectDirectory);
-
+		
+		//if freeze parameter provided project name set to freeze name
+		String projDir = "";
+		if(freezeName.equals(""))
+			projDir = projectDirectory.getName();
+		else
+			projDir = freezeName;
+		
 		if (parserList == null)
 		{
 			return PARSING_CANCELLED;
@@ -51,8 +58,7 @@ public class ParserExecutor
 			parserResultList = new ArrayList<ParseResult>();
 			for (ParserInterfaceAndFileList parserAndFiles : parserList)
 			{
-				DataContext thisOne = parseProject(parserAndFiles.getParser(), parserAndFiles.getFileList(), projectDirectory
-						.getName(), fileCsvPath, methodCsvPath, classCsvPath);
+				DataContext thisOne = parseProject(parserAndFiles.getParser(), parserAndFiles.getFileList(), projDir, fileCsvPath, methodCsvPath, classCsvPath);
 				if (thisOne == null)
 				{
 
@@ -157,7 +163,7 @@ public class ParserExecutor
 						+ aParser.getLanguage().getLangName() + "_" + nowStr + "PACKAGE.csv";
 
 				String methodCsvFileName = "";
-				if (methodCsvPath == "")
+				if (methodCsvPath.equals(""))
 				{
 					methodCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
 							+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
@@ -170,7 +176,7 @@ public class ParserExecutor
 
 				String fileCsvFileName = "";
 
-				if (fileCsvPath == "")
+				if (fileCsvPath.equals(""))
 				{
 					fileCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
 							+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
@@ -183,7 +189,7 @@ public class ParserExecutor
 
 				String classCsvFileName = "";
 
-				if (classCsvPath == "")
+				if (classCsvPath.equals(""))
 				{
 					classCsvFileName = ApplicationProperties.get("repositorylocation") + File.separator + projectName
 							+ File.separator + "parse_results" + File.separator + "parseResult" + "_"
