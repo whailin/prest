@@ -2,6 +2,7 @@ package predictor;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.text.DateFormat;
 
 import weka.classifiers.*;
@@ -40,7 +41,7 @@ public class WekaRunner
 		try
 		{
 			if (outputPath == "")
-				writer = new BufferedWriter(new FileWriter(folder + "results-"+ fileNames  + "-" + nowStr + ".res"));
+				writer = new BufferedWriter(new FileWriter(folder + "results-" + fileNames + "-" + nowStr + ".res"));
 			else
 				writer = new BufferedWriter(new FileWriter(outputPath));
 			writer.write(data);
@@ -54,7 +55,7 @@ public class WekaRunner
 		}
 		return 1;
 	}
-	
+
 	public static Instances doUnderSampling(Instances data)
 	{
 		Instances newdata = null;
@@ -62,9 +63,9 @@ public class WekaRunner
 		ArrayList<Integer> defectFree = new ArrayList<Integer>();
 		int defectCount = 0;
 		int defectFreeCount = 0;
-		for(int j=0; j<data.numInstances(); j++)
+		for (int j = 0; j < data.numInstances(); j++)
 		{
-			if (data.instance(j).stringValue(data.numAttributes()-1).equals("true"))
+			if (data.instance(j).stringValue(data.numAttributes() - 1).equals("true"))
 			{
 				defectCount++;
 				defective.add(j);
@@ -77,39 +78,38 @@ public class WekaRunner
 		}
 		if (defectCount == 0)
 			return null;
-		newdata = new Instances(data,defectCount*2);
-		newdata.setClassIndex(data.numAttributes()-1);
+		newdata = new Instances(data, defectCount * 2);
+		newdata.setClassIndex(data.numAttributes() - 1);
 		java.util.Random r = new java.util.Random();
-		for(int i=0; i<defectCount; i++)
+		for (int i = 0; i < defectCount; i++)
 		{
 			int pos = r.nextInt(defectFreeCount);
 			newdata.add(data.instance(defectFree.get(pos)));
-			for (int k=0; k<data.numAttributes()-1; k++)
+			for (int k = 0; k < data.numAttributes() - 1; k++)
 			{
 				newdata.instance(i).setValue(k, data.instance(defectFree.get(pos)).value(k));
 			}
-			newdata.instance(i).setValue(data.numAttributes()-1, "false");
+			newdata.instance(i).setValue(data.numAttributes() - 1, "false");
 		}
 		int dCount = 0;
-		for (int i=defectCount; i<2*defectCount; i++)
+		for (int i = defectCount; i < 2 * defectCount; i++)
 		{
 			newdata.add(data.instance(defective.get(dCount)));
-			for (int k=0; k<data.numAttributes()-1; k++)
+			for (int k = 0; k < data.numAttributes() - 1; k++)
 			{
 				newdata.instance(i).setValue(k, data.instance(defective.get(dCount)).value(k));
 			}
-			newdata.instance(i).setValue(data.numAttributes()-1, "true");
+			newdata.instance(i).setValue(data.numAttributes() - 1, "true");
 			dCount++;
 		}
 		return newdata;
 	}
 
-	public static String runWeka(String trainPath, String testPath, 
-			String algorithm, String preProcess, String CrossValidate,
-			String logFilter, String outputPath)
+	public static String runWeka(String trainPath, String testPath, String algorithm, String preProcess, String CrossValidate,
+			String logFilter, String outputPath, String fileFilter)
 	{
 		String fileNames = trainPath.substring(trainPath.lastIndexOf(File.separator) + 1) + "-"
-		                   + trainPath.substring(testPath.lastIndexOf(File.separator) +  1);
+				+ trainPath.substring(testPath.lastIndexOf(File.separator) + 1);
 		String output = "";
 		output += "train file: " + trainPath + "\n";
 		output += "test file: " + testPath + "\n";
@@ -122,19 +122,26 @@ public class WekaRunner
 			Instances trainData = new Instances(new BufferedReader(new FileReader(trainPath)));
 			// setting class attribute
 			trainData.setClassIndex(trainData.numAttributes() - 1);
-			
+
 			Instances newTrainData = doUnderSampling(trainData);
 			if (newTrainData != null)
-				trainData = newTrainData;			
+				trainData = newTrainData;
 			else
 			{
 				//use the previous training set
 			}
-			
+
 			trainData.deleteAttributeAt(0);
 			//first load test set 
 			//note: if cross validation is to be done than it is not used.
 			Instances testData = new Instances(new BufferedReader(new FileReader(testPath)));
+			String[] testFilePaths = new String[testData.numInstances()];
+
+			for (int i = 0; i < testData.numInstances(); i++)
+			{
+				testFilePaths[i] = testData.instance(i).stringValue(0).replace("\\", "/");
+			}
+
 			testData.deleteAttributeAt(0);
 			//normalize data if option selected
 			if (preProcess.equals("Normalize"))
@@ -174,16 +181,34 @@ public class WekaRunner
 			//show output on screen
 			output += "Experiment Results\n" + nowStr + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString() + "\n\n";
 
+			ArrayList<String> changedFiles = new ArrayList<String>();
+			//get changed files
+			if (!fileFilter.equals(""))
+			{
+				BufferedReader input = new BufferedReader(new FileReader(fileFilter));
+				String line = null;
+				input.readLine();
+				while ((line = input.readLine()) != null)
+				{
+					changedFiles.add(line.replace("\\", "/"));
+				}
+
+			}
+
 			// output the ID, actual value and predicted value for each instance
 			for (int i = 0; i < testData.numInstances(); i++)
 			{
+
 				double pred = cls.classifyInstance(testData.instance(i));
 				output += ("ID: " + testData.instance(i).value(0));
-			//	output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
-				output += (", predicted: " + trainData.classAttribute().value((int) pred) + "\n");
+				//	output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
+				if (isAmongChangedFiles(changedFiles, testFilePaths[i]))
+					output += (", predicted: " + trainData.classAttribute().value((int) pred) + "\n");
+				else
+					output += (", predicted: " + "false" + "\n"); // not among changed files
 			}
-			
-			writeToFile(findPredResultPath(trainPath), fileNames,  nowStr, output, outputPath);
+
+			writeToFile(findPredResultPath(trainPath), fileNames, nowStr, output, outputPath);
 			logger.info("Weka run finished successfully.");
 		}
 		catch (Exception e)
@@ -193,5 +218,18 @@ public class WekaRunner
 		}
 
 		return output;
+	}
+
+	private static boolean isAmongChangedFiles(ArrayList<String> changedFiles, String aFile)
+	{
+		if (changedFiles.size() == 0)//returns true when there are no changed files provided
+			return true;
+
+		for (String changedFile : changedFiles)
+		{
+			if (aFile.endsWith(changedFile))
+				return true;
+		}
+		return false;
 	}
 }

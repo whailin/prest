@@ -53,9 +53,11 @@ public class CommandLineExplorer
 		else if (args[0].equalsIgnoreCase("-predict"))
 		{
 			if (args.length == 3)
-				packageExplorer.predict(args[1], args[2], "");
+				packageExplorer.predict(args[1], args[2], "", "");
 			if (args.length == 4)
-				packageExplorer.predict(args[1], args[2], args[3]);
+				packageExplorer.predict(args[1], args[2], args[3], "");
+			if (args.length == 5)
+				packageExplorer.predict(args[1], args[2], args[3], args[4]);
 		}
 		else
 		{
@@ -80,6 +82,7 @@ public class CommandLineExplorer
 		System.out.println("-convertCsvToArff filepath outfilepath");
 		System.out.println("-predict trainfile testfile");
 		System.out.println("-predict trainfile testfile resultoutputpath");
+		System.out.println("-predict trainfile testfile  resultoutputpath filefilter");
 	}
 
 	/**
