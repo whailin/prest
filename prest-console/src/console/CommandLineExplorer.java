@@ -59,6 +59,10 @@ public class CommandLineExplorer
 			if (args.length == 5)
 				packageExplorer.predict(args[1], args[2], args[3], args[4]);
 		}
+		else if (args[0].equalsIgnoreCase("-addChanges"))
+		{
+			packageExplorer.addChanges(args[1],args[2], args[3], args[4], args[5]);
+		}
 		else
 		{
 			listCommandLineOptions();
@@ -67,6 +71,7 @@ public class CommandLineExplorer
 
 	public void listCommandLineOptions()
 	{
+		System.out.println("You entered a command with wrong syntax or wrong argument count.");
 		System.out.println("The command line options are:");
 		System.out.println("-setRepository repoPath");
 		System.out.println("-addProject projectDirectory");
@@ -83,6 +88,7 @@ public class CommandLineExplorer
 		System.out.println("-predict trainfile testfile");
 		System.out.println("-predict trainfile testfile resultoutputpath");
 		System.out.println("-predict trainfile testfile  resultoutputpath filefilter");
+		System.out.println("-addChanges changesfile methodfile methodfile");
 	}
 
 	/**
