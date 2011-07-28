@@ -106,7 +106,7 @@ public class WekaRunner
 	}
 
 	public static String runWeka(String trainPath, String testPath, String algorithm, String preProcess, String CrossValidate,
-			String logFilter, String outputPath, String fileFilter)
+			String logFilter, String outputPath, String fileFilter, int diffSpan)
 	{
 		String fileNames = trainPath.substring(trainPath.lastIndexOf(File.separator) + 1) + "-"
 				+ trainPath.substring(testPath.lastIndexOf(File.separator) + 1);
@@ -181,19 +181,7 @@ public class WekaRunner
 			//show output on screen
 			output += "Experiment Results\n" + nowStr + "\n\n" + eval.toClassDetailsString() + eval.toMatrixString() + "\n\n";
 
-			ArrayList<String> changedFiles = new ArrayList<String>();
-			//get changed files
-			if (!fileFilter.equals(""))
-			{
-				BufferedReader input = new BufferedReader(new FileReader(fileFilter));
-				String line = null;
-				input.readLine();
-				while ((line = input.readLine()) != null)
-				{
-					changedFiles.add(line.replace("\\", "/"));
-				}
-
-			}
+			
 
 			int tpC = 0;
 			int fpC = 0;
@@ -209,7 +197,7 @@ public class WekaRunner
 				double  t1 = testData.instance(i).value(testData.numAttributes() - 2);
 				String actualLabel = testData.classAttribute().value((int) testData.instance(i).classValue());
 				String predictedLabel = trainData.classAttribute().value((int) pred);
-				if (testData.instance(i).value(testData.numAttributes() - 2) > 5  && testData.numAttributes() == 94)
+				if (testData.instance(i).value(testData.numAttributes() - 2) > diffSpan  && testData.numAttributes() == 94)
 				{
 					output += (", predicted: " + "false" + ", actual:"
 							+ actualLabel + "\n"); // not among changed files
