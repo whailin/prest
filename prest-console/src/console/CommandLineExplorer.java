@@ -88,7 +88,7 @@ public class CommandLineExplorer
 		System.out.println("-predict trainfile testfile");
 		System.out.println("-predict trainfile testfile resultoutputpath");
 		System.out.println("-predict trainfile testfile  resultoutputpath filefilter");
-		System.out.println("-addChanges changesfile methodfile methodfile");
+		System.out.println("-addChanges sourceroot changesfile methodfile freeze outputfile");
 	}
 
 	/**
