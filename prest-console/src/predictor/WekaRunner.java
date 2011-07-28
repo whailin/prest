@@ -209,7 +209,7 @@ public class WekaRunner
 				double  t1 = testData.instance(i).value(testData.numAttributes() - 2);
 				String actualLabel = testData.classAttribute().value((int) testData.instance(i).classValue());
 				String predictedLabel = trainData.classAttribute().value((int) pred);
-				if (testData.instance(i).value(testData.numAttributes() - 2) > 5 && testData.numAttributes() == 106)
+				if (testData.instance(i).value(testData.numAttributes() - 2) > 5  && testData.numAttributes() == 94)
 				{
 					output += (", predicted: " + "false" + ", actual:"
 							+ actualLabel + "\n"); // not among changed files
