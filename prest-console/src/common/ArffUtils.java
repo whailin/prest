@@ -90,7 +90,7 @@ public class ArffUtils
 					if (filename.equals(tempinst.stringValue(0)))
 					{
 						//	System.out.println(tempinst.stringValue(0));
-						for (int y = 4; y < data.numAttributes(); y++)
+						for (int y = 7; y < data.numAttributes()-1; y++)
 						{
 							tempArray.add("" + tempinst.value(y));
 						}
