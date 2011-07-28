@@ -223,7 +223,7 @@ public class ArffUtils
 				catch (Exception e)
 				{
 					data.instance(i).setValue(data.numAttributes() - 2,
-							1000);
+							100);
 				}
 
 			}
