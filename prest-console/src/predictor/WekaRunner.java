@@ -123,13 +123,13 @@ public class WekaRunner
 			// setting class attribute
 			trainData.setClassIndex(trainData.numAttributes() - 1);
 
-			Instances newTrainData = doUnderSampling(trainData);
-			if (newTrainData != null)
-				trainData = newTrainData;
-			else
-			{
+			//Instances newTrainData = doUnderSampling(trainData);
+			//if (newTrainData != null)
+			//	trainData = newTrainData;
+			//else
+			//{
 				//use the previous training set
-			}
+			//}
 
 			trainData.deleteAttributeAt(0);
 			//first load test set 
@@ -195,6 +195,10 @@ public class WekaRunner
 
 			}
 
+			int tpC = 0;
+			int fpC = 0;
+			int tnC = 0;
+			int fnC = 0;
 			// output the ID, actual value and predicted value for each instance
 			for (int i = 0; i < testData.numInstances(); i++)
 			{
@@ -202,12 +206,42 @@ public class WekaRunner
 				double pred = cls.classifyInstance(testData.instance(i));
 				output += ("ID: " + testData.instance(i).value(0));
 				//	output += (", actual: " + testData.classAttribute().value((int) testData.instance(i).classValue()));
-				if (isAmongChangedFiles(changedFiles, testFilePaths[i]))
-					output += (", predicted: " + trainData.classAttribute().value((int) pred) + "\n");
+				double  t1 = testData.instance(i).value(testData.numAttributes() - 2);
+				String actualLabel = testData.classAttribute().value((int) testData.instance(i).classValue());
+				String predictedLabel = trainData.classAttribute().value((int) pred);
+				if (testData.instance(i).value(testData.numAttributes() - 2) > 5 && testData.numAttributes() == 106)
+				{
+					output += (", predicted: " + "false" + ", actual:"
+							+ actualLabel + "\n"); // not among changed files
+				
+					if (actualLabel.equals("false"))
+						tnC++;
+					else
+						fnC++;
+				}
 				else
-					output += (", predicted: " + "false" + "\n"); // not among changed files
+				{
+					output += (", predicted: " + predictedLabel + ", actual:"
+							+ actualLabel + "\n");
+					
+					if (actualLabel.equals("false"))
+					{
+						if( predictedLabel.equals("false"))
+							tnC++;
+						else
+							fpC++;
+					}
+					else
+					{
+						if( predictedLabel.equals("false"))
+							fnC++;
+						else
+							tpC++;
+					}
+				}
 			}
-
+			output = " tp:" + tpC +  " fp:" + fpC +  " tn:" + tnC +  " fn:" + fnC +  "\n"  + output;
+			output = " pd:" + (1.0 * tpC/(tpC + fnC)) +  " pf:" + (1.0 *fpC /(fpC + tnC)) +  "\n" + output;
 			writeToFile(findPredResultPath(trainPath), fileNames, nowStr, output, outputPath);
 			logger.info("Weka run finished successfully.");
 		}
