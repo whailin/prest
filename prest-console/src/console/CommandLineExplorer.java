@@ -81,7 +81,7 @@ public class CommandLineExplorer
 		System.out
 				.println("-parse projectDirectory freezelabel -fm filelevelmetricsoutputdirectory methodlevelmetricsoutputdirectory");
 		System.out.println("-parse projectDirectory freezelabel -fcm filelevelmetricsoutputdirectory classlevelmetricsoutputdirectory methodlevelmetricsoutputdirectory");
-		System.out.println("aggregateMethod2File methodpath");
+		System.out.println("aggregateMethodToFile methodpath");
 		System.out.println("-logFilter filepath");
 		System.out.println("-convertCsvToArff filepath");
 		System.out.println("-convertCsvToArff filepath outfilepath");
