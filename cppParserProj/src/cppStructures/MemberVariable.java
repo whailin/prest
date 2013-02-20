@@ -1,3 +1,4 @@
+package cppStructures;
 
 public class MemberVariable {
 
