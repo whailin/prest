@@ -1,3 +1,4 @@
+package cppStructures;
 
 public enum FundamentalType {
 	NOT_FTYPE,

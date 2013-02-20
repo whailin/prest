@@ -1,3 +1,5 @@
+package cppStructures;
+
 import java.util.ArrayList;
 
 /**

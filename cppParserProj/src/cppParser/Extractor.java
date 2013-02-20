@@ -1,3 +1,5 @@
+package cppParser;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,6 +11,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Stack;
 
+import cppStructures.CppClass;
+import cppStructures.CppFunc;
+import cppStructures.CppNamespace;
+import cppStructures.CppScope;
+
 /**
  * Extractor.java
  * Provides lexical analysis and metrics extraction of C++ source and header files.
@@ -17,8 +24,7 @@ import java.util.Stack;
  */
 public class Extractor
 {
-	// List of allowed file extensions
-	private String[] allowedExtensions = new String[] {".cpp", ".h", ".cxx"};
+
 	
 	// Filename or folder to process
 	private String file = "";
@@ -68,101 +74,35 @@ public class Extractor
 		this.file = file;
 	}
 	
-	private boolean isValidExtension(String s)
-	{
-		for(int i = 0; i < allowedExtensions.length; ++i)
-		{
-			if(s.endsWith(allowedExtensions[i])) return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Searches recursively for files in the given folder and all the subfolders.
-	 * 
-	 * @param folder The root folder to search from
-	 * @return List of files in the given folder and all the subfolders
-	 */
-	private ArrayList<String> getFilesFrom(String folder)
-	{
-		ArrayList<String> files = new ArrayList<String>();
-		File f = new File(folder);
-		File[] entries = f.listFiles();
-		for(File entry : entries)
-		{
-			if(entry.isFile())
-			{
-				String s = entry.getPath();
-				if(isValidExtension(s)) files.add(s);
-			}
-			else if(entry.isDirectory())
-			{
-				ArrayList<String> subFiles = getFilesFrom(entry.getPath());
-				for(String s : subFiles)
-				{
-					if(isValidExtension(s)) files.add(s);
-				}
-			}
-		}
-		
-		return files;
-	}
-	
-	private ArrayList<String> sortFiles(ArrayList<String> files)
-	{
-		ArrayList<String> ordered = new ArrayList<String>();
-		
-		for(int i = 0; i < files.size(); ++i)
-		{
-			String s = files.get(i);
-			if(s.charAt(s.lastIndexOf('.') + 1) == 'c')
-			{
-				ordered.add(s);
-			}else{
-				ordered.add(0, s);
-			}
-		}
-		
-		return ordered;
-	}
-	
 	/**
 	 * Starts processing the files
 	 */
 	public void process()
 	{
-		System.out.println("Processing started.");
-		System.out.print("Finding files and sorting... ");
+		Log.d("Processing started.");
+		Log.d("Finding files and sorting... ");
+		
 		long startTime = System.currentTimeMillis();
 		
-		// this.process(file);
-		ArrayList<String> listOfFiles = new ArrayList<String>();
-		File f = new File(file);
-		if(f.isDirectory())
+		FileLoader fileLoader = new FileLoader(this.file);
+		
+		Log.d("done in: " + (double)(System.currentTimeMillis() - startTime) / 1000.0 + " s.");
+		Log.d("Found " + fileLoader.getFiles().size() + " files.");
+		
+		for(String s : fileLoader.getFiles())
 		{
-			listOfFiles = getFilesFrom(file);
-		}else{
-			listOfFiles.add(file);
-		}
-		
-		// Order so that .h files are before .cpp/.cxx files
-		listOfFiles = sortFiles(listOfFiles);
-		
-		System.out.println("done in: " + (double)(System.currentTimeMillis() - startTime) / 1000.0 + " s.");
-		
-		for(String s : listOfFiles)
-		{
-			System.out.println("Processing " + s + " ...");
+			Log.d("Processing " + s + " ...");
 			process(s);
 		}
 		
-		System.out.println("Processing done. Dumping...");
+		Log.d("Processing done. Dumping...");
 		
 		dumpTreeResults();
 		
-		System.out.println("Dump done.");
+		Log.d("Dump done.");
 		
 		long duration = System.currentTimeMillis() - startTime;
+		Log.d("Processing took " + duration + " ms.");
 		System.out.println("Processing took " + duration + " ms.");
 	}
 	
@@ -297,7 +237,7 @@ public class Extractor
 				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")\n");
 				for(CppFunc mf : cc.getFuncs())
 				{
-					// System.out.println("    - " + mf.getType() + " | " + mf.getName());
+					// Log.d("    - " + mf.getType() + " | " + mf.getName());
 					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + "\n");
 				}
 				writer.write("\n");
@@ -315,13 +255,13 @@ public class Extractor
 	 */
 	private void printTreeResults()
 	{
-		System.out.println("Tree results");
+		Log.d("Tree results");
 		for(CppScope cc : cppScopes)
 		{
-			System.out.println(" - " + cc.getName());
+			Log.d(" - " + cc.getName());
 			for(CppFunc mf : cc.getFuncs())
 			{
-				System.out.println("    - " + mf.getType() + " | " + mf.getName());
+				Log.d("    - " + mf.getType() + " | " + mf.getName());
 			}
 		}
 	}
@@ -331,41 +271,41 @@ public class Extractor
 		// Print #defines
 		if(defines.size() > 0)
 		{
-			System.out.println("defines");
-			for(String s : defines) System.out.println(" - " + s);
-			System.out.println();
+			Log.d("defines");
+			for(String s : defines) Log.d(" - " + s);
+			Log.d();
 		}
 		
 		// Print #includes
 		if(includes.size() > 0)
 		{
-			System.out.println("includes");
-			for(String s : includes) System.out.println(" - " + s);
-			System.out.println();
+			Log.d("includes");
+			for(String s : includes) Log.d(" - " + s);
+			Log.d();
 		}
 		
 		// Print class names
 		if(classes.size() > 0)
 		{
-			System.out.println("classes");
-			for(String s : classes)	System.out.println(" - " + s);
-			System.out.println();
+			Log.d("classes");
+			for(String s : classes)	Log.d(" - " + s);
+			Log.d();
 		}
 		
 		// Print single-line comments
 		if(oneLineComments.size() > 0)
 		{
-			System.out.println("oneline comments");
-			for(String s : oneLineComments)	System.out.println(" - " + s);
-			System.out.println();
+			Log.d("oneline comments");
+			for(String s : oneLineComments)	Log.d(" - " + s);
+			Log.d();
 		}
 		
 		// Print multi-line comments
 		if(multiLineComments.size() > 0)
 		{
-			System.out.println("multiline comments");
-			for(String s : multiLineComments) System.out.println(" - " + s);
-			System.out.println();
+			Log.d("multiline comments");
+			for(String s : multiLineComments) Log.d(" - " + s);
+			Log.d();
 		}
 	}
 
@@ -393,10 +333,10 @@ public class Extractor
 			if(addToStack)
 			{
 				cppScopeStack.push(cc);
-				System.out.println("SCOPE " + cppScopeStack.peek().getName() + " START (line: " + lineno + ")");
+				Log.d("SCOPE " + cppScopeStack.peek().getName() + " START (line: " + lineno + ")");
 			}else
 			{
-				if(!cppScopeStack.isEmpty()) System.out.println("SCOPE " + cppScopeStack.peek().getName() + " PART (line: " + lineno + ")");
+				if(!cppScopeStack.isEmpty()) Log.d("SCOPE " + cppScopeStack.peek().getName() + " PART (line: " + lineno + ")");
 			}
 			
 		}
@@ -432,7 +372,7 @@ public class Extractor
 	{
 		CppScope cs = cppScopeStack.pop();
 		CppClass cc = new CppClass(cs);
-		System.out.println("Found a scope that is a class > " + cc.name);
+		Log.d("Found a scope that is a class > " + cc.name);
 		cppScopeStack.push(cc);
 	}
 	
@@ -450,7 +390,7 @@ public class Extractor
 						setCurrentScope(tokens[j-1], true);
 						if(!(cppScopeStack.peek() instanceof CppClass)) currentScopeToClass();
 						cppScopeStack.peek().braceCount = braceCount;
-						System.out.println("CLASS " + cppScopeStack.peek().getName() + " START (line: " + lineno + ")");
+						Log.d("CLASS " + cppScopeStack.peek().getName() + " START (line: " + lineno + ")");
 						break;
 					}
 				}
@@ -463,15 +403,15 @@ public class Extractor
 		braceCount--;
 		if(currentFunc != null && funcBraceCount == braceCount)
 		{
-			System.out.println("   FUNCTION " + currentFunc.getName() + " END (line: " + lineno + ")");
+			Log.d("   FUNCTION " + currentFunc.getName() + " END (line: " + lineno + ")");
 			currentFunc = null;
 		}
 		// if(!cppClassStack.isEmpty() && classBraceCount == braceCount)
 		if(!cppScopeStack.isEmpty() && cppScopeStack.peek().braceCount == braceCount)
 		{
-			if(cppScopeStack.peek() instanceof CppClass) System.out.println("CLASS " + cppScopeStack.peek().getName() + " END (line: " + lineno + ")");
-			else if(cppScopeStack.peek() instanceof CppNamespace)System.out.println("NAMESPACE " + cppScopeStack.peek().getName() + " END (line: " + lineno + ")"); 
-			else System.out.println("SCOPE " + cppScopeStack.peek().getName() + " END (line: " + lineno + ")");
+			if(cppScopeStack.peek() instanceof CppClass) Log.d("CLASS " + cppScopeStack.peek().getName() + " END (line: " + lineno + ")");
+			else if(cppScopeStack.peek() instanceof CppNamespace)Log.d("NAMESPACE " + cppScopeStack.peek().getName() + " END (line: " + lineno + ")"); 
+			else Log.d("SCOPE " + cppScopeStack.peek().getName() + " END (line: " + lineno + ")");
 			cppScopeStack.pop();
 		}
 	}
@@ -542,7 +482,7 @@ public class Extractor
 					CppNamespace ns = new CppNamespace(tokens[i+1]);
 					ns.braceCount = braceCount;
 					ns.nameOfFile = currentFile;
-					System.out.println("NAMESPACE " + ns.name + " START (line: " + lineno + ")");
+					Log.d("NAMESPACE " + ns.name + " START (line: " + lineno + ")");
 					cppScopes.add(ns);
 					cppScopeStack.add(ns);
 				}
@@ -558,7 +498,7 @@ public class Extractor
 					// Check if tokens form a function with a body
 					if(isFuncWithBody(tokens, i))
 					{
-						System.out.println("   FUNCTION " + tokens[i+1] + " START (line: " + lineno + ")");
+						Log.d("   FUNCTION " + tokens[i+1] + " START (line: " + lineno + ")");
 						
 						// setCurrentCppClass(tokens[i-1]);
 						// setCurrentScope(tokens[i-1]);
@@ -605,19 +545,19 @@ public class Extractor
 			{
 				if(!line.trim().equals("}"))
 				{
-					// System.out.println(" - Mem.Line: " + line);
+					// Log.d(" - Mem.Line: " + line);
 				}
 			}
 			else
 			{
-				// System.out.println(" - Func.Line: " + line.trim());
+				// Log.d(" - Func.Line: " + line.trim());
 				if(tokens[tokens.length - 1].equals(";"))
 				{
 					boolean isReturn = false;
 					
 					if(tokens[0].equals("return"))
 					{
-						// System.out.println("        - Return statement");
+						// Log.d("        - Return statement");
 					}
 				}
 			}
@@ -625,14 +565,14 @@ public class Extractor
 		
 		if(currentFunc != null)
 		{
-			// if(!line.contains(currentFunc))// System.out.println(" - " + line);
+			// if(!line.contains(currentFunc))// Log.d(" - " + line);
 			/*
 			// System.out.print("   ");
 			for(int i = 0; i < tokens.length; ++i)
 			{
 				// System.out.print(tokens[i]);
 				if(i < tokens.length - 1) // System.out.print(" | ");
-				else // System.out.println();
+				else // Log.d();
 			}
 			*/
 		}
