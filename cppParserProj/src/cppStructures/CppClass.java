@@ -15,7 +15,7 @@ public class CppClass extends CppScope {
 	{
 		super(scope.name);
 		this.braceCount = scope.braceCount;
-		this.funcs = scope.funcs;
+		this.functions = scope.functions;
 		this.members = scope.members;
 		this.nameOfFile = scope.nameOfFile;
 	}

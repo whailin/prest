@@ -1,23 +1,44 @@
 package cppParser;
 import java.util.ArrayList;
+import java.util.HashMap;
 
-
-public class StringSplitter
+/**
+ * A collection of parsing and lexing -related string tools
+ * 
+ * @author Harri Pellikka 
+ */
+public class StringTools
 {
+	
+	// A "hint list" of deliminators found on the last split() call
+	public static HashMap<Integer, String> lastFoundDelims = new HashMap<Integer, String>();
+	
+	/**
+	 * A simple non-regex-splitter that splits the given string into tokens with the given deliminators.
+	 * 
+	 * @param src Source string to split
+	 * @param delims Array of deliminators
+	 * @param includeDelims if 'true', the deliminators are included in the resulting array
+	 * @return Array of tokens representing the original string
+	 */
 	public static String[] split(String src, String[] delims, boolean includeDelims)
 	{
+		// Bail out on trivial input
 		if(src == null || src.length() == 0) return null;
 		if(src.length() == 1 || delims == null || delims.length == 0) return new String[]{src};
 		
-		// char[] delimChars = delims.toCharArray();
+		// Init the list of parts
 		ArrayList<String> parts = new ArrayList<String>();
+		lastFoundDelims.clear();
 		
+		// Loop through the input string
 		String s = "";
 		for(int i = 0; i < src.length(); ++i)
 		{
 			boolean shouldSplit = false;
 			String includedDelim = null;
 			
+			// Check for deliminator
 			for(int j = 0; j < delims.length; ++j)
 			{
 				int matched = 0;
@@ -40,6 +61,7 @@ public class StringSplitter
 				if(shouldSplit) break;
 			}
 			
+			// If a delim was found, split the string
 			if(shouldSplit)
 			{
 				if(s.length() > 0) parts.add(s);
@@ -48,6 +70,7 @@ public class StringSplitter
 					if(src.charAt(i) != ' ')
 					{
 						parts.add(includedDelim);
+						lastFoundDelims.put(new Integer(parts.size() - 1), includedDelim);
 						i += includedDelim.length() - 1;
 						includedDelim = null;
 						
@@ -55,13 +78,20 @@ public class StringSplitter
 				}
 				s = "";
 			}else{
+				// No delim was found yet, add the current char to the current string
 				s += src.charAt(i);
 			}
 		}
 		
+		// Finally, convert the ArrayList to a simple array and return it
 		return listToArray(parts);
 	}
 
+	/**
+	 * Converts an arraylist into an array
+	 * @param list An arraylist to convert
+	 * @return An array
+	 */
 	private static String[] listToArray(ArrayList<String> list)
 	{
 		String[] retParts = new String[list.size()];

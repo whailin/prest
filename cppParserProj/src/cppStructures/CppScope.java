@@ -20,8 +20,8 @@ public class CppScope
 	public int braceCount = 0;
 	public String nameOfFile = "";
 	
-	public ArrayList<MemberVariable> members = new ArrayList<MemberVariable>();
-	public ArrayList<CppFunc> funcs = new ArrayList<CppFunc>();
+	protected ArrayList<MemberVariable> members = new ArrayList<MemberVariable>();
+	protected ArrayList<CppFunc> functions = new ArrayList<CppFunc>();
 	
 	public CppScope(String name)
 	{
@@ -35,7 +35,7 @@ public class CppScope
 	
 	public void addFunc(CppFunc func)
 	{
-		funcs.add(func);
+		functions.add(func);
 	}
 	
 	public ArrayList<MemberVariable> getMembers()
@@ -43,15 +43,15 @@ public class CppScope
 		return members;
 	}
 	
-	public ArrayList<CppFunc> getFuncs()
+	public ArrayList<CppFunc> getFunctions()
 	{
-		return funcs;
+		return functions;
 	}
 
 	public boolean hasFunc(CppFunc mf)
 	{
 		String mfName = mf.getName();
-		for(CppFunc mem : funcs)
+		for(CppFunc mem : functions)
 		{
 			if(mem.getName().equals(mfName)) return true;
 		}

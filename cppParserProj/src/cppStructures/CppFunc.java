@@ -9,12 +9,18 @@ public class CppFunc {
 	private String name = "";
 	// private MetricsParam[] params;
 	
+	public int funcBraceCount = 0;
+	
 	private ArrayList<MemberVariable> members = new ArrayList<MemberVariable>();
 	
+	// Halstead-related containers
 	private ArrayList<String> operators = new ArrayList<String>();
 	private ArrayList<String> operands = new ArrayList<String>();
 	private ArrayList<String> uniqueOperators = new ArrayList<String>();
 	private ArrayList<String> uniqueOperands = new ArrayList<String>();
+	
+	// Cyclomatic complexity-related containers
+	private ArrayList<String> statements = new ArrayList<String>();
 	
 	// Cyclomatic complexity
 	private int cyclomaticComplexity = 1;
@@ -205,5 +211,18 @@ public class CppFunc {
 			deliveredBugs = Math.pow(getEffort(), 2.0/3.0) / 3000.0;
 		}
 		return deliveredBugs;
+	}
+	
+	public void setCyclomaticComplexity(int i)
+	{
+		if(i > 1) this.cyclomaticComplexity = i;
+	}
+
+	/**
+	 * Retrieves the array of statements in this function
+	 * @return Array of statements
+	 */
+	public ArrayList<String> getStatements() {
+		return this.statements;
 	}
 }
