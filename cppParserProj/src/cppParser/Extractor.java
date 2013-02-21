@@ -24,8 +24,6 @@ import cppStructures.CppScope;
  */
 public class Extractor
 {
-
-	
 	// Filename or folder to process
 	private String file = "";
 	
@@ -38,7 +36,6 @@ public class Extractor
 	// If 'true', all "std"-starting stuff is ignored
 	private boolean ignoreStd = true;
 
-	
 	// Braces count when the current function was found
 	private int funcBraceCount = 0;
 	
@@ -48,6 +45,7 @@ public class Extractor
 	// Current line in the source file (may not reflect the actual processing)
 	public static int lineno = 0; 
 	
+	// The sentence analyzer used to analyze each "raw" sentence
 	private SentenceAnalyzer sentenceAnalyzer;
 	
 	/**
@@ -89,13 +87,13 @@ public class Extractor
 		
 		Log.d("Dump done.");
 		
+		printResults();
+		
 		long duration = System.currentTimeMillis() - startTime;
 		
 		Log.d("Processing took " + duration / 1000.0 + " s.");
 		System.out.println("Processing took " + duration / 1000.0 + " s.");
 	}
-	
-	
 	
 	/**
 	 * Processes the given file.
@@ -166,16 +164,34 @@ public class Extractor
 					{
 						if(commentLine.startsWith("//"))
 						{
-							// Skip until new line
-							isMultiLineComment = false;
-							skipToNewLine = true;
+							if(StringTools.getQuoteCount(line) % 2 == 0)
+							{
+								// Skip until new line
+								isMultiLineComment = false;
+								skipToNewLine = true;
+							}
+							else
+							{
+								Log.d("Found a single-line comment inside a string.");
+								commentLine = "";
+							}
+						}
+							
+						if(commentLine.startsWith("/*"))
+						{
+							if(StringTools.getQuoteCount(line) % 2 == 0)
+							{
+								isMultiLineComment = true;
+								skipToNewLine = true;
+							}
+							else
+							{
+								Log.d("Found a multi-line comment inside a string.");
+								commentLine = "";
+							}
 						}
 					}
-					if(commentLine.startsWith("/*"))
-					{
-						isMultiLineComment = true;
-						skipToNewLine = true;
-					}
+					
 					continue;
 				}
 				
@@ -211,7 +227,7 @@ public class Extractor
 		}
 		
 		// Prints some resulting information of the file
-		// printResults();
+		
 		// printTreeResults();
 		
 	}
