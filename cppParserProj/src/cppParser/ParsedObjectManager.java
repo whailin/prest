@@ -14,7 +14,21 @@ public class ParsedObjectManager {
 
 	private static ParsedObjectManager instance = new ParsedObjectManager();
 	
+	// Reference to the function currently under processing
+	public CppFunc currentFunc = null;
+	
+	// Reference to the class or namespace currently under processing
+	public CppScope currentScope = null;
+	
+	// List of scopes found
 	private ArrayList<CppScope> scopes = new ArrayList<CppScope>();
+	
+	// Array lists for misc. stuff found from source code
+	ArrayList<String> oneLineComments = new ArrayList<String>();
+	ArrayList<String> multiLineComments = new ArrayList<String>();
+	ArrayList<String> defines = new ArrayList<String>();
+	ArrayList<String> includes = new ArrayList<String>();
+	ArrayList<String> classes = new ArrayList<String>();
 	
 	/**
 	 * Retrieves the singleton instance
@@ -31,5 +45,10 @@ public class ParsedObjectManager {
 	private ParsedObjectManager()
 	{
 		
+	}
+
+	public ArrayList<CppScope> getScopes()
+	{
+		return scopes;
 	}
 }
