@@ -102,4 +102,16 @@ public class StringTools
 		
 		return retParts;
 	}
+
+	public static int getQuoteCount(String line) {
+		int count = 0;
+		for(int i = 0; i < line.length(); ++i)
+		{
+			if(line.charAt(i) == '"')
+			{
+				count++;
+			}
+		}
+		return count;
+	}
 }
