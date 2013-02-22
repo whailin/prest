@@ -38,13 +38,17 @@ public class CppFunc {
 	private double effort = 0.0;
 	private double timeToProgram = 0.0;
 	private double deliveredBugs = 0.0;
+	private double level = 0.0;
+	private double intContent = 0.0;
 	
 	public CppFunc(String type, String name)
 	{
 		this.type = type;
 		this.name = name;
 	}
-	
+
+	public String getType() 						{		return type;					}
+
 	public void incCC()
 	{
 		cyclomaticComplexity++;
@@ -60,31 +64,18 @@ public class CppFunc {
 		return uniqueOperators;
 	}
 	
-	public String getType()
-	{
-		return type;
-	}
+	public String getName()							{		return name;					}
 	
-	public String getName()
-	{
-		return name;
-	}
+	public int getCyclomaticComplexity()			{		return cyclomaticComplexity;	}
 	
-	public int getCyclomaticComplexity()
-	{
-		return cyclomaticComplexity;
-	}
+	public void addMember(MemberVariable mv) 		{		members.add(mv);				}
 	
-	public void addMember(MemberVariable mv)
-	{
-		members.add(mv);
-	}
+	public ArrayList<MemberVariable> getMembers() 	{		return members;					}
 	
-	public ArrayList<MemberVariable> getMembers()
-	{
-		return members;
-	}
-	
+	/*
+	 * Function getMember
+	 * 		input: name (string)
+	 * */
 	public MemberVariable getMember(String name)
 	{
 		for(MemberVariable mv : members)
@@ -94,6 +85,10 @@ public class CppFunc {
 		return null;
 	}
 	
+	/*
+	 * Function isMember to check the validity of member
+	 * 		input: name (string)
+	 * */
 	public boolean isMember(String name)
 	{
 		for(MemberVariable mv : members)
@@ -103,6 +98,10 @@ public class CppFunc {
 		return false;
 	}
 	
+	/*
+	 * Function addOperator to add the operator
+	 * 		input: op (string)
+	 * */
 	public void addOperator(String op)
 	{
 		
@@ -119,6 +118,11 @@ public class CppFunc {
 		if(isUnique) uniqueOperators.add(op);
 	}
 	
+	/*
+	 * Function addOperand to add the operand
+	 * 		input: od (string)
+	 * 
+	 * */
 	public void addOperand(String od)
 	{
 		
@@ -136,44 +140,52 @@ public class CppFunc {
 		
 	}
 	
-	public int getOperatorCount()
-	{
-		return operators.size();
-	}
+	/*
+	 * Function to count the number of operator
+	 * */
+	public int getOperatorCount()			{		return operators.size();		}
 	
-	public int getOperandCount()
-	{
-		return operands.size();
-	}
+	/*
+	 * Function to count the number of operand
+	 * */
+	public int getOperandCount()			{		return operands.size();			}
 	
-	public int getUniqueOperatorCount()
-	{
-		return uniqueOperators.size();
-	}
+	/*
+	 * Function to count the number of unique operator
+	 * */
+	public int getUniqueOperatorCount()		{		return uniqueOperators.size();	}
 	
-	public int getUniqueOperandCount()
-	{
-		return uniqueOperands.size();
-	}
+	/*
+	 * Function to count the number of unique operand
+	 * */
+	public int getUniqueOperandCount()		{		return uniqueOperands.size();	}
 	
+	/*
+	 * Function to get the vocabulary
+	 * -----------------------------
+	 * */
 	public int getVocabulary()
 	{
-		if(vocabulary == 0)
-		{
-			vocabulary = getUniqueOperatorCount() + getUniqueOperandCount();
-		}
+		if(vocabulary == 0)		
+			vocabulary = getUniqueOperatorCount() + getUniqueOperandCount();		
 		return vocabulary;
 	}
 	
+	/*
+	 * Function to get length
+	 * -----------------------------
+	 * */
 	public int getLength()
 	{
-		if(length == 0)
-		{
-			length = getOperatorCount() + getOperandCount();
-		}
+		if(length == 0)		
+			length = getOperatorCount() + getOperandCount();		
 		return length;
 	}
 	
+	/*
+	 * Function to calculate length
+	 * ------------------------------
+	 * */
 	public double getCalculatedLength()
 	{
 		if(calculatedLength == 0.0)
@@ -185,6 +197,10 @@ public class CppFunc {
 		return calculatedLength;
 	}
 	
+	/*
+	 * Function to get the volume 
+	 * -------------------------------
+	 * */
 	public double getVolume()
 	{
 		if(volume == 0.0)
@@ -196,6 +212,10 @@ public class CppFunc {
 		return volume;
 	}
 	
+	/*
+	 * Function to get the difficulty
+	 * ---------------------------------
+	 * */
 	public double getDifficulty()
 	{
 		if(difficulty == 0.0)
@@ -205,6 +225,10 @@ public class CppFunc {
 		return difficulty;
 	}
 	
+	/*
+	 * Function to get effort
+	 * ----------------------------------
+	 * */
 	public double getEffort()
 	{
 		if(effort == 0.0)
@@ -214,6 +238,10 @@ public class CppFunc {
 		return effort;
 	}
 	
+	/*
+	 * Function to get Programming Time
+	 * -----------------------------------
+	 * */
 	public double getTimeToProgram()
 	{
 		if(timeToProgram == 0.0)
@@ -223,6 +251,11 @@ public class CppFunc {
 		return timeToProgram;
 	}
 	
+	/*
+	 * Function to get the bugs (if any)
+	 * 
+	 * ------------------------------------
+	 * */
 	public double getDeliveredBugs()
 	{
 		if(deliveredBugs == 0.0)
@@ -231,6 +264,27 @@ public class CppFunc {
 		}
 		return deliveredBugs;
 	}
+
+	
+	/*
+	 * Function to get the program level
+	 * 	
+	 * */
+	public double getLevel()	{
+		if (level == 0.0)
+			level = 1.0 / getDifficulty();
+		return level;
+	}
+	
+	/*
+	 * Function to get the Intelligent Content
+	 * */
+	public double getIntContent()	{
+		if (intContent == 0.0)
+			intContent = getVolume() / getDifficulty();
+		return intContent;
+	}
+
 	
 	public void setCyclomaticComplexity(int i)
 	{
@@ -244,4 +298,5 @@ public class CppFunc {
 	public ArrayList<String> getStatements() {
 		return this.statements;
 	}
+
 }
