@@ -1,5 +1,6 @@
 package cppParser;
 
+import java.util.ArrayList;
 import java.util.Stack;
 
 import cppStructures.CppClass;
@@ -9,20 +10,23 @@ import cppStructures.CppScope;
 
 public class SentenceAnalyzer {
 
-	private Stack<CppScope> cppScopeStack = new Stack<CppScope>();
+	public Stack<CppScope> cppScopeStack = new Stack<CppScope>();
 	
-	public static int braceCount = 0;
+	public int braceCount = 0;
 	
 	public static boolean ignoreStd = false;
 	
 	// List of "splitters" that are used to tokenize a single line of source code
-	private String[] splitterChars = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::"};
+	private String[] splitterChars = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", "."};
 	
+	private ArrayList<Analyzer> analyzers = new ArrayList<Analyzer>();
 	private FunctionAnalyzer functionAnalyzer;
 	
 	public SentenceAnalyzer()
 	{
 		functionAnalyzer = new FunctionAnalyzer(this);
+		analyzers.add(functionAnalyzer);
+		analyzers.add(new ScopeAnalyzer(this));
 	}
 	
 	public void setCurrentScope(String scopeName, boolean addToStack)
@@ -41,7 +45,6 @@ public class SentenceAnalyzer {
 		
 		if(!found)
 		{
-			
 			CppScope cc = new CppScope(scopeName);
 			cc.nameOfFile = Extractor.currentFile;
 			// cppScopes.add(cc);
@@ -54,13 +57,11 @@ public class SentenceAnalyzer {
 				Log.d("SCOPE " + cppScopeStack.peek().getName() + " START (line: " + Extractor.lineno + ")");
 			}else
 			{
-				if(!cppScopeStack.isEmpty()) Log.d("SCOPE " + cppScopeStack.peek().getName() + " PART (line: " + Extractor.lineno + ")");
+				if(!cppScopeStack.isEmpty()) Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " PART (line: " + Extractor.lineno + ")");
 			}
 			
 		}
 	}
-	
-	public boolean lineDone = false;
 	
 	private void lexDefine(String[] tokens)
 	{
@@ -118,7 +119,7 @@ public class SentenceAnalyzer {
 	
 	private void lexEndBrace()
 	{
-		braceCount--;
+		
 		
 		if(ParsedObjectManager.getInstance().currentFunc != null && ParsedObjectManager.getInstance().currentFunc.funcBraceCount == braceCount)
 		{
@@ -136,6 +137,8 @@ public class SentenceAnalyzer {
 			else Log.d("SCOPE " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")");
 			cppScopeStack.pop();
 		}
+		
+		braceCount--;
 	}
 	
 	/**
@@ -143,17 +146,43 @@ public class SentenceAnalyzer {
 	 */
 	public void lexLine(String line)
 	{
-		lineDone = false;
 		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, splitterChars, true);
+		
+		
+		
+		for(int i = 0; i < tokens.length; ++i)
+		{
+			if(tokens[i].equals("{"))
+			{
+				braceCount++;
+				continue;
+			}
+			if(tokens[i].equals("}"))
+			{
+				lexEndBrace();
+				continue;
+			}
+		}
+		
+		if(ParsedObjectManager.getInstance().currentFunc != null)
+		{
+			functionAnalyzer.processSentence(tokens);
+			return;
+		}
+		
+		// Loop through analyzers
+		for(Analyzer a: analyzers)
+		{
+			if(a.processSentence(tokens)) break;
+		}
 		
 		lexDefine(tokens);
 		lexInclude(tokens);
 		lexClass(tokens);
 		
-		functionAnalyzer.processSentence(tokens);
-		
+		/*
 		for(int i = 0; i < tokens.length; ++i)
 		{
 			if(tokens[i].equals("{"))
@@ -180,51 +209,6 @@ public class SentenceAnalyzer {
 				}
 			}
 		}
-		
-		if(lineDone)
-		{
-			return;
-		}
-		
-		if(!cppScopeStack.isEmpty())
-		{
-			if(ParsedObjectManager.getInstance().currentFunc == null)
-			{
-				if(!line.trim().equals("}"))
-				{
-					// Log.d(" - Mem.Line: " + line);
-				}
-			}
-			else
-			{
-				// Log.d(" - Func.Line: " + line.trim());
-				if(tokens[tokens.length - 1].equals(";"))
-				{
-					boolean isReturn = false;
-					
-					if(tokens[0].equals("return"))
-					{
-						// Log.d("        - Return statement");
-					}
-				}
-			}
-		}
-		
-		if(ParsedObjectManager.getInstance().currentFunc != null)
-		{
-			// if(!line.contains(currentFunc))// Log.d(" - " + line);
-			/*
-			// System.out.print("   ");
-			for(int i = 0; i < tokens.length; ++i)
-			{
-				// System.out.print(tokens[i]);
-				if(i < tokens.length - 1) // System.out.print(" | ");
-				else // Log.d();
-			}
-			*/
-		}
+		*/
 	}
-	
-	
-	
 }
