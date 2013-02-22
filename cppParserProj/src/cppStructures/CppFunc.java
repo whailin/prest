@@ -9,6 +9,10 @@ public class CppFunc {
 	private String name = "";
 	// private MetricsParam[] params;
 	
+	public String fileOfFunc = "";
+	
+	public CppForStatement currentFor = null;
+	
 	public int funcBraceCount = 0;
 	
 	private ArrayList<MemberVariable> members = new ArrayList<MemberVariable>();
@@ -39,6 +43,21 @@ public class CppFunc {
 	{
 		this.type = type;
 		this.name = name;
+	}
+	
+	public void incCC()
+	{
+		cyclomaticComplexity++;
+	}
+	
+	public ArrayList<String> getOperators()
+	{
+		return operators;
+	}
+	
+	public ArrayList<String> getUniqueOperators()
+	{
+		return uniqueOperators;
 	}
 	
 	public String getType()

@@ -78,6 +78,7 @@ public class Extractor
 		{
 			Log.d("Processing " + s + " ...");
 			process(s);
+			Log.d();
 		}
 		
 		Log.d("Processing done. Dumping...");
@@ -87,7 +88,8 @@ public class Extractor
 		
 		Log.d("Dump done.");
 		
-		printResults();
+		// printTreeResults();
+		// printResults();
 		
 		long duration = System.currentTimeMillis() - startTime;
 		
@@ -212,24 +214,22 @@ public class Extractor
 					// lexLine(line);
 					sentenceAnalyzer.lexLine(line);
 					line = "";
+					commentLine = "";
 				}
 			}
 			
 			// Finally, close the reader
 			reader.close();
 			
-		} catch (FileNotFoundException e)
+		} 
+		catch (FileNotFoundException e)
 		{
 			e.printStackTrace();
-		} catch (IOException e)
+		} 
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		
-		// Prints some resulting information of the file
-		
-		// printTreeResults();
-		
 	}
 	
 	/**
@@ -247,7 +247,11 @@ public class Extractor
 				for(CppFunc mf : cc.getFunctions())
 				{
 					// Log.d("    - " + mf.getType() + " | " + mf.getName());
-					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + "\n");
+					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + ", CC: " + mf.getCyclomaticComplexity() + " | Ops: " + mf.getOperatorCount() + " | Uops: " + mf.getUniqueOperatorCount() + " (file: " + mf.fileOfFunc + ")\n");
+					for(String op : mf.getOperators())
+					{
+						writer.write("      " + op + "\n");
+					}
 				}
 				writer.write("\n");
 			}
