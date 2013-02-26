@@ -2,6 +2,8 @@ package cppParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import gnu.trove.map.*;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 import cppStructures.*;
 
@@ -14,7 +16,17 @@ public class FunctionAnalyzer extends Analyzer {
 	
 	// Keywords that increment the cyclomatic complexity
 	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "#ifdef"};
-	private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "->", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|"};
+	private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "->", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|", "\""};
+	
+	// Operands found from the sentence that is currently being processed
+	private ArrayList<String> currentOperands = null;
+	private TIntObjectHashMap<String> currentOperandMap = new TIntObjectHashMap<String>();
+	
+	// Iteration index for the current sentence
+	// private int i = -1;
+	
+	// Tokens for the current sentence
+	// private String[] tokens = null;
 	
 	public FunctionAnalyzer(SentenceAnalyzer sa)
 	{
@@ -31,7 +43,6 @@ public class FunctionAnalyzer extends Analyzer {
 	{
 		for(int i = 0; i < tokens.length; ++i)
 		{
-		
 			// Either a classname::function or a classname::member found
 			if(tokens[i].equals("::") && i > 0)
 			{
@@ -112,16 +123,21 @@ public class FunctionAnalyzer extends Analyzer {
 		return true;
 	}
 	
-	// private String[] currentOperands = null;
-	private ArrayList<String> currentOperands = null;
+	
+	
 	
 	private void checkOpsAndOds(CppFunc func, String[] tokens, int i)
 	{
 		if(tokens[i].startsWith("++") || tokens[i].startsWith("--"))
 		{
-			func.addOperator(tokens[i].substring(0, 3));
+			String op = tokens[i];
+			if(op.length() > 2)
+			{
+				op = op.substring(0, 3);
+			}
+			func.addOperator(op);
 			currentOperands.add(tokens[i].substring(2));
-			Log.d("        Op: ++ or -- (pre)");
+			Log.d("        Op: (Pre) " + op);
 			return;
 		}
 		else if(tokens[i].endsWith("++") || tokens[i].endsWith("--"))
@@ -130,9 +146,77 @@ public class FunctionAnalyzer extends Analyzer {
 			currentOperands.add(tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
 			Log.d("        Op: ++ or -- (post)");
 			return;
-		}else if(tokens[i].contains("->"))
+		}
+		else if(tokens[i].contains("->"))
+		{
+			// TODO Handle pointer operator
+		}
+		else if(tokens[i].equals("("))
+		{
+			if(i == 1)
+			{
+				Log.d("      Function call: " + tokens[i-1]);
+			}
+			
+			// Parse the parameters
+			String currentOperand = "";
+			boolean skip = false;
+			int parCount = 0;
+			for(int j = i + 1; j < tokens.length; ++j)
+			{
+				if(tokens[j].equals(")") && parCount == 0)
+				{
+					if(!currentOperand.equals("")) currentOperands.add(currentOperand);
+					break;
+				}
+				
+				if(tokens[j].equals("("))
+				{
+					parCount++;
+				}
+				else if(tokens[j].equals(")"))
+				{
+					parCount--;
+				}
+				
+				if(!tokens[j].contains(","))
+				{
+					currentOperand += tokens[j] + " ";
+				}else if(parCount == 0)
+				{
+					currentOperands.add(currentOperand);
+					currentOperand = "";
+					
+				}
+				
+			}
+		}
+		else if(tokens[i].startsWith("\""))
 		{
 			
+			String stringLiteral = tokens[i].substring(1) + " ";
+			if(tokens[i].endsWith("\""))
+			{
+				stringLiteral = stringLiteral.substring(0, stringLiteral.length() - 1);
+			}
+			else
+			{
+				for(int j = i + 1; j < tokens.length; ++j)
+				{
+					if(tokens[j].endsWith("\""))
+					{
+						stringLiteral += tokens[j].substring(0, tokens[j].length() - 1);
+						break;
+					}
+					else
+					{
+						stringLiteral += tokens[j] + " ";
+						i++;
+					}
+				}
+			}
+			Log.d("        Found string literal: " + stringLiteral);
+			currentOperands.add(stringLiteral);
 		}
 		
 		for(int j = 0; j < inFuncHalsteadOps.length; ++j)
@@ -148,18 +232,11 @@ public class FunctionAnalyzer extends Analyzer {
 					if(i < tokens.length - 1 && tokens[i+1].equals(tokens[i]))
 					{
 						op += tokens[i+1];
-						
 					}
 				}
 				
-				if(!tokens[i].equals(";"))
-				{
-					func.addOperator(op);
-					Log.d("        Op: " + (i) + ": " + op);
-				}
-				
-				
-				
+				func.addOperator(op);
+				Log.d("        Op: " + (i) + ": " + op);
 				
 				// Check for operand(s)
 				checkForOperands(func, tokens, i, op);
@@ -200,7 +277,7 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(i > 0 && !tokens[i-1].equals(")"))
 			{
-				currentOperands.add(tokens[i-1]);
+				if(i > 1 && !tokens[i-2].equals("=")) currentOperands.add(tokens[i-1]);
 			}else{
 				for(int j = i - 2; j > 0; --j)
 				{
@@ -213,6 +290,11 @@ public class FunctionAnalyzer extends Analyzer {
 					}
 				}
 			}
+		}
+		else if(op.equals("<=") || op.equals("<") || op.equals(">") || op.equals(">="))
+		{
+			currentOperands.add(tokens[i-1]);
+			currentOperands.add(tokens[i+1]);
 		}
 	}
 	
@@ -228,7 +310,7 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(tokens[i].equals(inFuncCCKeywords[j]))
 			{
-				// TODO: Check that && and || are only inside if clauses (or where they matter)
+				// TODO: Check that && and || are only inside if clauses (or where they matter / change the path)
 				func.incCC();
 			}
 		}
@@ -281,10 +363,5 @@ public class FunctionAnalyzer extends Analyzer {
 	private boolean isFuncDecl(String[] tokens, int di)
 	{
 		return false;
-	}
-	
-	private void functionComplete()
-	{
-		
 	}
 }

@@ -148,6 +148,7 @@ public class SentenceAnalyzer {
 	public void lexLine(String line)
 	{
 		
+		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, splitterChars, true);
 		

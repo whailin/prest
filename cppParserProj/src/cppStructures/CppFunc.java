@@ -2,7 +2,15 @@ package cppStructures;
 
 import java.util.ArrayList;
 
-
+/**
+ * CppFunc.java
+ * Represents a C++ function. Keeps track of the function's data and metrics:
+ * - Halstead metrics -related data (operators, operands)
+ * - Halstead metrics -related derived data (vocabulary, length, volume, difficulty, effort etc.)
+ * - Cyclomatic complexity
+ * 
+ * @author Harri Pellikka
+ */
 public class CppFunc {
 
 	private String type = "void";
@@ -41,41 +49,93 @@ public class CppFunc {
 	private double level = 0.0;
 	private double intContent = 0.0;
 	
+	/**
+	 * Constructs a new CppFunc with the given return type and name
+	 * @param type Return type of this function
+	 * @param name Name of this function
+	 */
 	public CppFunc(String type, String name)
 	{
 		this.type = type;
 		this.name = name;
 	}
 
-	public String getType() 						{		return type;					}
+	/**
+	 * Retrieves the return type of this function
+	 * @return The return type of this function
+	 */
+	public String getType()
+	{
+		return type;
+	}
 
+	/**
+	 * Increases cyclomatic complexity by one
+	 */
 	public void incCC()
 	{
 		cyclomaticComplexity++;
 	}
 	
+	/**
+	 * Retrieves the list of operators in this function
+	 * @return List of operators in this function
+	 */
 	public ArrayList<String> getOperators()
 	{
 		return operators;
 	}
 	
+	/**
+	 * Retrieves the list of unique operators in this function
+	 * @return List of unique operators in this function
+	 */
 	public ArrayList<String> getUniqueOperators()
 	{
 		return uniqueOperators;
 	}
 	
-	public String getName()							{		return name;					}
+	/**
+	 * Retrieves the name of this function
+	 * @return The name of this function
+	 */
+	public String getName()
+	{
+		return name;
+	}
 	
-	public int getCyclomaticComplexity()			{		return cyclomaticComplexity;	}
+	/**
+	 * Retrieves the McCabe's cyclomatic complexity value
+	 * @return The cyclomatic complexity of this function
+	 */
+	public int getCyclomaticComplexity()
+	{
+		return cyclomaticComplexity;
+	}
 	
-	public void addMember(MemberVariable mv) 		{		members.add(mv);				}
+	/**
+	 * Adds the given member variable to this function's member variable list
+	 * @param mv The member variable to add
+	 */
+	public void addMember(MemberVariable mv)
+	{
+		members.add(mv);
+	}
 	
-	public ArrayList<MemberVariable> getMembers() 	{		return members;					}
+	/**
+	 * Retrieves the list of member variables
+	 * @return The list of member variables
+	 */
+	public ArrayList<MemberVariable> getMembers()
+	{
+		return members;
+	}
 	
-	/*
-	 * Function getMember
-	 * 		input: name (string)
-	 * */
+	/**
+	 * Retrieves a member variable 'name'
+	 * @param name The name of the member variable
+	 * @return The member variable, or 'null' if the member variable was not found
+	 */
 	public MemberVariable getMember(String name)
 	{
 		for(MemberVariable mv : members)
@@ -85,10 +145,11 @@ public class CppFunc {
 		return null;
 	}
 	
-	/*
-	 * Function isMember to check the validity of member
-	 * 		input: name (string)
-	 * */
+	/**
+	 * Checks whether or not the given member "name" is a member of this function
+	 * @param name The name of the member
+	 * @return 'true' if is a member, 'false' otherwise
+	 */
 	public boolean isMember(String name)
 	{
 		for(MemberVariable mv : members)
@@ -98,13 +159,13 @@ public class CppFunc {
 		return false;
 	}
 	
-	/*
-	 * Function addOperator to add the operator
-	 * 		input: op (string)
-	 * */
+	/**
+	 * Adds the given operator to the list of operators, and if the
+	 * operator is unique, to the list of unique operators.
+	 * @param op The operator to add
+	 */
 	public void addOperator(String op)
 	{
-		
 		boolean isUnique = true;
 		for(String s : operators)
 		{
@@ -118,14 +179,13 @@ public class CppFunc {
 		if(isUnique) uniqueOperators.add(op);
 	}
 	
-	/*
-	 * Function addOperand to add the operand
-	 * 		input: od (string)
-	 * 
-	 * */
+	/**
+	 * Adds the given operand to the list of operands, and if the
+	 * operand is unique, to the list of unique operands.
+	 * @param od The operand to add
+	 */
 	public void addOperand(String od)
 	{
-		
 		boolean isUnique = true;
 		for(String s : operands)
 		{
@@ -140,30 +200,46 @@ public class CppFunc {
 		
 	}
 	
-	/*
-	 * Function to count the number of operator
-	 * */
-	public int getOperatorCount()			{		return operators.size();		}
+	/**
+	 * Retrieves the operator count of the function
+	 * @return The operator count
+	 */
+	public int getOperatorCount()
+	{
+		return operators.size();
+	}
 	
-	/*
-	 * Function to count the number of operand
-	 * */
-	public int getOperandCount()			{		return operands.size();			}
+	/**
+	 * Retrieves the operand count of the function
+	 * @return The operand count
+	 */
+	public int getOperandCount()
+	{
+		return operands.size();
+	}
 	
-	/*
-	 * Function to count the number of unique operator
-	 * */
-	public int getUniqueOperatorCount()		{		return uniqueOperators.size();	}
+	/**
+	 * Retrieves the unique operator count of the function
+	 * @return The unique operator count
+	 */
+	public int getUniqueOperatorCount()
+	{
+		return uniqueOperators.size();
+	}
 	
-	/*
-	 * Function to count the number of unique operand
-	 * */
-	public int getUniqueOperandCount()		{		return uniqueOperands.size();	}
+	/**
+	 * Retrieves the unique operand count of the function
+	 * @return The unique operand count
+	 */
+	public int getUniqueOperandCount()
+	{
+		return uniqueOperands.size();
+	}
 	
-	/*
-	 * Function to get the vocabulary
-	 * -----------------------------
-	 * */
+	/**
+	 * Retrieves the vocabulary of the function (unique operators + unique operands)
+	 * @return The vocabulary of the function
+	 */
 	public int getVocabulary()
 	{
 		if(vocabulary == 0)		
@@ -171,10 +247,10 @@ public class CppFunc {
 		return vocabulary;
 	}
 	
-	/*
-	 * Function to get length
-	 * -----------------------------
-	 * */
+	/**
+	 * Retrieves the length of the function (operators + operands)
+	 * @return The length of the function
+	 */
 	public int getLength()
 	{
 		if(length == 0)		
@@ -182,10 +258,10 @@ public class CppFunc {
 		return length;
 	}
 	
-	/*
-	 * Function to calculate length
-	 * ------------------------------
-	 * */
+	/**
+	 * Retrieves the calculated length of the function (uops * log2(uops) + uods * log2(uods))
+	 * @return The calculated length of the function
+	 */
 	public double getCalculatedLength()
 	{
 		if(calculatedLength == 0.0)
@@ -197,10 +273,10 @@ public class CppFunc {
 		return calculatedLength;
 	}
 	
-	/*
-	 * Function to get the volume 
-	 * -------------------------------
-	 * */
+	/**
+	 * Retrieves the volume of the function (length * log2(vocabulary))
+	 * @return The volume of the function
+	 */
 	public double getVolume()
 	{
 		if(volume == 0.0)
@@ -212,10 +288,10 @@ public class CppFunc {
 		return volume;
 	}
 	
-	/*
-	 * Function to get the difficulty
-	 * ---------------------------------
-	 * */
+	/**
+	 * Retrieves the difficulty of the function (uops / 2 * ods / uods)
+	 * @return The difficulty of the function
+	 */
 	public double getDifficulty()
 	{
 		if(difficulty == 0.0)
@@ -225,10 +301,10 @@ public class CppFunc {
 		return difficulty;
 	}
 	
-	/*
-	 * Function to get effort
-	 * ----------------------------------
-	 * */
+	/**
+	 * Retrieves the effort value (difficulty * volume)
+	 * @return The effort value
+	 */
 	public double getEffort()
 	{
 		if(effort == 0.0)
@@ -238,10 +314,10 @@ public class CppFunc {
 		return effort;
 	}
 	
-	/*
-	 * Function to get Programming Time
-	 * -----------------------------------
-	 * */
+	/**
+	 * Retrieves the time-to-program value (effort / 18)
+	 * @return The time-to-program value
+	 */
 	public double getTimeToProgram()
 	{
 		if(timeToProgram == 0.0)
@@ -251,11 +327,10 @@ public class CppFunc {
 		return timeToProgram;
 	}
 	
-	/*
-	 * Function to get the bugs (if any)
-	 * 
-	 * ------------------------------------
-	 * */
+	/**
+	 * Retrieves the delivered bugs estimate (effort*2/3 / 3000)
+	 * @return The delivered bugs estimate value
+	 */
 	public double getDeliveredBugs()
 	{
 		if(deliveredBugs == 0.0)
@@ -265,27 +340,30 @@ public class CppFunc {
 		return deliveredBugs;
 	}
 
-	
-	/*
-	 * Function to get the program level
-	 * 	
-	 * */
+	/**
+	 * Retrieves the level of the function (inverse of difficulty)
+	 * @return The level value
+	 */
 	public double getLevel()	{
 		if (level == 0.0)
 			level = 1.0 / getDifficulty();
 		return level;
 	}
 	
-	/*
-	 * Function to get the Intelligent Content
-	 * */
+	/**
+	 * Retrieves the intelligent content of the function (volume / difficulty)
+	 * @return The intelligent content value
+	 */
 	public double getIntContent()	{
 		if (intContent == 0.0)
 			intContent = getVolume() / getDifficulty();
 		return intContent;
 	}
 
-	
+	/**
+	 * Sets the cyclomatic complexity of the function
+	 * @param i The complexity value
+	 */
 	public void setCyclomaticComplexity(int i)
 	{
 		if(i > 1) this.cyclomaticComplexity = i;
