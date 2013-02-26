@@ -17,7 +17,8 @@ public class SentenceAnalyzer {
 	public static boolean ignoreStd = false;
 	
 	// List of "splitters" that are used to tokenize a single line of source code
-	private String[] splitterChars = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", "."};
+	// private String[] splitterChars = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", "."};
+	private String[] splitterChars = new String[] { " ", "(", ")", "{", "}", ";", "::" };
 	
 	private ArrayList<Analyzer> analyzers = new ArrayList<Analyzer>();
 	private FunctionAnalyzer functionAnalyzer;
