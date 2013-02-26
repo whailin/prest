@@ -1,5 +1,8 @@
 package cppParser;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import cppStructures.*;
 
 /**
@@ -11,7 +14,7 @@ public class FunctionAnalyzer extends Analyzer {
 	
 	// Keywords that increment the cyclomatic complexity
 	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "#ifdef"};
-	private static final String[] inFuncHalsteadOps = {"+", "-", "*", "/", "%", ".", "->", "<<", ">>", "<", "<=", ">", ">=", "=", "==", "!=", "&", "|"};
+	private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "->", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|"};
 	
 	public FunctionAnalyzer(SentenceAnalyzer sa)
 	{
@@ -83,27 +86,58 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processCurrentFunction(String[] tokens)
 	{
+		currentOperands = new ArrayList<String>();
+		
 		// Pull the currentFunc to a local variable for fast and easy access
 		CppFunc func = ParsedObjectManager.getInstance().currentFunc;
 		
 		for(int i = 0; i < tokens.length; ++i)
 		{
-			
+			Log.d("      PCF: " + tokens[i]);
 			
 			// Check for cyclomatic complexity
 			checkForCC(func, tokens, i);
 			
 			// Check for halstead complexity operators
-			checkForHalstead(func, tokens, i);
+			checkOpsAndOds(func, tokens, i);
+			
 		}
 		
+		for(String s : currentOperands)
+		{
+			Log.d("        Od: " + s);
+		}
+		
+		Log.d();
 		return true;
 	}
 	
-	private void checkForHalstead(CppFunc func, String[] tokens, int i)
+	// private String[] currentOperands = null;
+	private ArrayList<String> currentOperands = null;
+	
+	private void checkOpsAndOds(CppFunc func, String[] tokens, int i)
 	{
+		if(tokens[i].startsWith("++") || tokens[i].startsWith("--"))
+		{
+			func.addOperator(tokens[i].substring(0, 3));
+			currentOperands.add(tokens[i].substring(2));
+			Log.d("        Op: ++ or -- (pre)");
+			return;
+		}
+		else if(tokens[i].endsWith("++") || tokens[i].endsWith("--"))
+		{
+			func.addOperator(tokens[i].substring(tokens[i].length() - 2));
+			currentOperands.add(tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
+			Log.d("        Op: ++ or -- (post)");
+			return;
+		}else if(tokens[i].contains("->"))
+		{
+			
+		}
+		
 		for(int j = 0; j < inFuncHalsteadOps.length; ++j)
 		{
+			
 			if(inFuncHalsteadOps[j].equals(tokens[i]))
 			{
 				// Add the operator
@@ -114,13 +148,69 @@ public class FunctionAnalyzer extends Analyzer {
 					if(i < tokens.length - 1 && tokens[i+1].equals(tokens[i]))
 					{
 						op += tokens[i+1];
+						
 					}
 				}
-				func.addOperator(op);
 				
-				if(i > 0)
+				if(!tokens[i].equals(";"))
 				{
-					func.addOperand(tokens[i-1]);
+					func.addOperator(op);
+					Log.d("        Op: " + (i) + ": " + op);
+				}
+				
+				
+				
+				
+				// Check for operand(s)
+				checkForOperands(func, tokens, i, op);
+			}
+		}
+	}
+	
+	private void checkForOperands(CppFunc func, String[] tokens, int i, String op)
+	{
+		if(op.equals("=") || op.equals("!=") || op.equals("==") || op.equals("&&"))
+		{
+			
+			currentOperands.add(tokens[i-1]);
+			currentOperands.add(tokens[i+1]);
+			
+		}
+		else if(tokens[i].endsWith("++"))
+		{
+			String od = tokens[i].substring(0, tokens[i].indexOf("++"));
+			currentOperands.add(od);
+		}
+		else if(tokens[i].startsWith("++"))
+		{
+			String od = tokens[i].substring(tokens[i].indexOf("++") + 1);
+			currentOperands.add(od);
+		}
+		else if(op.equals("::"))
+		{
+			if(i < tokens.length - 3)
+			{
+				if(tokens[i+3].equals(";"))
+				{
+					currentOperands.add(tokens[i+2]);
+				}
+			}
+		}
+		else if(op.equals(";"))
+		{
+			if(i > 0 && !tokens[i-1].equals(")"))
+			{
+				currentOperands.add(tokens[i-1]);
+			}else{
+				for(int j = i - 2; j > 0; --j)
+				{
+					if(tokens[j].equals("("))
+					{
+						
+						Log.d("      Found function call: " + tokens[j-1]);
+						if(tokens[j-1].contains(".")) func.addOperator(".");
+						break;
+					}
 				}
 			}
 		}

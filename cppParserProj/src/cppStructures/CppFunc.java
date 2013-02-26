@@ -49,11 +49,20 @@ public class CppFunc {
 
 	public String getType() 						{		return type;					}
 
-	public void incCC()								{		cyclomaticComplexity++;			}
+	public void incCC()
+	{
+		cyclomaticComplexity++;
+	}
 	
-	public ArrayList<String> getOperators()			{		return operators;				}
+	public ArrayList<String> getOperators()
+	{
+		return operators;
+	}
 	
-	public ArrayList<String> getUniqueOperators()	{		return uniqueOperators;			}
+	public ArrayList<String> getUniqueOperators()
+	{
+		return uniqueOperators;
+	}
 	
 	public String getName()							{		return name;					}
 	
@@ -131,22 +140,29 @@ public class CppFunc {
 		
 	}
 	
+	/*
+	 * Function to count the number of operator
+	 * */
+	public int getOperatorCount()			{		return operators.size();		}
 	
-	//Function to count the number of operators	 
-	public int getOperatorCount()			{	return operators.size();		}
+	/*
+	 * Function to count the number of operand
+	 * */
+	public int getOperandCount()			{		return operands.size();			}
 	
-	//Function to count the number of operands
-	public int getOperandCount()			{	return operands.size();			}
+	/*
+	 * Function to count the number of unique operator
+	 * */
+	public int getUniqueOperatorCount()		{		return uniqueOperators.size();	}
 	
-	//Function to count the number of unique operators
-	public int getUniqueOperatorCount()		{	return uniqueOperators.size();	}
-	
-	//Function to count the number of unique operands
-	public int getUniqueOperandCount()		{	return uniqueOperands.size();	}
+	/*
+	 * Function to count the number of unique operand
+	 * */
+	public int getUniqueOperandCount()		{		return uniqueOperands.size();	}
 	
 	/*
 	 * Function to get the vocabulary
-	 * 		(total numbers of unique operators and unique operands)
+	 * -----------------------------
 	 * */
 	public int getVocabulary()
 	{
@@ -157,7 +173,7 @@ public class CppFunc {
 	
 	/*
 	 * Function to get length
-	 * 		(total numbers of operators and operands)
+	 * -----------------------------
 	 * */
 	public int getLength()
 	{
@@ -270,12 +286,17 @@ public class CppFunc {
 	}
 
 	
-	public void setCyclomaticComplexity(int i) 		{	if(i > 1) this.cyclomaticComplexity = i;	}
+	public void setCyclomaticComplexity(int i)
+	{
+		if(i > 1) this.cyclomaticComplexity = i;
+	}
 
 	/**
 	 * Retrieves the array of statements in this function
 	 * @return Array of statements
 	 */
-	public ArrayList<String> getStatements() 		{	return this.statements;					}
+	public ArrayList<String> getStatements() {
+		return this.statements;
+	}
 
 }

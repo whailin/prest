@@ -85,6 +85,11 @@ public class StringTools
 			}
 		}
 		
+		if(!s.equals(""))
+		{
+			parts.add(s);
+		}
+		
 		// Finally, convert the ArrayList to a simple array and return it
 		return listToArray(parts);
 	}
