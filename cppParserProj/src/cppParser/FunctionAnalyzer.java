@@ -2,8 +2,7 @@ package cppParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import gnu.trove.map.*;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import java.util.HashSet;
 
 import cppStructures.*;
 
@@ -16,18 +15,27 @@ public class FunctionAnalyzer extends Analyzer {
 	
 	// Keywords that increment the cyclomatic complexity
 	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "#ifdef"};
-	private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "->", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|", "\""};
+	private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|"};
 	
 	// Operands found from the sentence that is currently being processed
 	private ArrayList<String> currentOperands = null;
-	private TIntObjectHashMap<String> currentOperandMap = new TIntObjectHashMap<String>();
+	private ArrayList<String> currentOperators = null;
+	private HashSet<Integer> handledOperatorIndices = new HashSet<Integer>();
+	private HashSet<Integer> handledOperandIndices = new HashSet<Integer>();
 	
 	// Iteration index for the current sentence
-	// private int i = -1;
+	private int i = -1;
 	
 	// Tokens for the current sentence
-	// private String[] tokens = null;
+	private String[] tokens = null;
 	
+	// The function currently under analysis
+	private CppFunc func = null;
+	
+	/**
+	 * Constructs a new function analyzer
+	 * @param sa The sentence analyzer
+	 */
 	public FunctionAnalyzer(SentenceAnalyzer sa)
 	{
 		super(sa);
@@ -98,35 +106,92 @@ public class FunctionAnalyzer extends Analyzer {
 	private boolean processCurrentFunction(String[] tokens)
 	{
 		currentOperands = new ArrayList<String>();
+		currentOperators = new ArrayList<String>();
+		handledOperatorIndices.clear();
+		handledOperandIndices.clear();
+		this.i = 0;
+		this.tokens = tokens;
 		
 		// Pull the currentFunc to a local variable for fast and easy access
-		CppFunc func = ParsedObjectManager.getInstance().currentFunc;
+		func = ParsedObjectManager.getInstance().currentFunc;
 		
-		for(int i = 0; i < tokens.length; ++i)
+		for(i = 0; i < tokens.length; ++i)
 		{
-			Log.d("      PCF: " + tokens[i]);
-			
 			// Check for cyclomatic complexity
-			checkForCC(func, tokens, i);
+			checkForCC();
 			
 			// Check for halstead complexity operators
-			checkOpsAndOds(func, tokens, i);
+			checkOpsAndOds();
 			
 		}
-		
+		/*
+		Log.d("        Operands:");
 		for(String s : currentOperands)
 		{
-			Log.d("        Od: " + s);
+			Log.d("         - " + s);
 		}
+		
+		Log.d("        Operators:");
+		for(String s : currentOperators)
+		{
+			Log.d("         - " + s);
+		}
+		*/
 		
 		Log.d();
 		return true;
 	}
 	
 	
+	/**
+	 * Analyzes a function call.
+	 * This method is recursive, meaning that if it finds another function call
+	 * in the parameters, it will call itself to parse the inner function call.
+	 * @param index The index in tokens if the opening parenthesis
+	 * @return The index of the closing parenthesis
+	 */
+	private int handleFunctionCall(int index)
+	{
+		String funcName = tokens[index-1];
+		if(tokens[index+1].equals(")"))
+		{
+			Log.d("      Function call without parameters > " + funcName);
+			return index + 1;
+		}
+		
+		String cp = "";
+		int pCount = 0;
+		for(int j = index + 1; j < tokens.length; ++j)
+		{
+			if(tokens[j].equals(")"))
+			{
+				if(pCount == 0)
+				{
+					Log.d("      Function call > " + funcName);
+					return j;
+				}
+				pCount--;
+			}
+			
+			if(tokens[j].equals("("))
+			{
+				// TODO: Analyze if there's a new function here and do a recursive call
+				if(true)
+				{
+					j = handleFunctionCall(j);
+				}
+				else
+				{
+					pCount++;
+				}
+			}
+		}
+		
+		// This should never happen, but if it does, this is the last one that was checked
+		return tokens.length - 1;
+	}
 	
-	
-	private void checkOpsAndOds(CppFunc func, String[] tokens, int i)
+	private void checkOpsAndOds()
 	{
 		if(tokens[i].startsWith("++") || tokens[i].startsWith("--"))
 		{
@@ -135,69 +200,59 @@ public class FunctionAnalyzer extends Analyzer {
 			{
 				op = op.substring(0, 3);
 			}
-			func.addOperator(op);
-			currentOperands.add(tokens[i].substring(2));
-			Log.d("        Op: (Pre) " + op);
+			
+			// func.addOperator(op);
+			// currentOperands.add(tokens[i].substring(2));
+			addOperator(i, op);
+			addOperand(i, tokens[i].substring(2));
+			
+			// Log.d("        Op: (Pre) " + op);
 			return;
 		}
 		else if(tokens[i].endsWith("++") || tokens[i].endsWith("--"))
 		{
-			func.addOperator(tokens[i].substring(tokens[i].length() - 2));
-			currentOperands.add(tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
+			// func.addOperator(tokens[i].substring(tokens[i].length() - 2));
+			// currentOperands.add(tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
+			addOperator(i, tokens[i].substring(tokens[i].length() - 2));
+			addOperand(i, tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
 			Log.d("        Op: ++ or -- (post)");
 			return;
 		}
-		else if(tokens[i].contains("->"))
+		
+		if(tokens[i].contains("->"))
 		{
 			// TODO Handle pointer operator
 		}
 		else if(tokens[i].equals("("))
 		{
-			if(i == 1)
+			// Check for hints of a function call
+			if(i > 0)
 			{
-				Log.d("      Function call: " + tokens[i-1]);
-			}
-			
-			// Parse the parameters
-			String currentOperand = "";
-			boolean skip = false;
-			int parCount = 0;
-			for(int j = i + 1; j < tokens.length; ++j)
-			{
-				if(tokens[j].equals(")") && parCount == 0)
+				switch(tokens[i-1])
 				{
-					if(!currentOperand.equals("")) currentOperands.add(currentOperand);
+				case "for":
+					// TODO Handle 'for'
+					break;
+				case "while":
+					// TODO Handle 'while'
+					break;
+				case "if":
+					// TODO Handle 'if'
+					break;
+				default:
+					i = handleFunctionCall(i);
 					break;
 				}
-				
-				if(tokens[j].equals("("))
-				{
-					parCount++;
-				}
-				else if(tokens[j].equals(")"))
-				{
-					parCount--;
-				}
-				
-				if(!tokens[j].contains(","))
-				{
-					currentOperand += tokens[j] + " ";
-				}else if(parCount == 0)
-				{
-					currentOperands.add(currentOperand);
-					currentOperand = "";
-					
-				}
-				
 			}
 		}
+		
+		// Check for a string literal
 		else if(tokens[i].startsWith("\""))
 		{
-			
-			String stringLiteral = tokens[i].substring(1) + " ";
+			String stringLiteral = tokens[i] + " ";
 			if(tokens[i].endsWith("\""))
 			{
-				stringLiteral = stringLiteral.substring(0, stringLiteral.length() - 1);
+				stringLiteral = stringLiteral.substring(0, stringLiteral.length());
 			}
 			else
 			{
@@ -205,7 +260,7 @@ public class FunctionAnalyzer extends Analyzer {
 				{
 					if(tokens[j].endsWith("\""))
 					{
-						stringLiteral += tokens[j].substring(0, tokens[j].length() - 1);
+						stringLiteral += tokens[j].substring(0, tokens[j].length());
 						break;
 					}
 					else
@@ -215,86 +270,118 @@ public class FunctionAnalyzer extends Analyzer {
 					}
 				}
 			}
-			Log.d("        Found string literal: " + stringLiteral);
-			currentOperands.add(stringLiteral);
+			addOperand(i, stringLiteral);
 		}
 		
-		for(int j = 0; j < inFuncHalsteadOps.length; ++j)
+		// Check for operators
+		if(tokens[i].length() < 3)
 		{
-			
-			if(inFuncHalsteadOps[j].equals(tokens[i]))
+			for(int j = 0; j < inFuncHalsteadOps.length; ++j)
 			{
-				// Add the operator
-				String op = tokens[i];
-				if(tokens[i].equals("+") || tokens[i].equals("-"))
+				if(inFuncHalsteadOps[j].equals(tokens[i]))
 				{
-					if(i > 0 && tokens[i-1].equals(tokens[i])) return;
-					if(i < tokens.length - 1 && tokens[i+1].equals(tokens[i]))
+					// Add the operator
+					String op = tokens[i];
+					if(tokens[i].equals("+") || tokens[i].equals("-"))
 					{
-						op += tokens[i+1];
+						if(i > 0 && tokens[i-1].equals(tokens[i])) return;
+						if(i < tokens.length - 1 && tokens[i+1].equals(tokens[i]))
+						{
+							op += tokens[i+1];
+						}
 					}
+					
+					// func.addOperator(op);
+					addOperator(i, op);
+					
+					// Check for operand(s)
+					checkForOperands(op);
 				}
-				
-				func.addOperator(op);
-				Log.d("        Op: " + (i) + ": " + op);
-				
-				// Check for operand(s)
-				checkForOperands(func, tokens, i, op);
 			}
 		}
 	}
 	
-	private void checkForOperands(CppFunc func, String[] tokens, int i, String op)
+	private void addOperand(int i, String t)
 	{
-		if(op.equals("=") || op.equals("!=") || op.equals("==") || op.equals("&&"))
+		Integer integer = new Integer(i);
+		if(!handledOperandIndices.contains(integer))
 		{
-			
-			currentOperands.add(tokens[i-1]);
-			currentOperands.add(tokens[i+1]);
-			
+			handledOperandIndices.add(integer);
+			currentOperands.add(t);
 		}
-		else if(tokens[i].endsWith("++"))
+		else
 		{
-			String od = tokens[i].substring(0, tokens[i].indexOf("++"));
-			currentOperands.add(od);
+			Log.d("TRIED TO ADD AN OPERAND OF AN EXISTING INDEX");
 		}
-		else if(tokens[i].startsWith("++"))
+	}
+	
+	private void addOperator(int i , String t)
+	{
+		Integer integer = new Integer(i);
+		if(!handledOperatorIndices.contains(integer))
 		{
-			String od = tokens[i].substring(tokens[i].indexOf("++") + 1);
-			currentOperands.add(od);
+			handledOperatorIndices.add(integer);
+			currentOperators.add(t);
 		}
-		else if(op.equals("::"))
+		else
 		{
+			Log.d("TRIED TO ADD AN OPERATOR OF AN EXISTING INDEX");
+		}
+	}
+	
+	private void checkForOperands(String op)
+	{
+		switch(op)
+		{
+		case "=":
+		case "!=":
+		case "==":
+		case "&&":
+		case "<=":
+		case "<":
+		case ">":
+		case ">=":
+			addOperand(i-1, tokens[i-1]);
+			addOperand(i+1, tokens[i+1]);
+			break;
+		case "::":
 			if(i < tokens.length - 3)
 			{
 				if(tokens[i+3].equals(";"))
 				{
-					currentOperands.add(tokens[i+2]);
+					addOperand(i+2, tokens[i+2]);
+				}
+				else if(tokens[i+2].equals("("))
+				{
+					addOperand(i+1, tokens[i+1]);
 				}
 			}
-		}
-		else if(op.equals(";"))
-		{
+			break;
+		case ";":
 			if(i > 0 && !tokens[i-1].equals(")"))
 			{
-				if(i > 1 && !tokens[i-2].equals("=")) currentOperands.add(tokens[i-1]);
-			}else{
+				if(i > 1 && !tokens[i-2].equals("="))
+				{
+					addOperand(i-1, tokens[i-1]);
+				}
+			}
+			/*
+			else
+			{
 				for(int j = i - 2; j > 0; --j)
 				{
 					if(tokens[j].equals("("))
 					{
-						
-						Log.d("      Found function call: " + tokens[j-1]);
-						if(tokens[j-1].contains(".")) func.addOperator(".");
+						if(tokens[j-1].contains("."))
+						{
+							addOperator(j-1, tokens[j-1]);
+						}
 						break;
 					}
 				}
 			}
-		}
-		else if(op.equals("<=") || op.equals("<") || op.equals(">") || op.equals(">="))
-		{
-			currentOperands.add(tokens[i-1]);
-			currentOperands.add(tokens[i+1]);
+			*/
+			break;
 		}
 	}
 	
@@ -304,7 +391,7 @@ public class FunctionAnalyzer extends Analyzer {
 	 * @param tokens The tokens to inspect
 	 * @param i The iterator position for tokens
 	 */
-	private void checkForCC(CppFunc func, String[] tokens, int i)
+	private void checkForCC()
 	{
 		for(int j = 0; j < inFuncCCKeywords.length; ++j)
 		{
@@ -364,4 +451,6 @@ public class FunctionAnalyzer extends Analyzer {
 	{
 		return false;
 	}
+
+	
 }

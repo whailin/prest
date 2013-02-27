@@ -1,5 +1,7 @@
 package cppParser;
 
+import java.util.ArrayList;
+
 import cppStructures.CppNamespace;
 
 /**
