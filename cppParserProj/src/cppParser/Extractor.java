@@ -213,6 +213,7 @@ public class Extractor
 				{
 					// lexLine(line);
 					sentenceAnalyzer.lexLine(line);
+					// sentenceAnalyzer.lexLineHM(line);
 					line = "";
 					commentLine = "";
 				}

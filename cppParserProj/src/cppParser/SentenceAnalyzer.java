@@ -1,6 +1,8 @@
 package cppParser;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Stack;
 
 import cppStructures.CppClass;
@@ -147,13 +149,9 @@ public class SentenceAnalyzer {
 	 */
 	public void lexLine(String line)
 	{
-		
-		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, splitterChars, true);
-		
-		
-		
+
 		for(int i = 0; i < tokens.length; ++i)
 		{
 			if(tokens[i].equals("{"))
@@ -183,34 +181,5 @@ public class SentenceAnalyzer {
 		lexDefine(tokens);
 		lexInclude(tokens);
 		lexClass(tokens);
-		
-		/*
-		for(int i = 0; i < tokens.length; ++i)
-		{
-			if(tokens[i].equals("{"))
-			{
-				braceCount++;
-				continue;
-			}
-			else if(tokens[i].equals("}"))
-			{
-				lexEndBrace();
-				continue;
-			}
-			else if(tokens[i].equals("namespace"))
-			{
-				if(!tokens[i+1].equals("{"))
-				{
-					CppNamespace ns = new CppNamespace(tokens[i+1]);
-					ns.braceCount = braceCount;
-					ns.nameOfFile = Extractor.currentFile;
-					Log.d("NAMESPACE " + ns.name + " START (line: " + Extractor.lineno + ")");
-					// cppScopes.add(ns);
-					ParsedObjectManager.getInstance().getScopes().add(ns);
-					cppScopeStack.add(ns);
-				}
-			}
-		}
-		*/
 	}
 }

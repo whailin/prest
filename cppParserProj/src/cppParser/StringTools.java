@@ -1,4 +1,5 @@
 package cppParser;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -10,9 +11,6 @@ import java.util.HashMap;
 public class StringTools
 {
 	
-	// A "hint list" of deliminators found on the last split() call
-	public static ArrayList<String> lastFoundDelims = new ArrayList<String>();
-	
 	/**
 	 * A simple non-regex-splitter that splits the given string into tokens with the given deliminators.
 	 * 
@@ -23,8 +21,6 @@ public class StringTools
 	 */
 	public static String[] split(String src, String[] delims, boolean includeDelims)
 	{
-		lastFoundDelims.clear();
-		
 		// Bail out on trivial input
 		if(src == null || src.length() == 0) return null;
 		if(src.length() == 1 || delims == null || delims.length == 0) return new String[]{src};
@@ -72,10 +68,8 @@ public class StringTools
 					if(src.charAt(i) != ' ')
 					{
 						parts.add(includedDelim);
-						lastFoundDelims.add(includedDelim);
 						i += includedDelim.length() - 1;
 						includedDelim = null;
-						
 					}
 				}
 				s = "";
