@@ -23,6 +23,12 @@ public class CppFunc {
 	
 	public int funcBraceCount = 0;
 	
+	// List of recognized lines, only for debugging
+	public ArrayList<String> recognizedLines = new ArrayList<String>();
+	
+	// Container for non-completely parsed lines (unknown references etc.)
+	private ArrayList<String[]> nonCompleteLines = new ArrayList<String[]>();
+	
 	private ArrayList<MemberVariable> members = new ArrayList<MemberVariable>();
 	
 	// Halstead-related containers
