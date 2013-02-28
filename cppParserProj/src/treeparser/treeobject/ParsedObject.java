@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import treeparser.SentenceFormer;
 import treeparser.Type;
-// import com.thoughtworks.xstream.XStream;
 
 /**
  *
@@ -100,7 +99,7 @@ public class ParsedObject extends BaseParsedObject{
                 }else{
                     BaseParsedObject newObj=null;
                     if(obj instanceof ParsedObject){
-                        ((ParsedObject)obj).formSentences();
+                        //((ParsedObject)obj).formSentences();
                         newObj=sf.push((ParsedObject)obj);
                     }else if(obj instanceof ParsedObjectLeaf){
                         newObj=sf.push((ParsedObjectLeaf)obj);
@@ -181,6 +180,25 @@ public class ParsedObject extends BaseParsedObject{
         String str="";
         for(BaseParsedObject o:childObjects)
             str+=o.toString();
+        return str;
+    }
+    
+    public String toSimpleString(){
+        String str="";
+        for(BaseParsedObject o:childObjects){
+            if(o instanceof ParsedObject){
+                ParsedObject obj=(ParsedObject)o;
+                if(obj.getType()==Type.SIMPLESENTENCE)
+                    str+=obj.toString();
+                else if(obj.getType()==Type.BRACKET){
+                    int size=obj.getChildren().size();
+                    str+=obj.getChildren().get(0).getContent();
+                    if(size>=2)str+="...";
+                    str+=obj.getChildren().get(size-1).getContent();
+                }
+            }else
+                str+=o.toString();
+        }
         return str;
     }
 
