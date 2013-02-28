@@ -249,9 +249,15 @@ public class Extractor
 				{
 					// Log.d("    - " + mf.getType() + " | " + mf.getName());
 					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + ", CC: " + mf.getCyclomaticComplexity() + " | Ops: " + mf.getOperatorCount() + " | Uops: " + mf.getUniqueOperatorCount() + " (file: " + mf.fileOfFunc + ")\n");
+					/*
 					for(String op : mf.getOperators())
 					{
 						writer.write("      " + op + "\n");
+					}
+					*/
+					for(String s : mf.recognizedLines)
+					{
+						writer.write(s + "\n");
 					}
 				}
 				writer.write("\n");

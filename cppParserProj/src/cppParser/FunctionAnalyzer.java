@@ -15,7 +15,7 @@ public class FunctionAnalyzer extends Analyzer {
 	
 	// Keywords that increment the cyclomatic complexity
 	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "#ifdef"};
-	private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|"};
+	// private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|"};
 	
 	// Operands found from the sentence that is currently being processed
 	private ArrayList<String> currentOperands = null;
@@ -138,7 +138,7 @@ public class FunctionAnalyzer extends Analyzer {
 		}
 		*/
 		
-		Log.d();
+		// Log.d();
 		return true;
 	}
 	
@@ -152,47 +152,114 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private int handleFunctionCall(int index)
 	{
+		// Store the function name
 		String funcName = tokens[index-1];
+		
+		// Check if the function call is parameterless
 		if(tokens[index+1].equals(")"))
 		{
-			Log.d("      Function call without parameters > " + funcName);
+			// Log.d("      (line: " + Extractor.lineno + ") Function call np > " + funcName);
+			func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
 			return index + 1;
 		}
 		
-		String cp = "";
-		int pCount = 0;
+		ArrayList<String> params = new ArrayList<String>();
+		String currentParam = "";
+		// Loop through the parameters
 		for(int j = index + 1; j < tokens.length; ++j)
 		{
-			if(tokens[j].equals(")"))
+			switch(tokens[j])
 			{
-				if(pCount == 0)
+			case ")":
+				// Close the function call
+				if(!currentParam.equals(""))
 				{
-					Log.d("      Function call > " + funcName);
-					return j;
+					params.add(currentParam);
 				}
-				pCount--;
-			}
-			
-			if(tokens[j].equals("("))
-			{
-				// TODO: Analyze if there's a new function here and do a recursive call
-				if(true)
+				// Log.d("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+				func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+				/*
+				Log.d("      Function call > " + funcName + " | params: ");
+				for(String s : params)
 				{
-					j = handleFunctionCall(j);
+					Log.d("         - " + s);
 				}
-				else
-				{
-					pCount++;
-				}
+				*/
+				return j;
+			case "(":
+				// Recurse through inner function calls
+				// j = handleFunctionCall(j);
+				j = handleOpeningParenthesis(j);
+				break;
+			case ",":
+				params.add(currentParam);
+				currentParam = "";
+				break;
+			default:
+				currentParam += " " + tokens[j];
+				break;
 			}
 		}
+		
 		
 		// This should never happen, but if it does, this is the last one that was checked
 		return tokens.length - 1;
 	}
 	
+	/**
+	 * Analyzes an opening parenthesis to find out what it means
+	 * (function call, cast, ordering...) and calls an appropriate
+	 * handling function.
+	 * 
+	 * Note that this function is a part of a recursive call chain.
+	 * 
+	 * @param index The index of the opening parenthesis
+	 * @return The index of the closing parenthesis
+	 */
+	private int handleOpeningParenthesis(int index)
+	{
+		int origIndex = index;
+		
+		if(index < 1) return index;
+		
+		// Check the token before the opening parenthesis
+		switch(tokens[index-1])
+		{
+		case "for":
+			// Log.d("      (line: " + Extractor.lineno + ") for-statement");
+			func.recognizedLines.add("      (line: " + Extractor.lineno + ") for-statement");
+			break;
+		case "while":
+			// Log.d("      (line: " + Extractor.lineno + ") while-statement");
+			func.recognizedLines.add("      (line: " + Extractor.lineno + ") while-statement");
+			break;
+		case "if":
+			// Log.d("      (line: " + Extractor.lineno + ") if-statement");
+			func.recognizedLines.add("      (line: " + Extractor.lineno + ") if-statement");
+			break;
+		case "(":
+		case "+":
+		case "-":
+		case "*":
+		case "/":
+			break;
+		case ")":
+			
+			break;
+		default:
+			// TODO Change from 'default' case to actual function handling case
+			index = handleFunctionCall(index);
+			break;
+		}
+		
+		return index;
+	}
+	
 	private void checkOpsAndOds()
 	{
+		// Early bail out on tokens that are too long to be delimiters
+		if(tokens[i].length() > 2) return;
+		
 		if(tokens[i].startsWith("++") || tokens[i].startsWith("--"))
 		{
 			String op = tokens[i];
@@ -201,8 +268,6 @@ public class FunctionAnalyzer extends Analyzer {
 				op = op.substring(0, 3);
 			}
 			
-			// func.addOperator(op);
-			// currentOperands.add(tokens[i].substring(2));
 			addOperator(i, op);
 			addOperand(i, tokens[i].substring(2));
 			
@@ -211,8 +276,6 @@ public class FunctionAnalyzer extends Analyzer {
 		}
 		else if(tokens[i].endsWith("++") || tokens[i].endsWith("--"))
 		{
-			// func.addOperator(tokens[i].substring(tokens[i].length() - 2));
-			// currentOperands.add(tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
 			addOperator(i, tokens[i].substring(tokens[i].length() - 2));
 			addOperand(i, tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
 			Log.d("        Op: ++ or -- (post)");
@@ -225,25 +288,7 @@ public class FunctionAnalyzer extends Analyzer {
 		}
 		else if(tokens[i].equals("("))
 		{
-			// Check for hints of a function call
-			if(i > 0)
-			{
-				switch(tokens[i-1])
-				{
-				case "for":
-					// TODO Handle 'for'
-					break;
-				case "while":
-					// TODO Handle 'while'
-					break;
-				case "if":
-					// TODO Handle 'if'
-					break;
-				default:
-					i = handleFunctionCall(i);
-					break;
-				}
-			}
+			i = handleOpeningParenthesis(i);
 		}
 		
 		// Check for a string literal
@@ -274,6 +319,7 @@ public class FunctionAnalyzer extends Analyzer {
 		}
 		
 		// Check for operators
+		/*
 		if(tokens[i].length() < 3)
 		{
 			for(int j = 0; j < inFuncHalsteadOps.length; ++j)
@@ -299,8 +345,14 @@ public class FunctionAnalyzer extends Analyzer {
 				}
 			}
 		}
+		*/
 	}
 	
+	/**
+	 * Adds an operand to the list of operands in the current line
+	 * @param i Index of the operand in the token list
+	 * @param t The operand token
+	 */
 	private void addOperand(int i, String t)
 	{
 		Integer integer = new Integer(i);
@@ -315,6 +367,11 @@ public class FunctionAnalyzer extends Analyzer {
 		}
 	}
 	
+	/**
+	 * Adds an operator to the list of operators in the current line
+	 * @param i Index of the operator in the token list
+	 * @param t The operator token
+	 */
 	private void addOperator(int i , String t)
 	{
 		Integer integer = new Integer(i);
