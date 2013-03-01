@@ -117,7 +117,7 @@ public class FunctionAnalyzer {
         ParsedObject po=new ParsedObject(null,"FunctionCall",Type.OTHER);
         ParsedObjectLeaf name=null;
         BaseParsedObject temp;
-        int lastRef=0;
+        int lastRef=0, end=-1;
         if(i==-1)
             throw new UnsupportedOperationException("Function parameters not found in obj");
         else{
@@ -125,21 +125,25 @@ public class FunctionAnalyzer {
                 if(obj.getChildren().get(i-1) instanceof ParsedObjectLeaf){
                     name=(ParsedObjectLeaf)obj.getChildren().get(i-1);
                     
-                    
                 }else{ 
                     System.out.println("null returned");
                     return null;
                 }
             }
-            for(int x=1;(i-x)<0;x++){//This loop looks back from name of the function to find out how many owners it has
+            //
+            for(int x=1;(i-x)>0;x++){//This loop looks back from name of the function to find out how many owners it has
                 temp=obj.getChildren().get(i-x);
                 if(temp instanceof ParsedObjectLeaf){
                     ParsedObjectLeaf pol=(ParsedObjectLeaf)temp;
                     if(isEndOfSentence(pol)){
-                        //end=x;
+                        end=x;
                         break;
                     }else if(isReferenceOperator(pol))
                         lastRef=x; //Last owner is before this
+                    
+                }else if(temp instanceof ParsedObject){
+                    if(temp.getType()==Type.BRACKET)
+                        break;
                 }
             }
             if(lastRef>0){
@@ -156,8 +160,7 @@ public class FunctionAnalyzer {
                 }else{                    
                     //throw new ParseException("Not valid code, expected function call or variable before ::, ->, or .");
                 }
- 
-               for(;a>0;a--){
+               for(;a>1;a--){
                    temp=obj.getChildren().get(i-a);
                    po.addChild(temp);
                }
@@ -183,6 +186,8 @@ public class FunctionAnalyzer {
         if(str.contentEquals(","))
             return true;
         else if(str.contentEquals("="))
+            return true;
+        else if(str.contentEquals(";"))
             return true;
         return false;
     }
