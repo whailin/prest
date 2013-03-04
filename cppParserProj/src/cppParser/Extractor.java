@@ -45,6 +45,10 @@ public class Extractor
 	// Current line in the source file (may not reflect the actual processing)
 	public static int lineno = 0; 
 	
+	public int loc = 0;
+	public int lloc = 0;
+	public int ploc = 0;
+	
 	// The sentence analyzer used to analyze each "raw" sentence
 	private SentenceAnalyzer sentenceAnalyzer;
 	
@@ -128,7 +132,15 @@ public class Extractor
 			while((c = (char)reader.read()) != (char)-1)
 			{
 				// Simply increase the line number
-				if(c == '\n') lineno++;
+				if(c == '\n')
+				{
+					if(!line.contains("\n"))
+					{
+						ploc++;
+					}
+					loc++;
+					lineno++;
+				}
 				
 				// Skips characters until the current comment ends
 				if(skipToNewLine)
@@ -211,6 +223,7 @@ public class Extractor
 				// If the line ends, start lexing it
 				if(c == ';' || c == '{' || c == '}')
 				{
+					lloc++;
 					// lexLine(line);
 					sentenceAnalyzer.lexLine(line);
 					// sentenceAnalyzer.lexLineHM(line);
@@ -245,6 +258,16 @@ public class Extractor
 			for(CppScope cc : ParsedObjectManager.getInstance().getScopes())
 			{
 				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")\n");
+				for(CppScope cs : cc.children)
+				{
+					writer.write("   - Parent of " + cs.getName() + "\n");
+				}
+				for(CppScope cs : cc.parents)
+				{
+					writer.write("   - Child of " + cs.getName() + "\n");
+				}
+				
+				/*
 				for(CppFunc mf : cc.getFunctions())
 				{
 					// Log.d("    - " + mf.getType() + " | " + mf.getName());
@@ -255,13 +278,21 @@ public class Extractor
 						writer.write("      " + op + "\n");
 					}
 					*/
+					/*
 					for(String s : mf.recognizedLines)
 					{
 						writer.write(s + "\n");
 					}
 				}
+				*/
 				writer.write("\n");
 			}
+			
+			writer.write("\n");
+			writer.write("Total amount of lines: " + loc + "\n");
+			writer.write("Logical lines of code: " + lloc + "\n");
+			writer.write("Physical lines of code: " + ploc + "\n");
+			
 			writer.close();
 		}
 		catch (IOException e)

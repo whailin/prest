@@ -2,6 +2,8 @@ package cppStructures;
 
 import java.util.ArrayList;
 
+import cppParser.Log;
+
 /**
  * CPP Scope
  * 
@@ -17,6 +19,9 @@ public class CppScope
 	public String name = "_MAIN_";
 	public String getName() { return name; }
 	
+	public ArrayList<CppScope> parents = null;
+	public ArrayList<CppScope> children = null;
+	
 	public int braceCount = 0;
 	public String nameOfFile = "";
 	
@@ -26,6 +31,8 @@ public class CppScope
 	public CppScope(String name)
 	{
 		this.name = name;
+		this.children = new ArrayList<CppScope>();
+		this.parents = new ArrayList<CppScope>();
 	}
 	
 	public void addMember(MemberVariable mv)
@@ -66,5 +73,29 @@ public class CppScope
 			if(mem.getName().equals(mvName)) return true;
 		}
 		return false;
+	}
+	
+	public void addChild(CppScope cc)
+	{
+		boolean canAdd = true;
+		for(CppScope c : children)
+		{
+			if(c.getName().equals(cc.getName()))
+			{
+				canAdd = false;
+				break;
+			}
+		}
+		
+		if(canAdd)
+		{
+			children.add(cc);
+			cc.setParent(this);
+		}
+	}
+	
+	public void setParent(CppScope cc)
+	{
+		parents.add(cc);
 	}
 }

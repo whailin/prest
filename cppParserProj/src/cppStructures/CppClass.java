@@ -1,6 +1,8 @@
 package cppStructures;
 import java.util.ArrayList;
 
+import cppParser.Log;
+
 
 public class CppClass extends CppScope {
 
@@ -19,4 +21,6 @@ public class CppClass extends CppScope {
 		this.members = scope.members;
 		this.nameOfFile = scope.nameOfFile;
 	}
+	
+	
 }
