@@ -51,4 +51,29 @@ public class ParsedObjectManager {
 	{
 		return scopes;
 	}
+	
+	public CppClass addClass(String name)
+	{
+		CppClass newClass = null;
+		for(CppScope cs : scopes)
+		{
+			if(cs instanceof CppClass)
+			{
+				if(cs.getName().equals(name))
+				{
+					Log.d("Found an existing scope " + name);
+					newClass = (CppClass)cs;
+					break;
+				}
+			}
+		}
+		
+		if(newClass == null)
+		{
+			newClass = new CppClass(name);
+			scopes.add(newClass);
+		}
+		
+		return newClass;
+	}
 }

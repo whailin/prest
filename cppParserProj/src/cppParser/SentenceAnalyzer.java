@@ -20,16 +20,18 @@ public class SentenceAnalyzer {
 	
 	// List of "splitters" that are used to tokenize a single line of source code
 	// private String[] splitterChars = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", "."};
-	private String[] splitterChars = new String[] { " ", "(", ")", "{", "}", ";", "::" };
+	private String[] splitterChars = new String[] { " ", "(", ")", "{", "}", ";", "::", ","};
 	
 	private ArrayList<Analyzer> analyzers = new ArrayList<Analyzer>();
 	private FunctionAnalyzer functionAnalyzer;
+	private ClassAnalyzer classAnalyzer;
 	
 	public SentenceAnalyzer()
 	{
 		functionAnalyzer = new FunctionAnalyzer(this);
+		classAnalyzer = new ClassAnalyzer(this);
 		analyzers.add(functionAnalyzer);
-		analyzers.add(new ScopeAnalyzer(this));
+		analyzers.add(classAnalyzer);
 	}
 	
 	public void setCurrentScope(String scopeName, boolean addToStack)
@@ -171,6 +173,10 @@ public class SentenceAnalyzer {
 			functionAnalyzer.processSentence(tokens);
 			return;
 		}
+		else if(ParsedObjectManager.getInstance().currentScope != null)
+		{
+			
+		}
 		
 		// Loop through analyzers
 		for(Analyzer a: analyzers)
@@ -178,8 +184,10 @@ public class SentenceAnalyzer {
 			if(a.processSentence(tokens)) break;
 		}
 		
+		/*
 		lexDefine(tokens);
 		lexInclude(tokens);
 		lexClass(tokens);
+		*/
 	}
 }
