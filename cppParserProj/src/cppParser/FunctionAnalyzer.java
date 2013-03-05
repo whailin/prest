@@ -41,6 +41,24 @@ public class FunctionAnalyzer extends Analyzer {
 		super(sa);
 	}
 	
+	private String getScope(String[] tokens, int i)
+	{
+		for(int j = 1; j < i - 1; ++j)
+		{
+			if(tokens[j].equals("::"))
+			{
+				return tokens[j-1];
+			}
+		}
+		
+		// No scope was found from the tokens, return the currentScope from ParsedObjectManager
+		if(ParsedObjectManager.getInstance().currentScope != null)
+		{
+			return ParsedObjectManager.getInstance().currentScope.getName();
+		}
+		return null;
+	}
+	
 	/**
 	 * Analyses the list of tokens to find out whether or not
 	 * the tokens form a new function.
@@ -49,10 +67,49 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processNewFunction(String[] tokens)
 	{
-		for(int i = 0; i < tokens.length; ++i)
+		// Bail out instantly if there's no body starting
+		if(!tokens[tokens.length - 1].equals("{")) return false;
+		
+		for(int i = 1; i < tokens.length; ++i)
 		{
+			if(tokens[i].equals("("))
+			{
+				Log.d("\tFUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
+				
+				// Get scope
+				String scope = getScope(tokens, i);
+				if(scope == null) return false; // TODO Fix this
+				sentenceAnalyzer.setCurrentScope(scope, false);
+				
+				String funcName = tokens[i-1];
+				String returnType = tokens[0];
+				if(returnType.equals(tokens[i-1]) && i == 1)
+				{
+					if(funcName.startsWith("~")) returnType = "dtor";
+					else returnType = "ctor";
+				}
+				else
+				{
+					if(i > 1)
+					{
+						for(int j = 1; j < i - 2; ++j)
+						{
+							returnType += (tokens[j].equals("*") ? "" : " ") + tokens[j];
+						}
+					}
+				}
+				
+				ParsedObjectManager.getInstance().currentFunc = new CppFunc(returnType, funcName);
+				ParsedObjectManager.getInstance().currentScope.addFunc(ParsedObjectManager.getInstance().currentFunc);
+				ParsedObjectManager.getInstance().currentFunc.funcBraceCount = sentenceAnalyzer.braceCount;
+				ParsedObjectManager.getInstance().currentFunc.fileOfFunc = Extractor.currentFile;
+				
+				return true;
+			}
+			
+			/*
 			// Either a classname::function or a classname::member found
-			if(tokens[i].equals("::") && i > 0)
+			if((tokens[i].equals("::") || (ParsedObjectManager.getInstance().currentScope != null && tokens[tokens.length - 1].equals("{"))) && i > 0)
 			{
 				if(SentenceAnalyzer.ignoreStd && tokens[i-1].equals("std")) continue;
 				
@@ -61,7 +118,7 @@ public class FunctionAnalyzer extends Analyzer {
 				{
 					Log.d("   FUNCTION " + tokens[i+1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
 					
-					sentenceAnalyzer.setCurrentScope(tokens[i-1], false);
+					if(ParsedObjectManager.getInstance().currentScope == null) sentenceAnalyzer.setCurrentScope(tokens[i-1], false);
 					
 					String currentFuncName = tokens[i+1];
 					
@@ -93,6 +150,7 @@ public class FunctionAnalyzer extends Analyzer {
 					
 				}
 			}
+			*/
 		}
 		
 		return false;
@@ -484,6 +542,7 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean isFuncWithBody(String[] tokens, int di)
 	{
+		/*
 		if(di > 0)
 		{
 			for(int i = 0; i < tokens[di-1].length(); ++i)
@@ -500,6 +559,16 @@ public class FunctionAnalyzer extends Analyzer {
 				return true;
 			}
 		}
+		*/
+		
+		for(int j = 0; j < tokens.length; ++j)
+		{
+			if(tokens[j].equals("(") && tokens[tokens.length - 1].equals("{"))
+			{
+				return true;
+			}
+		}
+		
 		
 		return false;
 	}

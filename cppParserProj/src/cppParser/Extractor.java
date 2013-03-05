@@ -267,7 +267,7 @@ public class Extractor
 					writer.write("   - Child of " + cs.getName() + "\n");
 				}
 				
-				/*
+				
 				for(CppFunc mf : cc.getFunctions())
 				{
 					// Log.d("    - " + mf.getType() + " | " + mf.getName());
@@ -283,8 +283,9 @@ public class Extractor
 					{
 						writer.write(s + "\n");
 					}
+					*/
 				}
-				*/
+				
 				writer.write("\n");
 			}
 			
