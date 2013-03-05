@@ -52,15 +52,14 @@ public class SentenceAnalyzer {
 		{
 			CppScope cc = new CppScope(scopeName);
 			cc.nameOfFile = Extractor.currentFile;
-			// cppScopes.add(cc);
 			ParsedObjectManager.getInstance().getScopes().add(cc);
-			// currentScope = cc;
 			ParsedObjectManager.getInstance().currentScope = cc;
 			if(addToStack)
 			{
 				cppScopeStack.push(cc);
 				Log.d("SCOPE " + cppScopeStack.peek().getName() + " START (line: " + Extractor.lineno + ")");
-			}else
+			}
+			else
 			{
 				if(!cppScopeStack.isEmpty()) Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " PART (line: " + Extractor.lineno + ")");
 			}
@@ -100,28 +99,6 @@ public class SentenceAnalyzer {
 		cppScopeStack.push(cc);
 	}
 	
-	private void lexClass(String[] tokens)
-	{
-		for(int i = 0; i < tokens.length; ++i)
-		{
-			if(tokens[i].equals("class"))
-			{
-				
-				for(int j = i + 1; j < tokens.length; ++j)
-				{
-					if(tokens[j].equals(":") || tokens[j].equals("{"))
-					{
-						setCurrentScope(tokens[j-1], true);
-						if(!(cppScopeStack.peek() instanceof CppClass)) currentScopeToClass();
-						cppScopeStack.peek().braceCount = braceCount;
-						Log.d("CLASS " + cppScopeStack.peek().getName() + " START (line: " + Extractor.lineno + ")");
-						break;
-					}
-				}
-			}
-		}
-	}
-	
 	private void lexEndBrace()
 	{
 		
@@ -132,8 +109,6 @@ public class SentenceAnalyzer {
 			ParsedObjectManager.getInstance().currentFunc = null;
 		}
 		
-		
-		
 		// if(!cppClassStack.isEmpty() && classBraceCount == braceCount)
 		if(!cppScopeStack.isEmpty() && cppScopeStack.peek().braceCount == braceCount)
 		{
@@ -141,6 +116,15 @@ public class SentenceAnalyzer {
 			else if(cppScopeStack.peek() instanceof CppNamespace)Log.d("NAMESPACE " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")"); 
 			else Log.d("SCOPE " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")");
 			cppScopeStack.pop();
+		}
+		
+		if(ParsedObjectManager.getInstance().currentScope != null)
+		{
+			if(ParsedObjectManager.getInstance().currentScope.braceCount == braceCount)
+			{
+				Log.d("   SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " END (line: " + Extractor.lineno + ")");
+				ParsedObjectManager.getInstance().currentScope = null;
+			}
 		}
 		
 		braceCount--;

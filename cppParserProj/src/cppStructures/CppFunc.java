@@ -26,6 +26,9 @@ public class CppFunc {
 	// List of recognized lines, only for debugging
 	public ArrayList<String> recognizedLines = new ArrayList<String>();
 	
+	// List of parameters
+	public ArrayList<CppFuncParam> parameters = new ArrayList<CppFuncParam>();
+	
 	// Container for non-completely parsed lines (unknown references etc.)
 	private ArrayList<String[]> nonCompleteLines = new ArrayList<String[]>();
 	
