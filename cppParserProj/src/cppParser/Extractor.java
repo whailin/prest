@@ -43,11 +43,12 @@ public class Extractor
 	private int braceCount = 0;
 	
 	// Current line in the source file (may not reflect the actual processing)
-	public static int lineno = 0; 
+	public static long lineno = 0; 
 	
-	public int loc = 0;
-	public int lloc = 0;
-	public int ploc = 0;
+	public long loc = 0;			//lines of codes
+	public long lloc = 0;			//logical lines of codes
+	public long ploc = 0;			//physical lines of codes
+	public long cmtLineNo = 0;		//comment lines	
 	
 	// The sentence analyzer used to analyze each "raw" sentence
 	private SentenceAnalyzer sentenceAnalyzer;
@@ -175,7 +176,7 @@ public class Extractor
 				{
 					commentLine += c;
 					if(commentLine.length() > 1)
-					{
+					{						
 						if(commentLine.startsWith("//"))
 						{
 							if(StringTools.getQuoteCount(line) % 2 == 0)
@@ -204,8 +205,8 @@ public class Extractor
 								commentLine = "";
 							}
 						}
-					}
-					
+						cmtLineNo++;
+					}					
 					continue;
 				}
 				
@@ -257,21 +258,25 @@ public class Extractor
 			writer = new BufferedWriter(new FileWriter("treedump.txt"));
 			for(CppScope cc : ParsedObjectManager.getInstance().getScopes())
 			{
-				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")\n");
+				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")");
+				writer.newLine();
 				for(CppScope cs : cc.children)
 				{
-					writer.write("   - Parent of " + cs.getName() + "\n");
+					writer.write("   - Parent of " + cs.getName());
+					writer.newLine();
 				}
 				for(CppScope cs : cc.parents)
 				{
-					writer.write("   - Child of " + cs.getName() + "\n");
+					writer.write("   - Child of " + cs.getName());
+					writer.newLine();
 				}
 				
 				
 				for(CppFunc mf : cc.getFunctions())
 				{
 					// Log.d("    - " + mf.getType() + " | " + mf.getName());
-					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + ", CC: " + mf.getCyclomaticComplexity() + " | Ops: " + mf.getOperatorCount() + " | Uops: " + mf.getUniqueOperatorCount() + " (file: " + mf.fileOfFunc + ")\n");
+					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + ", CC: " + mf.getCyclomaticComplexity() + " | Ops: " + mf.getOperatorCount() + " | Uops: " + mf.getUniqueOperatorCount() + " (file: " + mf.fileOfFunc + ")");
+					writer.newLine();
 					/*
 					for(String op : mf.getOperators())
 					{
@@ -286,13 +291,14 @@ public class Extractor
 					*/
 				}
 				
-				writer.write("\n");
+				writer.newLine();
 			}
 			
-			writer.write("\n");
-			writer.write("Total amount of lines: " + loc + "\n");
-			writer.write("Logical lines of code: " + lloc + "\n");
-			writer.write("Physical lines of code: " + ploc + "\n");
+			writer.newLine();
+			writer.write("Total amount of lines: " + loc);	writer.newLine();
+			writer.write("Comment lines: " + cmtLineNo);    writer.newLine();
+			writer.write("Logical lines of code: " + lloc);	writer.newLine();			
+			writer.write("Physical lines of code: " + ploc);
 			
 			writer.close();
 		}
