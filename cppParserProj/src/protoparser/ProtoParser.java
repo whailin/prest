@@ -8,6 +8,7 @@ import treeparser.FunctionAnalyzer;
 import treeparser.treeobject.FunctionCall;
 import treeparser.treeobject.ParsedObject;
 import treeparser.treeobject.TreeFactory;
+import treeparser.treeobject.Variable;
 
 /**
  *
@@ -17,7 +18,7 @@ public class ProtoParser {
    
     
     public static void main(String[] args) throws Exception{
-       String dest= "H:\\cpp\\simple\\main.cpp";
+       String dest= "H:\\cpp\\simple\\main1.cpp";
        
        File file=new File(dest);
         try {
@@ -40,6 +41,7 @@ public class ProtoParser {
            //obj is root node which was supposed to take more than just the function body. 
            //we have to take the function body here, the array should not contain anything else
            List<FunctionCall> fcs=FunctionAnalyzer.findFunctionCalls((ParsedObject)obj.getChildren().get(0)); 
+           List<Variable> vars=FunctionAnalyzer.findVariables(null,(ParsedObject)obj.getChildren().get(0));
            
            System.out.println("Number of calls:"+fcs.size());
            for(FunctionCall f:fcs)                  //this loop lists all the methods that were called
@@ -52,7 +54,7 @@ public class ProtoParser {
         TreeFactory tf=new TreeFactory();
         ParsedObject obj=null;
         BufferedReader br=new BufferedReader(new FileReader(file));
-
+        
         boolean EOF=false;
         try{
         	while(!EOF){

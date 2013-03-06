@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class Constants {
     public static final String specialChars="/*-+";
-    public static final String[] keywords={
+    public static final String[] keywordArray={
         "alignas", // C++11
         "alignof", // C++11
         "and",
@@ -110,8 +110,8 @@ public class Constants {
          "^=",
          "&=",
          "|=",
-         "<<",
-         ">>",
+         //"<<", //These two were left out because operator overloading might cause parsing issues
+         //">>", // eg compare cout<<"hello; and std::vector<std::pair<std::string, int>> values;
          "==",
          "!=",
          "<=",
@@ -123,9 +123,28 @@ public class Constants {
          "->"
      };
      
+     public static final String[] simpleTypeArray={
+         "bool",
+         "char",
+         "char16_t",
+         "char32_t",
+         "double",
+         "float",
+         "int",
+         "long",
+         "short",
+         "signed",
+         "unsigned",
+         "void",
+         "wchar_t"
+         
+     };
+
+     
      public static final String[] threeCharOperator={};
     
-    public static final List<String> l=new ArrayList<String>(Arrays.asList(keywords));
+    public static final List<String> keywords=new ArrayList<String>(Arrays.asList(keywordArray));
+    public static final List<String> simpleTypes=new ArrayList<String>(Arrays.asList(simpleTypeArray));
     
     public static boolean isTwoCharOperator(String str){
         int l=twoCharOperators.length;
@@ -136,7 +155,7 @@ public class Constants {
         return false;
     }
     public static boolean isKeyword(String str){
-        int i=Collections.binarySearch(Constants.l, str);
+        int i=Collections.binarySearch(keywords, str);
         if(i>=0)
             return true;
         else
@@ -158,6 +177,14 @@ public class Constants {
         else if(c=='_')
             return true;
         return false;
+    }
+    
+    public static boolean isSimpleType(String str){
+        int i=Collections.binarySearch(simpleTypes, str);
+        if(i>=0)
+            return true;
+        else
+            return false;
     }
     
     public static boolean isSpecialChar(char c){

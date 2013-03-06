@@ -46,6 +46,7 @@ public class BracketParser extends Parser{
             BaseParsedObject obj=parser.push(c);
             if(obj!=null){
                 parser=null;
+                if(!(currentObject.getType()==Type.COMMENT || currentObject.getType()==Type.NEWLINE)) //Skip comments
                 currentObject.addChild(obj);
             }
             lastChar=c;
