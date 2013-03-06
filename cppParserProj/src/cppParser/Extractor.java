@@ -43,11 +43,11 @@ public class Extractor
 	private int braceCount = 0;
 	
 	// Current line in the source file (may not reflect the actual processing)
-	public static long lineno = 0; 
+	public static int lineno = 0; 
 	
-	public long loc = 0;			//lines of codes
-	public long lloc = 0;			//logical lines of codes
-	public long ploc = 0;			//physical lines of codes
+	public int loc = 0;
+	public int lloc = 0;
+	public int ploc = 0;
 	public long cmtLineNo = 0;		//comment lines	
 	
 	// The sentence analyzer used to analyze each "raw" sentence
@@ -258,25 +258,21 @@ public class Extractor
 			writer = new BufferedWriter(new FileWriter("treedump.txt"));
 			for(CppScope cc : ParsedObjectManager.getInstance().getScopes())
 			{
-				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")");
-				writer.newLine();
+				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")\n");
 				for(CppScope cs : cc.children)
 				{
-					writer.write("   - Parent of " + cs.getName());
-					writer.newLine();
+					writer.write("   - Parent of " + cs.getName() + "\n");
 				}
 				for(CppScope cs : cc.parents)
 				{
-					writer.write("   - Child of " + cs.getName());
-					writer.newLine();
+					writer.write("   - Child of " + cs.getName() + "\n");
 				}
 				
 				
 				for(CppFunc mf : cc.getFunctions())
 				{
 					// Log.d("    - " + mf.getType() + " | " + mf.getName());
-					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + ", CC: " + mf.getCyclomaticComplexity() + " | Ops: " + mf.getOperatorCount() + " | Uops: " + mf.getUniqueOperatorCount() + " (file: " + mf.fileOfFunc + ")");
-					writer.newLine();
+					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + ", CC: " + mf.getCyclomaticComplexity() + " | Ops: " + mf.getOperatorCount() + " | Uops: " + mf.getUniqueOperatorCount() + " (file: " + mf.fileOfFunc + ")\n");
 					/*
 					for(String op : mf.getOperators())
 					{
@@ -291,14 +287,13 @@ public class Extractor
 					*/
 				}
 				
-				writer.newLine();
+				writer.write("\n");
 			}
 			
-			writer.newLine();
-			writer.write("Total amount of lines: " + loc);	writer.newLine();
-			writer.write("Comment lines: " + cmtLineNo);    writer.newLine();
-			writer.write("Logical lines of code: " + lloc);	writer.newLine();			
-			writer.write("Physical lines of code: " + ploc);
+			writer.write("\n");
+			writer.write("Total amount of lines: " + loc + "\n");
+			writer.write("Logical lines of code: " + lloc + "\n");
+			writer.write("Physical lines of code: " + ploc + "\n");
 			
 			writer.close();
 		}
