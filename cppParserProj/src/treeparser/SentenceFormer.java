@@ -21,6 +21,9 @@ public class SentenceFormer {
     public SentenceFormer(ParsedObject parent) {
         this.parent=parent;
     }
+    public SentenceFormer() {
+        this.parent=null;
+    }
     public ParsedObject push(ParsedObject obj){
         if(obj.getType()==Type.COMMENT)
             return null;
@@ -28,9 +31,8 @@ public class SentenceFormer {
         list.add(obj);
         
         if(obj.getContent().contentEquals("{")){
-            System.out.print("Adding {");
             type=Type.SENTENCE;
-            obj.formSentences();
+            //obj.formSentences();
             if(list.get(list.size()-2) instanceof ParsedObject){
                 ParsedObject temp=(ParsedObject)list.get(list.size()-2);
                 if(temp.getContent().contentEquals("(")){
@@ -44,15 +46,21 @@ public class SentenceFormer {
         return null;
     }
     
+    public ParsedObject push(BaseParsedObject obj){
+        if(obj instanceof ParsedObjectLeaf)
+            return push((ParsedObjectLeaf)obj);
+        else if(obj instanceof ParsedObject)
+            return push((ParsedObject)obj);
+        else throw new Error ("Unexpected object type");
+    }
+    
     public ParsedObject push(ParsedObjectLeaf obj){
         if(obj.getType()==Type.COMMENT)
             return null;
-        System.out.print("Adding "+obj.getContent());
         list.add(obj);
         if(obj.getContent().contentEquals(";")){
             ParsedObject temp=createSentence("Sentence", list);
             list.clear();
-            System.out.println("S contains "+temp.getNumberOfChildren());
             return temp;
         }
         return null;
@@ -75,7 +83,7 @@ public class SentenceFormer {
     private ParsedObject createSentence(String name, List<BaseParsedObject> list){
         ParsedObject obj=new ParsedObject(parent,name,type);
         obj.addChildren(list);
-        System.out.println("Sentence "+x++);
+        System.out.println("Sentence created:");
         obj.printCode();
         //System.out.println("");
         return obj;

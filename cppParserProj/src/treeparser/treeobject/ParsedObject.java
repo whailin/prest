@@ -80,49 +80,7 @@ public class ParsedObject extends BaseParsedObject{
         }
         
     }
-    /**
-     * This method goes through the list of children and forms sentences from them
-     */
-    public void formSentences(){
-        ArrayList<BaseParsedObject> list=new ArrayList<BaseParsedObject>();
-        if(content.contentEquals("{")){
-            int i=0;
-            SentenceFormer sf=new SentenceFormer(this);
-            for(BaseParsedObject obj:childObjects){
-                if (i==0){
-                    list.add(obj);
-                }else if( i==(childObjects.size()-1)){//ignoring brackets
-                    BaseParsedObject o=sf.noMoreTokens();
-                    if(o!=null)
-                        list.add(o);
-                    list.add(obj);
-                }else{
-                    BaseParsedObject newObj=null;
-                    if(obj instanceof ParsedObject){
-                        //((ParsedObject)obj).formSentences();
-                        newObj=sf.push((ParsedObject)obj);
-                    }else if(obj instanceof ParsedObjectLeaf){
-                        newObj=sf.push((ParsedObjectLeaf)obj);
-                        
-                    }
-                    if(newObj!=null){
-                        newObj.printCode();
-                        System.out.println("New obj:"+newObj.getType());
-                        list.add(obj);
-                    }
-                }
-                i++;
-            }
-            childObjects.clear();
-            childObjects.addAll(list);
-            for(BaseParsedObject o:list)
-                System.out.println("List:"+o.getType());
-            listObjects(this);
-            System.out.println("formed "+list.size()+" "+childObjects.size());
-        }
-            
-        
-    }
+    
     
     private static void listObjects(ParsedObject root) {
         System.out.println("Listing");
