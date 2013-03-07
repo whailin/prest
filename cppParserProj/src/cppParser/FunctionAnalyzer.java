@@ -74,7 +74,7 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(tokens[i].equals("("))
 			{
-				Log.d("\tFUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
+				Log.d("   FUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
 				
 				// Get scope
 				String scope = getScope(tokens, i);
@@ -82,24 +82,71 @@ public class FunctionAnalyzer extends Analyzer {
 				sentenceAnalyzer.setCurrentScope(scope, false);
 				
 				String funcName = tokens[i-1];
-				String returnType = tokens[0];
-				if(returnType.equals(tokens[i-1]) && i == 1)
+				String returnType = "";
+				if(i == 3 && tokens[i-2].equals("::"))
 				{
+					returnType = "ctor";
 					if(funcName.startsWith("~")) returnType = "dtor";
-					else returnType = "ctor";
 				}
 				else
 				{
-					if(i > 1)
+					returnType = tokens[0];
+					if(returnType.equals(tokens[i-1]) && i == 1)
 					{
-						for(int j = 1; j < i - 2; ++j)
+						if(funcName.startsWith("~")) returnType = "dtor";
+						else returnType = "ctor";
+					}
+					else
+					{
+						if(i > 1)
 						{
-							returnType += (tokens[j].equals("*") ? "" : " ") + tokens[j];
+							for(int j = 1; j < i - 3; ++j)
+							{
+								returnType += (tokens[j].equals("*") ? "" : " ") + tokens[j];
+							}
 						}
 					}
 				}
 				
-				ParsedObjectManager.getInstance().currentFunc = new CppFunc(returnType, funcName);
+				CppFunc func = new CppFunc(returnType, funcName);
+				
+				// Parse parameters
+				if(!tokens[i+1].equals(")"))
+				{
+					String paramType = "";
+					String paramName = "";
+					for(int j = i + 1; j < tokens.length - 1; ++j)
+					{
+						if(tokens[j].equals(")")) break;
+						
+						if(tokens[j].equals(","))
+						{
+							CppFuncParam attrib = new CppFuncParam(paramType, paramName);
+							func.parameters.add(attrib);
+							paramType = "";
+							paramName = "";
+						}
+						else
+						{
+							if(tokens[j+1].equals(",") || tokens[j+1].equals(")"))
+							{
+								paramName = tokens[j];
+							}
+							else
+							{
+								paramType += (paramType.length() > 0 ? " " : "") + tokens[j];
+							}
+						}
+					}
+					
+					if(!paramType.equals("") && !paramName.equals(""))
+					{
+						CppFuncParam attrib = new CppFuncParam(paramType, paramName);
+						func.parameters.add(attrib);
+					}
+				}
+				
+				ParsedObjectManager.getInstance().currentFunc = func;
 				ParsedObjectManager.getInstance().currentScope.addFunc(ParsedObjectManager.getInstance().currentFunc);
 				ParsedObjectManager.getInstance().currentFunc.funcBraceCount = sentenceAnalyzer.braceCount;
 				ParsedObjectManager.getInstance().currentFunc.fileOfFunc = Extractor.currentFile;

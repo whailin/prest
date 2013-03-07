@@ -25,17 +25,31 @@ public class SentenceAnalyzer {
 	private ArrayList<Analyzer> analyzers = new ArrayList<Analyzer>();
 	private FunctionAnalyzer functionAnalyzer;
 	private ClassAnalyzer classAnalyzer;
+	private ScopeAnalyzer scopeAnalyzer;
 	
 	public SentenceAnalyzer()
 	{
 		functionAnalyzer = new FunctionAnalyzer(this);
 		classAnalyzer = new ClassAnalyzer(this);
+		scopeAnalyzer = new ScopeAnalyzer(this);
+	
 		analyzers.add(functionAnalyzer);
 		analyzers.add(classAnalyzer);
+		analyzers.add(scopeAnalyzer);
 	}
 	
+	/**
+	 * Sets the current scope to "scopeName". If the scope is already known,
+	 * the existing scope will be used. Otherwise, a new scope is created.
+	 * If 'addToStack' is 'true', the scope is also stored in a scope stack.
+	 * This is useful for i.e. inner classes.
+	 * 
+	 * @param scopeName The name of the scope
+	 * @param addToStack If 'true', store the scope in a scope stack
+	 */
 	public void setCurrentScope(String scopeName, boolean addToStack)
 	{
+		// Search for an existing scope with the given name
 		boolean found = false;
 		for(CppScope cc : ParsedObjectManager.getInstance().getScopes())
 		{
@@ -99,33 +113,44 @@ public class SentenceAnalyzer {
 		cppScopeStack.push(cc);
 	}
 	
+	
+	/**
+	 * Handles an ending brace.
+	 * In the case of a function body, the current function handling is ended.
+	 * In the case of a scope, the current scope handling is ended, and if
+	 * the scope is in the scope stack, it is removed from there.
+	 */
 	private void lexEndBrace()
 	{
 		
-		
+		// If function body is ended
 		if(ParsedObjectManager.getInstance().currentFunc != null && ParsedObjectManager.getInstance().currentFunc.funcBraceCount == braceCount)
 		{
 			Log.d("   FUNCTION " + ParsedObjectManager.getInstance().currentFunc.getName() + " END (line: " + Extractor.lineno + ")");
 			ParsedObjectManager.getInstance().currentFunc = null;
 		}
 		
-		// if(!cppClassStack.isEmpty() && classBraceCount == braceCount)
+		// If scope body is ended
 		if(!cppScopeStack.isEmpty() && cppScopeStack.peek().braceCount == braceCount)
 		{
 			if(cppScopeStack.peek() instanceof CppClass) Log.d("CLASS " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")");
 			else if(cppScopeStack.peek() instanceof CppNamespace)Log.d("NAMESPACE " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")"); 
 			else Log.d("SCOPE " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")");
+			
 			cppScopeStack.pop();
+			if(cppScopeStack.size() > 0) ParsedObjectManager.getInstance().currentScope = cppScopeStack.peek();
 		}
 		
+		/*
 		if(ParsedObjectManager.getInstance().currentScope != null)
 		{
 			if(ParsedObjectManager.getInstance().currentScope.braceCount == braceCount)
 			{
-				Log.d("   SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " END (line: " + Extractor.lineno + ")");
+				Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " END (line: " + Extractor.lineno + ")");
 				ParsedObjectManager.getInstance().currentScope = null;
 			}
 		}
+		*/
 		
 		braceCount--;
 	}

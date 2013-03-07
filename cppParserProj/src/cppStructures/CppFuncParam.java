@@ -4,6 +4,7 @@ public class CppFuncParam {
 
 	public String type = "NOTYPE";
 	public String name = "NONAME";
+	public String value = "NOVALUE";
 	
 	public CppFuncParam()
 	{
