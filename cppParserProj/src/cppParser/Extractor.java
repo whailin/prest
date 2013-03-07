@@ -13,6 +13,7 @@ import java.util.Stack;
 
 import cppStructures.CppClass;
 import cppStructures.CppFunc;
+import cppStructures.CppFuncParam;
 import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 
@@ -268,23 +269,17 @@ public class Extractor
 					writer.write("   - Child of " + cs.getName() + "\n");
 				}
 				
-				
+				// Dump functions
 				for(CppFunc mf : cc.getFunctions())
 				{
-					// Log.d("    - " + mf.getType() + " | " + mf.getName());
-					writer.write(" - Function: " + mf.getType() + " " + mf.getName() + ", CC: " + mf.getCyclomaticComplexity() + " | Ops: " + mf.getOperatorCount() + " | Uops: " + mf.getUniqueOperatorCount() + " (file: " + mf.fileOfFunc + ")\n");
-					/*
-					for(String op : mf.getOperators())
+					writer.write("    Function: " + mf.getType() + "\t\t" + mf.getName() + "\t\t(file: " + mf.fileOfFunc + ")\n");
+					
+					// Dump parameters
+					writer.write("        Params: " + mf.parameters.size() + "\n");
+					for(CppFuncParam cfp : mf.parameters)
 					{
-						writer.write("      " + op + "\n");
+						writer.write("         - " + cfp.type + "\t\t" + cfp.name + "\n");
 					}
-					*/
-					/*
-					for(String s : mf.recognizedLines)
-					{
-						writer.write(s + "\n");
-					}
-					*/
 				}
 				
 				writer.write("\n");

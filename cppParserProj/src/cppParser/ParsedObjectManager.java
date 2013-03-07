@@ -20,6 +20,8 @@ public class ParsedObjectManager {
 	// Reference to the class or namespace currently under processing
 	public CppScope currentScope = null;
 	
+	public String currentNameSpace = "";
+	
 	// List of scopes found
 	private ArrayList<CppScope> scopes = new ArrayList<CppScope>();
 	

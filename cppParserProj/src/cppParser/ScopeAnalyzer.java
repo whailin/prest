@@ -33,7 +33,6 @@ public class ScopeAnalyzer extends Analyzer {
 					
 					ParsedObjectManager.getInstance().getScopes().add(ns);
 					sentenceAnalyzer.cppScopeStack.add(ns);
-					
 				}
 			}
 		}
