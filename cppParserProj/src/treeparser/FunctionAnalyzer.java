@@ -4,8 +4,11 @@ package treeparser;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import treeparser.exception.ParseException;
 import treeparser.treeobject.BaseParsedObject;
 import treeparser.treeobject.FunctionCall;
 import treeparser.treeobject.ParsedObject;
@@ -17,8 +20,59 @@ import treeparser.treeobject.Variable;
  * @author Tomi
  */
 public class FunctionAnalyzer {
+    Hashtable<String,String> foundWords = new Hashtable<String,String>();
     
-    public static List<Variable> findVariables(ParsedObject funcParams, ParsedObject functionBody){
+    public void createSentences(ParsedObject obj){
+        //SentenceFormer s=new SentenceFormer();
+        
+    }
+    public void formSentences(ParsedObject funcBody){
+        ArrayList<BaseParsedObject> list=new ArrayList<BaseParsedObject>();
+        formSentences(funcBody,list);
+    }
+    /**
+     * This method goes through the list of children and forms sentences from them
+     */
+    private void formSentences(ParsedObject funcBody, List<BaseParsedObject> listOfSentences){
+        List<BaseParsedObject> list=listOfSentences;
+        String content=funcBody.getContent();
+        
+        if(content.contentEquals("{")){
+            int i=0;
+            SentenceFormer sf=new SentenceFormer();
+            for(BaseParsedObject obj:funcBody.getChildren()){
+                if (i==0){
+                    //list.add(obj);
+                }else if( i==(funcBody.getChildren().size()-1)){//ignoring brackets
+                    BaseParsedObject o=sf.noMoreTokens();
+                    if(o!=null)
+                        list.add(o);
+                    list.add(obj);
+                }else{
+                    BaseParsedObject newObj=null;
+                    if(obj instanceof ParsedObject){
+                        //((ParsedObject)obj).formSentences();
+                        newObj=sf.push((ParsedObject)obj);
+                    }else if(obj instanceof ParsedObjectLeaf){
+                        newObj=sf.push((ParsedObjectLeaf)obj);
+                        
+                    }
+                    if(newObj!=null){
+                        
+                        list.add(obj);
+                    }
+                }
+                i++;
+            }
+            
+            
+            System.out.println("formed "+list.size()+" ");
+        }
+            
+        
+    }
+    
+    public List<Variable> findVariables(ParsedObject funcParams, ParsedObject functionBody){
         int index;
         List<Variable> declarations=new ArrayList<Variable>();
         Variable var=null;
@@ -36,6 +90,7 @@ public class FunctionAnalyzer {
                     BaseParsedObject nextObj=functionBody.getChildren().get(index+1);
                     if(obj instanceof ParsedObjectLeaf){
                         if(obj.getType()==Type.WORDTOKEN){
+                            foundWords.put(obj.getContent(), obj.getContent());
                             System.out.println("Word "+obj.toString());
                             if(nextObj.getContent().contentEquals("::")){
                                 index+=parseVariable(index, functionBody, declarations);
@@ -43,8 +98,6 @@ public class FunctionAnalyzer {
                                 index+=parsePrimitiveVariable(index, functionBody, declarations);
                             }
                         }
-
-
                     }else if(obj instanceof ParsedObject){}
                 }
             }
@@ -52,7 +105,7 @@ public class FunctionAnalyzer {
         
         return null;
     }
-    public static List<FunctionCall> findFunctionCalls(ParsedObject object){
+    public List<FunctionCall> findFunctionCalls(ParsedObject object){
         List<FunctionCall> fcs=new ArrayList();
         return findFunctionCalls(object,fcs);
     }
@@ -60,7 +113,7 @@ public class FunctionAnalyzer {
      * Found function calls are collected to the functions list.
      * This method is called recursively so it's private. 
      */
-    private static List<FunctionCall> findFunctionCalls(ParsedObject object, List<FunctionCall> functions){
+    private List<FunctionCall> findFunctionCalls(ParsedObject object, List<FunctionCall> functions){
          List<FunctionCall> fcs=functions;
         if(object.getType()==Type.BRACKET){
             //ParsedObject sentence=new ParsedObject(null,"Sentence",Type.SENTENCE);
@@ -104,7 +157,7 @@ public class FunctionAnalyzer {
                                     System.out.println(lastWord+" called");
                             }
                             findFunctionCalls(po, fcs);
-                        }else if(b=='{'){
+                        }else if(b=='{' || b=='['){
                             findFunctionCalls(po, fcs);
                         }
                         lastWord=null;
@@ -117,7 +170,7 @@ public class FunctionAnalyzer {
         
     }
     
-    private static boolean canIgnore(BaseParsedObject obj) {
+    private boolean canIgnore(BaseParsedObject obj) {
         Type t=obj.getType();
         if(t==Type.COMMENT)
             return true;
@@ -126,7 +179,7 @@ public class FunctionAnalyzer {
         return false;
     }
     
-    private static char getBracketType(ParsedObject obj){
+    private char getBracketType(ParsedObject obj){
             
             if(obj.getChildren().get(0) instanceof ParsedObjectLeaf)
                 return ((ParsedObjectLeaf)obj.getChildren().get(0)).getContent().charAt(0);
@@ -146,7 +199,7 @@ public class FunctionAnalyzer {
  * }
  * createFunctionCall(obj,parameters) would return FunctionCall with ParsedObject owner={"abc","::", "cd"}, name="hello" and parameters=(a)
  */
-    private static FunctionCall createFunctionCall(ParsedObject obj, ParsedObject parameters) {
+    private FunctionCall createFunctionCall(ParsedObject obj, ParsedObject parameters) {
         int i=obj.getChildren().indexOf(parameters);
         ParsedObject po=new ParsedObject(null,"FunctionCall",Type.OTHER);
         ParsedObjectLeaf name=null;
@@ -205,7 +258,7 @@ public class FunctionAnalyzer {
         
     }
     
-    private static boolean isReferenceOperator(ParsedObjectLeaf leaf){
+    private boolean isReferenceOperator(ParsedObjectLeaf leaf){
         String str=leaf.getContent();
         if(str.contentEquals("::"))
             return true;
@@ -215,7 +268,7 @@ public class FunctionAnalyzer {
             return true;
         return false;
     }
-    private static boolean isEndOfSentence(ParsedObjectLeaf leaf){
+    private boolean isEndOfSentence(ParsedObjectLeaf leaf){
         String str=leaf.getContent();
         if(str.contentEquals(","))
             return true;
@@ -226,42 +279,82 @@ public class FunctionAnalyzer {
         return false;
     }
     
-    private static int parsePrimitiveVariable(int index, ParsedObject obj,List<Variable> list) {
-        System.out.println("primitive variable");
-        int x=0, size=obj.getChildren().size();
+    private int parsePrimitiveVariable(int index, ParsedObject obj,List<Variable> list){
+        int x=0;
         Variable var=new Variable();
         var.type=(ParsedObjectLeaf)obj.getChildren().get(index);
         BaseParsedObject o;
-        
         x++;
+        do{
+            try{
+                int temp=parseVariableName(var,obj,index+x);
+                System.out.println(temp+"Found primitive variable declaration:"+var.toString());
+                list.add(var);
+                x+=temp;
+                
+            }catch(ParseException ex){
+            ex.printStackTrace();
+            break;
+            }
+            if(obj.getChildren().size()>x){
+                o=obj.getChildren().get(x);
+                int a=findNextComma(index+x,obj);
+                    if(a==-1){
+                        x++;
+                        break;
+                    }else
+                        x+=a;
+                String s=o.getContent();
+                if(s.contentEquals("=")){
+                    
+                }else if(s.contentEquals(",")){
+                    x++;
+                }else if(s.contentEquals(";")){
+                    break;
+                }
+                    
+            }else break;
+        }while(true);
+        /*if(obj.getChildren().size()>x)
+            System.out.println("next token:"+obj.getChildren().get(x)+" x:"+x);*/
+        
+        return x;
+    }
+    /**
+     * Method parses variable name which it extracts from obj starting from index.
+     * name is put in var.
+     * @param var
+     * @param obj
+     * @param index
+     * @return
+     * @throws ParseException thrown if name could not be parsed, because currently parsed object is not variable.
+     */
+    private int parseVariableName(Variable var, ParsedObject obj, int index)throws ParseException{
+        int x=0,size=obj.getChildren().size();
+        BaseParsedObject o;
         while((index+x)<size){
             o=obj.getChildren().get(index+x);
-            System.out.println("o:"+o.getType());
             if(o.getType()==Type.BRACKET){
-                var=null;
-                break;
+                throw new ParseException("Not a variable");
             }else if(o.getType()==Type.SPECIAL){
                 if(o.getContent().contentEquals("*")||o.getContent().contentEquals("&"))
                     var.pointers+=o.getContent();
                 else if(o.getContent().contentEquals(";")){
-                    var=null;
-                    break;
+                    throw new ParseException("Not a variable");
                 }
             }else if(o.getType()==Type.WORDTOKEN){
                 var.name=o.getContent();
+                x++;
                 break;
-            }
+            }else throw new ParseException("Not a variable");
             x++;
         }
-        if(var!=null){
-            System.out.println("Found primitive variable declaration:"+var.toString());
-            //if(var.)
-        }
-        
         return x;
     }
+    
+    
 
-    private static int parseVariable(int index, ParsedObject obj, List<Variable> list) {
+    private int parseVariable(int index, ParsedObject obj, List<Variable> list) {
         BaseParsedObject obj1, nextObj;
         int size=obj.getChildren().size()-1;
         if(obj.getType()==Type.BRACKET)
@@ -369,6 +462,29 @@ public class FunctionAnalyzer {
             System.out.println("Found variable declaration:"+var.toString());
         return x;
         
+    }
+    /**
+     * Method finds next token that contains ",". It counts tokens to next "," after index
+     * and returns it. If statement ends( ";", bracket is found, or there are no more tokens) it returns -1;
+     * @param index
+     * @param obj
+     * @return 
+     */
+    private int findNextComma(int index, ParsedObject obj) {
+        BaseParsedObject obj1;
+        
+        int x,size=obj.getChildren().size();
+        for(x=0;(index+x)<size;x++){
+            obj1=obj.getChildren().get(index+x);
+            if(obj1.getContent().contentEquals(","))
+                return x;
+            else if(obj1.getContent().contentEquals(";") ||
+                    obj1.getContent().contentEquals(")") ||
+                    obj1.getContent().contentEquals("]") ||
+                    obj1.getContent().contentEquals("}"))
+                return -1;
+        }
+        return -1;
     }
 
 

@@ -18,10 +18,12 @@ public class ProtoParser {
    
     
     public static void main(String[] args) throws Exception{
-       String dest= "H:\\cpp\\simple\\main1.cpp";
-       
+       String dest= "H:\\cpp\\simple\\main.cpp";
+       FunctionAnalyzer fa=new FunctionAnalyzer();
        File file=new File(dest);
         try {
+            //obj is root node which was supposed to take more than just the function body. 
+           //we have to take the function body here, the array should not contain anything else
            ParsedObject obj=loadFile(file);
            /* The parsed file should only contain 
             * the body of the function that is to be analyzed eg
@@ -38,10 +40,11 @@ public class ProtoParser {
             * String str="{hello();}
             * ParsedObject obj=tf.stringToTree(str);
             */
-           //obj is root node which was supposed to take more than just the function body. 
-           //we have to take the function body here, the array should not contain anything else
-           List<FunctionCall> fcs=FunctionAnalyzer.findFunctionCalls((ParsedObject)obj.getChildren().get(0)); 
-           List<Variable> vars=FunctionAnalyzer.findVariables(null,(ParsedObject)obj.getChildren().get(0));
+           
+           
+           //fa.formSentences((ParsedObject)obj.getChildren().get(0));
+           List<FunctionCall> fcs=fa.findFunctionCalls((ParsedObject)obj.getChildren().get(0)); 
+           List<Variable> vars=fa.findVariables(null,(ParsedObject)obj.getChildren().get(0));
            
            System.out.println("Number of calls:"+fcs.size());
            for(FunctionCall f:fcs)                  //this loop lists all the methods that were called
