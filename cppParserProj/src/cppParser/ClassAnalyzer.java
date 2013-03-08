@@ -88,7 +88,7 @@ public class ClassAnalyzer extends Analyzer {
 	
 	private boolean handleOpeningParenthesis()
 	{
-		if(tokens[i].equals("("))
+		if(i > 0 && tokens[i].equals("("))
 		{
 			Log.d("\tFound a function > " + tokens[i-1]);
 			
@@ -101,18 +101,16 @@ public class ClassAnalyzer extends Analyzer {
 			
 			// Find out the return type of the function
 			String type = "";
-			if(i > 2)
+			if(i == 1)
+			{
+				if(type.startsWith("~")) type = "dtor";
+				else type = "ctor";
+			}
+			else if(i > 1)
 			{
 				type = tokens[i-2];
 			}
-			else
-			{
-				if(tokens[i-1].contains(ParsedObjectManager.getInstance().currentScope.getName()))
-				{
-					type = "ctor";
-					if(type.startsWith("~")) type = "dtor";
-				}
-			}
+			
 			String name = tokens[i-1];
 			
 			// Create the CppFunc object
@@ -123,11 +121,21 @@ public class ClassAnalyzer extends Analyzer {
 			{
 				String paramType = "";
 				String paramName = "";
+				boolean skipCommas = false;
 				for(int j = i + 1; j < tokens.length - 1; ++j)
 				{
 					if(tokens[j].equals(")")) break;
 					
-					if(tokens[j].equals(","))
+					if(tokens[j].contains("<"))
+					{
+						skipCommas = true;
+					}
+					if(tokens[j].contains(">"))
+					{
+						skipCommas = false;
+					}
+					
+					if(!skipCommas && tokens[j].equals(","))
 					{
 						CppFuncParam attrib = new CppFuncParam(paramType, paramName);
 						cf.parameters.add(attrib);
@@ -136,9 +144,16 @@ public class ClassAnalyzer extends Analyzer {
 					}
 					else
 					{
-						if(tokens[j+1].equals(",") || tokens[j+1].equals(")"))
+						if(tokens[j+1].equals(",") || tokens[j+1].equals(")") || tokens[j+1].equals("="))
 						{
-							paramName = tokens[j];
+							if(skipCommas)
+							{
+								paramName = tokens[j];
+								if(tokens[j+1].equals("="))
+								{
+									while(j < tokens.length - 1 && !tokens[j+1].equals(",") && !tokens[j+1].equals(")")) j++;
+								}
+							}
 						}
 						else
 						{

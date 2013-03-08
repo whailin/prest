@@ -142,6 +142,14 @@ public class Extractor
 					}
 					loc++;
 					lineno++;
+					
+					// Preprocess lines should be processed on endline
+					if(line.startsWith("#"))
+					{
+						sentenceAnalyzer.lexLine(line);
+						line = "";
+						commentLine = "";
+					}
 				}
 				
 				// Skips characters until the current comment ends

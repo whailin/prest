@@ -19,8 +19,6 @@ public class CppFunc {
 	
 	public String fileOfFunc = "";
 	
-	public CppForStatement currentFor = null;
-	
 	public int funcBraceCount = 0;
 	
 	// List of recognized lines, only for debugging
