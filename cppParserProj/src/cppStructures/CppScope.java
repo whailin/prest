@@ -55,8 +55,6 @@ public class CppScope
 	 */
 	public void addFunc(CppFunc func)
 	{
-		Log.d(this.getName() + ": Trying to add function: " + func.getName() + " (Param count: " + func.parameters.size());
-		
 		if(!hasFunc(func)) functions.add(func);
 	}
 	
@@ -97,6 +95,15 @@ public class CppScope
 				int paramCount = mem.parameters.size();
 				int matchingParams = 0;
 				
+				for(int i = 0; i < paramCount; ++i)
+				{
+					if(mem.parameters.get(i).type.equals(mf.parameters.get(i).type))
+					{
+						matchingParams++;
+					}
+				}
+				
+				/*
 				for(CppFuncParam cfp0 : mem.parameters)
 				{
 					for(CppFuncParam cfp1 : mf.parameters)
@@ -107,10 +114,10 @@ public class CppScope
 						}
 					}
 				}
+				*/
 				
 				if(matchingParams == paramCount)
 				{
-					Log.d("Found an existing function > " + mf.getName());
 					return true;
 				}
 			}

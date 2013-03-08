@@ -76,13 +76,18 @@ public class FunctionAnalyzer extends Analyzer {
 			{
 				Log.d("   FUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
 				
+				if(tokens[i-1].equals("Property"))
+				{
+					Log.d("dbg start");
+				}
+				
 				// Get scope
 				String scope = getScope(tokens, i);
 				if(scope == null) return false; // TODO Fix this
 				sentenceAnalyzer.setCurrentScope(scope, false);
 				
 				String funcName = tokens[i-1];
-				String returnType = "";
+				String returnType = "NORETURNTYPE";
 				if(i == 3 && tokens[i-2].equals("::"))
 				{
 					returnType = "ctor";
@@ -90,7 +95,10 @@ public class FunctionAnalyzer extends Analyzer {
 				}
 				else
 				{
-					returnType = tokens[0];
+					if(i == 1 && !tokens[0].contains("protected") && !tokens[0].contains("private")) returnType = tokens[0];
+					else if(i != 2) returnType = tokens[i-2];
+					else returnType = funcName;
+					
 					if(returnType.equals(tokens[i-1]) && i == 1)
 					{
 						if(funcName.startsWith("~")) returnType = "dtor";

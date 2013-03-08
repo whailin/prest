@@ -160,6 +160,9 @@ public class SentenceAnalyzer {
 	 */
 	public void lexLine(String line)
 	{
+		// TODO Create a preprocessor analyzer and remove this
+		if(line.startsWith("#")) return;
+		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, splitterChars, true);
 
