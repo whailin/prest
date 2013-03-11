@@ -51,6 +51,9 @@ public class Extractor
 	public int ploc = 0;
 	public long cmtLineNo = 0;		//comment lines	
 	
+	// Reference to the singleton parsed object manager
+	private ParsedObjectManager objManager;
+	
 	// The sentence analyzer used to analyze each "raw" sentence
 	private SentenceAnalyzer sentenceAnalyzer;
 	
@@ -61,6 +64,7 @@ public class Extractor
 	public Extractor(String file)
 	{
 		this.file = file;
+		objManager = ParsedObjectManager.getInstance();
 	}
 	
 	/**
@@ -113,8 +117,9 @@ public class Extractor
 		currentFile = file;
 		// currentFunc = null;
 		// currentScope = null;
-		ParsedObjectManager.getInstance().currentFunc = null;
-		ParsedObjectManager.getInstance().currentScope = null;
+		objManager.currentFunc = null;
+		// ParsedObjectManager.getInstance().currentScope = null;
+		objManager.setDefaultScope();
 		
 		cppScopeStack.clear();
 		braceCount = 0;
@@ -160,7 +165,7 @@ public class Extractor
 						if(c == '\r' || c == '\n')
 						{
 							skipToNewLine = false;
-							ParsedObjectManager.getInstance().oneLineComments.add(commentLine);
+							objManager.oneLineComments.add(commentLine);
 							commentLine = "";
 						}
 					}
@@ -170,7 +175,7 @@ public class Extractor
 						{
 							skipToNewLine = false;
 							isMultiLineComment = false;
-							ParsedObjectManager.getInstance().multiLineComments.add(commentLine);
+							objManager.multiLineComments.add(commentLine);
 							commentLine = "";
 						}
 					}
@@ -265,7 +270,7 @@ public class Extractor
 		try
 		{
 			writer = new BufferedWriter(new FileWriter("treedump.txt"));
-			for(CppScope cc : ParsedObjectManager.getInstance().getScopes())
+			for(CppScope cc : objManager.getScopes())
 			{
 				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")\n");
 				for(CppScope cs : cc.children)
@@ -312,7 +317,7 @@ public class Extractor
 	private void printTreeResults()
 	{
 		Log.d("Tree results");
-		for(CppScope cs : ParsedObjectManager.getInstance().getScopes())
+		for(CppScope cs : objManager.getScopes())
 		{
 			Log.d(" - " + cs.getName());
 			for(CppFunc cp : cs.getFunctions())
@@ -328,42 +333,42 @@ public class Extractor
 	private void printResults()
 	{
 		// Print #defines
-		if(ParsedObjectManager.getInstance().defines.size() > 0)
+		if(objManager.defines.size() > 0)
 		{
 			Log.d("defines");
-			for(String s : ParsedObjectManager.getInstance().defines) Log.d(" - " + s);
+			for(String s : objManager.defines) Log.d(" - " + s);
 			Log.d();
 		}
 		
 		// Print #includes
-		if(ParsedObjectManager.getInstance().includes.size() > 0)
+		if(objManager.includes.size() > 0)
 		{
 			Log.d("includes");
-			for(String s : ParsedObjectManager.getInstance().includes) Log.d(" - " + s);
+			for(String s : objManager.includes) Log.d(" - " + s);
 			Log.d();
 		}
 		
 		// Print class names
-		if(ParsedObjectManager.getInstance().classes.size() > 0)
+		if(objManager.classes.size() > 0)
 		{
 			Log.d("classes");
-			for(String s : ParsedObjectManager.getInstance().classes)	Log.d(" - " + s);
+			for(String s : objManager.classes)	Log.d(" - " + s);
 			Log.d();
 		}
 		
 		// Print single-line comments
-		if(ParsedObjectManager.getInstance().oneLineComments.size() > 0)
+		if(objManager.oneLineComments.size() > 0)
 		{
 			Log.d("oneline comments");
-			for(String s : ParsedObjectManager.getInstance().oneLineComments)	Log.d(" - " + s);
+			for(String s : objManager.oneLineComments)	Log.d(" - " + s);
 			Log.d();
 		}
 		
 		// Print multi-line comments
-		if(ParsedObjectManager.getInstance().multiLineComments.size() > 0)
+		if(objManager.multiLineComments.size() > 0)
 		{
 			Log.d("multiline comments");
-			for(String s : ParsedObjectManager.getInstance().multiLineComments) Log.d(" - " + s);
+			for(String s : objManager.multiLineComments) Log.d(" - " + s);
 			Log.d();
 		}
 	}

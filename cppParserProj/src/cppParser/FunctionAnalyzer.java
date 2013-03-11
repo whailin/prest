@@ -82,12 +82,6 @@ public class FunctionAnalyzer extends Analyzer {
 				//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);		//operator ()
 				
 
-				if(tokens[i-1].equals("Property"))
-				{
-					Log.d("dbg start");
-				}
-				
-
 				// Get scope
 				String scope = getScope(tokens, i);
 				if(scope == null) return false; // TODO Fix this
@@ -100,7 +94,7 @@ public class FunctionAnalyzer extends Analyzer {
 				
 				String returnType = "";
 
-				String returnType = "NORETURNTYPE";
+				// String returnType = "NORETURNTYPE";
 
 				if(i == 3 && tokens[i-2].equals("::"))
 				{
