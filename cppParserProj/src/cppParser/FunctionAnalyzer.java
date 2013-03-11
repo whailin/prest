@@ -47,6 +47,8 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(tokens[j].equals("::"))
 			{
+				//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[j]);
+				//ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[j-1]);
 				return tokens[j-1];
 			}
 		}
@@ -76,20 +78,33 @@ public class FunctionAnalyzer extends Analyzer {
 			{
 				Log.d("   FUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
 				
+
+				//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);		//operator ()
+				
+
 				if(tokens[i-1].equals("Property"))
 				{
 					Log.d("dbg start");
 				}
 				
+
 				// Get scope
 				String scope = getScope(tokens, i);
 				if(scope == null) return false; // TODO Fix this
 				sentenceAnalyzer.setCurrentScope(scope, false);
 				
 				String funcName = tokens[i-1];
+
+				
+				//ParsedObjectManager.getInstance().currentFunc.addOperand(funcName);			//operand name of function
+				
+				String returnType = "";
+
 				String returnType = "NORETURNTYPE";
+
 				if(i == 3 && tokens[i-2].equals("::"))
 				{
+					ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i-2]);	//operator ::
 					returnType = "ctor";
 					if(funcName.startsWith("~")) returnType = "dtor";
 				}
@@ -115,6 +130,8 @@ public class FunctionAnalyzer extends Analyzer {
 						}
 					}
 				}
+				
+				//ParsedObjectManager.getInstance().currentFunc.addOperator(returnType);		//operator return
 				
 				CppFunc func = new CppFunc(returnType, funcName);
 				
@@ -152,6 +169,9 @@ public class FunctionAnalyzer extends Analyzer {
 						CppFuncParam attrib = new CppFuncParam(paramType, paramName);
 						func.parameters.add(attrib);
 					}
+					
+					//ParsedObjectManager.getInstance().currentFunc.addOperator(paramType);		//operator type of arg
+					//ParsedObjectManager.getInstance().currentFunc.addOperand(paramName);		//operator name of arg
 				}
 				
 				ParsedObjectManager.getInstance().currentFunc = func;
@@ -268,6 +288,9 @@ public class FunctionAnalyzer extends Analyzer {
 		// Store the function name
 		String funcName = tokens[index-1];
 		
+		//ParsedObjectManager.getInstance().currentFunc.addOperand(funcName);
+		//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[index]);
+		
 		// Check if the function call is parameterless
 		if(tokens[index+1].equals(")"))
 		{
@@ -312,6 +335,7 @@ public class FunctionAnalyzer extends Analyzer {
 				currentParam += " " + tokens[j];
 				break;
 			}
+			
 		}
 		
 		
@@ -351,19 +375,35 @@ public class FunctionAnalyzer extends Analyzer {
 			func.recognizedLines.add("      (line: " + Extractor.lineno + ") if-statement");
 			break;
 		case "(":
-		case "+":
-		case "-":
-		case "*":
-		case "/":
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after (
 			break;
+		case "+":
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after +
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before +
+			break;
+		case "-":
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after -
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before -
+			break;
+		case "*":
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after *
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before *
+			break;
+		case "/":
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after /
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before /
+			break;			
 		case ")":
-			
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before )
 			break;
 		default:
 			// TODO Change from 'default' case to actual function handling case
 			index = handleFunctionCall(index);
 			break;
 		}
+		
+		ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[index-1]);		//operator at before index
+		ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);		//operand at index
 		
 		return index;
 	}
@@ -375,7 +415,8 @@ public class FunctionAnalyzer extends Analyzer {
 		
 		if(tokens[i].startsWith("++") || tokens[i].startsWith("--"))
 		{
-			String op = tokens[i];
+			String op = tokens[i];			
+			
 			if(op.length() > 2)
 			{
 				op = op.substring(0, 3);
@@ -383,6 +424,9 @@ public class FunctionAnalyzer extends Analyzer {
 			
 			addOperator(i, op);
 			addOperand(i, tokens[i].substring(2));
+			
+			ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i-2]);
 			
 			// Log.d("        Op: (Pre) " + op);
 			return;
@@ -392,12 +436,19 @@ public class FunctionAnalyzer extends Analyzer {
 			addOperator(i, tokens[i].substring(tokens[i].length() - 2));
 			addOperand(i, tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
 			Log.d("        Op: ++ or -- (post)");
+			
+			ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);	//operator ++ or --
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i-2]);	//operand before ++/--
+			
 			return;
 		}
 		
 		if(tokens[i].contains("->"))
 		{
 			// TODO Handle pointer operator
+			//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i-1]);	//operand before ->
+			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i+1]);	//operand after ->
 		}
 		else if(tokens[i].equals("("))
 		{
@@ -425,11 +476,15 @@ public class FunctionAnalyzer extends Analyzer {
 					{
 						stringLiteral += tokens[j] + " ";
 						i++;
-					}
+					}					
 				}
 			}
 			addOperand(i, stringLiteral);
+			
 		}
+		
+		ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);	//operator at i position
+
 		
 		// Check for operators
 		/*
@@ -512,18 +567,18 @@ public class FunctionAnalyzer extends Analyzer {
 		case ">":
 		case ">=":
 			addOperand(i-1, tokens[i-1]);
-			addOperand(i+1, tokens[i+1]);
+			addOperand(i+1, tokens[i+1]);			
 			break;
 		case "::":
 			if(i < tokens.length - 3)
 			{
 				if(tokens[i+3].equals(";"))
 				{
-					addOperand(i+2, tokens[i+2]);
+					addOperand(i+2, tokens[i+2]);					
 				}
 				else if(tokens[i+2].equals("("))
 				{
-					addOperand(i+1, tokens[i+1]);
+					addOperand(i+1, tokens[i+1]);					
 				}
 			}
 			break;
@@ -532,7 +587,7 @@ public class FunctionAnalyzer extends Analyzer {
 			{
 				if(i > 1 && !tokens[i-2].equals("="))
 				{
-					addOperand(i-1, tokens[i-1]);
+					addOperand(i-1, tokens[i-1]);					
 				}
 			}
 			/*
@@ -553,6 +608,8 @@ public class FunctionAnalyzer extends Analyzer {
 			*/
 			break;
 		}
+		
+		//ParsedObjectManager.getInstance().currentFunc.addOperator(op);
 	}
 	
 	/**
