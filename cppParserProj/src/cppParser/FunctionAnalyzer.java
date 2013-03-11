@@ -1,10 +1,10 @@
 package cppParser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 import cppStructures.*;
+import cppParser.utils.VarFinder;
 
 /**
  * This class is responsible of analyzing and constructing functions found in the source code.
@@ -31,6 +31,9 @@ public class FunctionAnalyzer extends Analyzer {
 	
 	// The function currently under analysis
 	private CppFunc func = null;
+        
+        //Helper class for finding variables
+        private VarFinder varFinder=new VarFinder();
 	
 	/**
 	 * Constructs a new function analyzer
@@ -232,6 +235,8 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processCurrentFunction(String[] tokens)
 	{
+                
+                varFinder.findVariables(tokens);
 		currentOperands = new ArrayList<String>();
 		currentOperators = new ArrayList<String>();
 		handledOperatorIndices.clear();
