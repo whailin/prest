@@ -15,7 +15,7 @@ import treeparser.treeobject.Variable;
  * @author Tomi
  */
 public class VarFinder{
-    
+    private static final boolean silenced=true;
     public VarFinder(){
         variables=new ArrayList<>();
     }
@@ -266,7 +266,8 @@ public class VarFinder{
     }
 
     private void createVariable() {
-        Log.d("Found variable "+currentType+" "+currentName+currentArray);
+        if(!silenced)
+            Log.d("Found variable "+currentType+" "+currentName+currentArray);
         currentName="";
         currentArray="";
     }
