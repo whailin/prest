@@ -62,24 +62,28 @@ public class ClassAnalyzer extends Analyzer {
 				// TODO handle enums properly
 				if(tokens[1].equals("class") || tokens[1].equals("struct"))
 				{
-					Log.d("\tFound a scope enum " + tokens[2] + "\n");
+					Log.d("\tFound a scope enum " + tokens[2] + "\n");					
 				}
 				else
 				{
-					Log.d("\tFound an enum " + tokens[1] + "\n");
+					Log.d("\tFound an enum " + tokens[1] + "\n");					
 				}
 				return true;
 			case "typedef":
 				// TODO handle typedefs properly
-				Log.d("\tFound a typedef " + tokens[1] + "\n");
+				Log.d("\tFound a typedef " + tokens[1] + "\n");				
 				return true;
 			}
+			
 		}
 		
 		// Check for a member variable declaration
 		if(tokens.length > 2 && tokens[tokens.length - 1].equals(";"))
 		{
 			Log.d("\tFound a member variable: " + tokens[tokens.length - 2] + " (type: " + tokens[tokens.length - 3] + ")");
+			//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[tokens.length-3]);		//operator type of variable
+			//ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[tokens.length-2]);		//operand name of variable
+			//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[tokens.length-1]);		//operator semi-colon
 		}
 		// Log.d();
 		
@@ -91,6 +95,8 @@ public class ClassAnalyzer extends Analyzer {
 		if(i > 0 && tokens[i].equals("("))
 		{
 			Log.d("\tFound a function > " + tokens[i-1]);
+			//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]); 	//operator ()
+			//ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i-1]);	//operand name of function
 			
 			// Check if there's a body
 			if(tokens[tokens.length - 1].equals("{"))
@@ -113,6 +119,8 @@ public class ClassAnalyzer extends Analyzer {
 			
 			String name = tokens[i-1];
 			
+			//ParsedObjectManager.getInstance().currentFunc.addOperator(type);	//operator type of function			
+			
 			// Create the CppFunc object
 			CppFunc cf = new CppFunc(type, name);
 			
@@ -128,6 +136,10 @@ public class ClassAnalyzer extends Analyzer {
 					
 					if(tokens[j].contains("<"))
 					{
+
+						//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[j]);	//operator comma
+						
+
 						skipCommas = true;
 					}
 					if(tokens[j].contains(">"))
@@ -137,6 +149,7 @@ public class ClassAnalyzer extends Analyzer {
 					
 					if(!skipCommas && tokens[j].equals(","))
 					{
+
 						CppFuncParam attrib = new CppFuncParam(paramType, paramName);
 						cf.parameters.add(attrib);
 						paramType = "";
@@ -154,6 +167,7 @@ public class ClassAnalyzer extends Analyzer {
 									while(j < tokens.length - 1 && !tokens[j+1].equals(",") && !tokens[j+1].equals(")")) j++;
 								}
 							}
+							//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[j+1]);	//operator comma
 						}
 						else
 						{
@@ -167,6 +181,9 @@ public class ClassAnalyzer extends Analyzer {
 					CppFuncParam attrib = new CppFuncParam(paramType, paramName);
 					cf.parameters.add(attrib);
 				}
+				
+				//ParsedObjectManager.getInstance().currentFunc.addOperator(paramType);
+				//ParsedObjectManager.getInstance().currentFunc.addOperand(paramName);
 			}
 			
 			if(cf.parameters.size() > 0)
@@ -197,12 +214,14 @@ public class ClassAnalyzer extends Analyzer {
 		for(int i = 0; i < tokens.length; ++i)
 		{
 			if(tokens[i].equals("class"))
-			{
+			{				
 				Log.d("Found class ");
 				if(tokens[tokens.length - 1].equals(";"))
 				{
 					// Found a forward declaration
 					Log.d("    ... forward declaration: " + tokens[tokens.length - 2]);
+					
+					//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[tokens.length-1]);
 					
 					// Create the class but don't set it as current class
 					CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2]);
@@ -220,7 +239,8 @@ public class ClassAnalyzer extends Analyzer {
 						if(tokens[j].equals(":"))
 						{
 							isInheriting = true;
-							Log.d("   ... called " + tokens[j-1]);
+							Log.d("   ... called " + tokens[j-1]);							
+							
 							CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[j-1]);
 							cc.nameOfFile = Extractor.currentFile;
 							cc.braceCount = sentenceAnalyzer.braceCount;
@@ -232,8 +252,10 @@ public class ClassAnalyzer extends Analyzer {
 								if(tokens[k].equals(",") || tokens[k].equals("{"))
 								{
 									Log.d("    ... inherited from " + tokens[k-1]);
-									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1]);
 									
+									ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[k]);	//operator comma									
+									
+									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1]);									
 									pcc.addChild(cc);
 									pcc.nameOfFile = Extractor.currentFile;
 								}
@@ -249,7 +271,8 @@ public class ClassAnalyzer extends Analyzer {
 					// If no ancestors were found, create a class with no parents
 					if(!isInheriting)
 					{
-						Log.d("   ... called " + tokens[tokens.length - 2]);
+						Log.d("   ... called " + tokens[tokens.length - 2]);						
+						
 						CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2]);
 						cc.nameOfFile = Extractor.currentFile;
 						cc.braceCount = sentenceAnalyzer.braceCount;
