@@ -252,9 +252,6 @@ public class ClassAnalyzer extends Analyzer {
 								if(tokens[k].equals(",") || tokens[k].equals("{"))
 								{
 									Log.d("    ... inherited from " + tokens[k-1]);
-									
-									ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[k]);	//operator comma									
-									
 									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1]);									
 									pcc.addChild(cc);
 									pcc.nameOfFile = Extractor.currentFile;

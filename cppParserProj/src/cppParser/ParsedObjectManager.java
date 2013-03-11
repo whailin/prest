@@ -25,6 +25,8 @@ public class ParsedObjectManager {
 	// List of scopes found
 	private ArrayList<CppScope> scopes = new ArrayList<CppScope>();
 	
+	private CppScope defaultScope = new CppScope("DEFAULT");
+	
 	// Array lists for misc. stuff found from source code
 	ArrayList<String> oneLineComments = new ArrayList<String>();
 	ArrayList<String> multiLineComments = new ArrayList<String>();
@@ -49,6 +51,11 @@ public class ParsedObjectManager {
 		
 	}
 
+	public void setDefaultScope()
+	{
+		currentScope = defaultScope;
+	}
+	
 	public ArrayList<CppScope> getScopes()
 	{
 		return scopes;

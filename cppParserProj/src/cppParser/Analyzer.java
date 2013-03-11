@@ -12,9 +12,13 @@ public class Analyzer {
 
 	protected SentenceAnalyzer sentenceAnalyzer;
 	
+	// Reference to the singleton parsed object manager
+	protected ParsedObjectManager objManager;
+	
 	public Analyzer(SentenceAnalyzer sa)
 	{
 		this.sentenceAnalyzer = sa;
+		objManager = ParsedObjectManager.getInstance();
 	}
 	
 	/**

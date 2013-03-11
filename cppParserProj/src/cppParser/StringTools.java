@@ -28,7 +28,6 @@ public class StringTools
 		// Init the list of parts
 		ArrayList<String> parts = new ArrayList<String>();
 		
-		
 		// Loop through the input string
 		String s = "";
 		for(int i = 0; i < src.length(); ++i)
