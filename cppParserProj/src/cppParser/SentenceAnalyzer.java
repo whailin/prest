@@ -1,12 +1,9 @@
 package cppParser;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Stack;
 
 import cppStructures.CppClass;
-import cppStructures.CppFunc;
 import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 
@@ -81,6 +78,7 @@ public class SentenceAnalyzer {
 		}
 	}
 	
+	/*
 	private void lexDefine(String[] tokens)
 	{
 		for(int i = 0; i < tokens.length; ++i)
@@ -92,7 +90,9 @@ public class SentenceAnalyzer {
 			}
 		}
 	}
+	*/
 	
+	/*
 	private void lexInclude(String[] tokens)
 	{
 		for(int i = 0; i < tokens.length; ++i)
@@ -104,7 +104,9 @@ public class SentenceAnalyzer {
 			}
 		}
 	}
+	*/
 	
+	/*
 	private void currentScopeToClass()
 	{
 		CppScope cs = cppScopeStack.pop();
@@ -112,7 +114,7 @@ public class SentenceAnalyzer {
 		Log.d("Found a scope that is a class > " + cc.name);
 		cppScopeStack.push(cc);
 	}
-	
+	*/
 	
 	/**
 	 * Handles an ending brace.
@@ -160,23 +162,34 @@ public class SentenceAnalyzer {
 	 */
 	public void lexLine(String line)
 	{
+		if(Extractor.lineno == 3194)
+		{
+			Log.d("start dbg");
+		}
+		
 		// TODO Create a preprocessor analyzer and remove this
 		if(line.startsWith("#")) return;
 		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, splitterChars, true);
 
+		boolean stringOpen = false;
 		for(int i = 0; i < tokens.length; ++i)
 		{
-			if(tokens[i].equals("{"))
+			if(tokens[i].equals("\"")) stringOpen = !stringOpen;
+			
+			if(!stringOpen && tokens[i].length() == 1)
 			{
-				braceCount++;
-				continue;
-			}
-			if(tokens[i].equals("}"))
-			{
-				lexEndBrace();
-				continue;
+				if(tokens[i].equals("{"))
+				{
+					braceCount++;
+					continue;
+				}
+				if(tokens[i].equals("}"))
+				{
+					lexEndBrace();
+					continue;
+				}
 			}
 		}
 		

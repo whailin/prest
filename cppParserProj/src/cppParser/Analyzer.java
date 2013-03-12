@@ -1,8 +1,5 @@
 package cppParser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 /**
  * Base class for all the analyzers (except SentenceAnalyzer)
  * 

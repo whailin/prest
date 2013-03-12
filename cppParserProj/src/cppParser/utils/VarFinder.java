@@ -22,9 +22,11 @@ public class VarFinder{
     public VarFinder(List<Variable> variables){
         this.variables=variables;
     }
-    private List<Variable> variables;
+    @SuppressWarnings("unused")
+	private List<Variable> variables;
             
-    private static final int TYPE=0,NAME=1,ARRAY=2,EQUALS=3, RESET=4, TEMPLATE=5;
+    @SuppressWarnings("unused")
+	private static final int TYPE=0,NAME=1,ARRAY=2,EQUALS=3, RESET=4, TEMPLATE=5;
     private boolean foundStringLiteral=false;
     private int mode=TYPE;
     /*
@@ -47,7 +49,8 @@ public class VarFinder{
     
     private int i=0; //Current index in the token array
     
-    private int arrays=0; // This is for checking arrays inside arrays
+    @SuppressWarnings("unused")
+	private int arrays=0; // This is for checking arrays inside arrays
     private String token,next;
     
     public void findVariables(String[] tokens){

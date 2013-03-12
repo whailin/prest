@@ -19,7 +19,7 @@ public class FileLoader {
 	private boolean shouldSort = true;
 	
 	// The original path to the file / folder
-	private String path = "";
+	// private String path = "";
 	
 	// List of files found
 	private ArrayList<String> files = new ArrayList<String>();
@@ -39,7 +39,7 @@ public class FileLoader {
 	 */
 	public FileLoader(String path)
 	{
-		this.path = path;
+		// this.path = path;
 		File f = new File(path);
 		if(f.isDirectory())
 		{

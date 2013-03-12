@@ -3,7 +3,6 @@
 package treeparser.treeobject;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import treeparser.Constants;
 import treeparser.Type;
@@ -110,6 +109,7 @@ public class ParsedObjectLeaf extends BaseParsedObject{
             //System.out.println("Splitting done");
     }
     
+    /*
     private void printList(List<ParsedObjectLeaf> list){
         Iterator<ParsedObjectLeaf> it=list.iterator();
         while(it.hasNext()){
@@ -118,6 +118,7 @@ public class ParsedObjectLeaf extends BaseParsedObject{
                 System.out.println(obj.type+" "+obj.getContent());
         }
     }
+    */
     
     /**
      * This method further tokenizes the content in the leaf

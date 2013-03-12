@@ -4,7 +4,6 @@ package treeparser;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -75,7 +74,8 @@ public class FunctionAnalyzer {
     public List<Variable> findVariables(ParsedObject funcParams, ParsedObject functionBody){
         int index;
         List<Variable> declarations=new ArrayList<Variable>();
-        Variable var=null;
+        @SuppressWarnings("unused")
+		Variable var=null;
         int size=functionBody.getNumberOfChildren();
         /*
          * We search for variable declarations that start with word that represents 
@@ -106,7 +106,7 @@ public class FunctionAnalyzer {
         return null;
     }
     public List<FunctionCall> findFunctionCalls(ParsedObject object){
-        List<FunctionCall> fcs=new ArrayList();
+        List<FunctionCall> fcs = new ArrayList<FunctionCall>();
         return findFunctionCalls(object,fcs);
     }
     /*
@@ -119,7 +119,7 @@ public class FunctionAnalyzer {
             //ParsedObject sentence=new ParsedObject(null,"Sentence",Type.SENTENCE);
             List<BaseParsedObject> list=object.getChildren();
             Iterator<BaseParsedObject> it=list.iterator();
-            String bracket;
+            // String bracket;
             boolean firstTime=true;
             
             String lastWord=null;
@@ -204,7 +204,8 @@ public class FunctionAnalyzer {
         ParsedObject po=new ParsedObject(null,"FunctionCall",Type.OTHER);
         ParsedObjectLeaf name=null;
         BaseParsedObject temp;
-        int lastRef=0, end=-1;
+        @SuppressWarnings("unused")
+		int lastRef=0, end=-1;
         if(i==-1)
             throw new UnsupportedOperationException("Function parameters not found in obj");
         else{
@@ -385,7 +386,8 @@ public class FunctionAnalyzer {
                 var.owners=owners;
                 break;
             }else{
-                String s1="", s2="";
+                @SuppressWarnings("unused")
+				String s1="", s2="";
                 if(temp1!=null){
                     s1=temp1.toString();
                 }
