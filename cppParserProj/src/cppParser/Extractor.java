@@ -2,19 +2,14 @@ package cppParser;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Stack;
 
-import cppStructures.CppClass;
 import cppStructures.CppFunc;
 import cppStructures.CppFuncParam;
-import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 
 /**
@@ -35,13 +30,13 @@ public class Extractor
 	private Stack<CppScope> cppScopeStack = new Stack<CppScope>();
 	
 	// If 'true', all "std"-starting stuff is ignored
-	private boolean ignoreStd = true;
+	// private boolean ignoreStd = true;
 
 	// Braces count when the current function was found
-	private int funcBraceCount = 0;
+	// private int funcBraceCount = 0;
 	
 	// Currently open braces count
-	private int braceCount = 0;
+	// private int braceCount = 0;
 	
 	// Current line in the source file (may not reflect the actual processing)
 	public static int lineno = 0; 
@@ -91,6 +86,8 @@ public class Extractor
 			Log.d();
 		}
 		
+		// TODO Second pass: fix unknown references / types / ambiguities
+		
 		Log.d("Processing done. Dumping...");
 		
 		// Dump tree results to a file
@@ -104,7 +101,6 @@ public class Extractor
 		long duration = System.currentTimeMillis() - startTime;
 		
 		Log.d("Processing took " + duration / 1000.0 + " s.");
-		System.out.println("Processing took " + duration / 1000.0 + " s.");
 	}
 	
 	/**
@@ -118,14 +114,21 @@ public class Extractor
 		// currentFunc = null;
 		// currentScope = null;
 		objManager.currentFunc = null;
-		// ParsedObjectManager.getInstance().currentScope = null;
-		objManager.setDefaultScope();
+		ParsedObjectManager.getInstance().currentScope = null;
+		// objManager.setDefaultScope();
 		
 		cppScopeStack.clear();
-		braceCount = 0;
-		funcBraceCount = 0;
+		// braceCount = 0;
+		// funcBraceCount = 0;
 		// this.lineDone = false;
-		this.lineno = 0;
+		lineno = 0;
+		
+		Log.d("Analyzing file: " + file);
+		
+		if(file.endsWith("OgreMaterialSerializer.cpp"))
+		{
+			Log.d("dbg start");
+		}
 		
 		try
 		{
@@ -133,23 +136,20 @@ public class Extractor
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			String line = "";
 			String commentLine = "";
-			boolean skipToNewLine = false;
+			boolean skipComment = false;
 			boolean isMultiLineComment = false;
 			char c;
+			boolean stringOpen = false;
+			
 			while((c = (char)reader.read()) != (char)-1)
 			{
-				// Simply increase the line number
 				if(c == '\n')
 				{
-					if(!line.contains("\n"))
-					{
-						ploc++;
-					}
 					loc++;
 					lineno++;
 					
 					// Preprocess lines should be processed on endline
-					if(line.startsWith("#"))
+					if(!stringOpen && line.startsWith("#"))
 					{
 						sentenceAnalyzer.lexLine(line);
 						line = "";
@@ -158,13 +158,13 @@ public class Extractor
 				}
 				
 				// Skips characters until the current comment ends
-				if(skipToNewLine)
+				if(skipComment)
 				{
 					if(!isMultiLineComment)
 					{
 						if(c == '\r' || c == '\n')
 						{
-							skipToNewLine = false;
+							skipComment = false;
 							objManager.oneLineComments.add(commentLine);
 							commentLine = "";
 						}
@@ -173,14 +173,14 @@ public class Extractor
 					{
 						if(commentLine.endsWith("*/"))
 						{
-							skipToNewLine = false;
+							skipComment = false;
 							isMultiLineComment = false;
 							objManager.multiLineComments.add(commentLine);
 							commentLine = "";
 						}
 					}
 					
-					if(skipToNewLine) commentLine += c;
+					if(skipComment) commentLine += c;
 					
 					continue;
 				}
@@ -197,7 +197,7 @@ public class Extractor
 							{
 								// Skip until new line
 								isMultiLineComment = false;
-								skipToNewLine = true;
+								skipComment = true;
 							}
 							else
 							{
@@ -211,7 +211,7 @@ public class Extractor
 							if(StringTools.getQuoteCount(line) % 2 == 0)
 							{
 								isMultiLineComment = true;
-								skipToNewLine = true;
+								skipComment = true;
 							}
 							else
 							{
@@ -227,7 +227,16 @@ public class Extractor
 				// Add a character to the "line"
 				if(c != '\r' && c != '\n' && c != '\t')
 				{
-					line += c;
+					if(c == '"')
+					{
+						line += "\"";
+						stringOpen = !stringOpen;
+					}
+					else
+					{
+						line += c;
+					}
+					
 				}
 				else if(line.length() > 0 && line.charAt(line.length() - 1) != ' ')
 				{
@@ -235,8 +244,12 @@ public class Extractor
 					line += ' ';
 				}
 				
+				
+				
+				
+				
 				// If the line ends, start lexing it
-				if(c == ';' || c == '{' || c == '}')
+				if(!stringOpen &&  (c == ';' || c == '{' || c == '}'))
 				{
 					lloc++;
 					// lexLine(line);
@@ -314,6 +327,7 @@ public class Extractor
 	/**
 	 * Prints the results
 	 */
+	/*
 	private void printTreeResults()
 	{
 		Log.d("Tree results");
@@ -326,10 +340,12 @@ public class Extractor
 			}
 		}
 	}
+	*/
 	
 	/**
 	 * Prints information out to console
 	 */
+	/*
 	private void printResults()
 	{
 		// Print #defines
@@ -372,5 +388,5 @@ public class Extractor
 			Log.d();
 		}
 	}
-	
+	*/
 }

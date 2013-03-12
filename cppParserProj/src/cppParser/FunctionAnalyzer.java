@@ -79,12 +79,8 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(tokens[i].equals("("))
 			{
-				Log.d("   FUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
+				// Log.d("   FUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
 				
-
-				//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);		//operator ()
-				
-
 				// Get scope
 				String scope = getScope(tokens, i);
 				if(scope == null) return false; // TODO Fix this
@@ -92,16 +88,12 @@ public class FunctionAnalyzer extends Analyzer {
 				
 				String funcName = tokens[i-1];
 
-				
-				//ParsedObjectManager.getInstance().currentFunc.addOperand(funcName);			//operand name of function
-				
 				String returnType = "";
 
 				// String returnType = "NORETURNTYPE";
 
 				if(i == 3 && tokens[i-2].equals("::"))
 				{
-					ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i-2]);	//operator ::
 					returnType = "ctor";
 					if(funcName.startsWith("~")) returnType = "dtor";
 				}
@@ -354,6 +346,7 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private int handleOpeningParenthesis(int index)
 	{
+		@SuppressWarnings("unused")
 		int origIndex = index;
 		
 		if(index < 1) return index;
@@ -386,7 +379,7 @@ public class FunctionAnalyzer extends Analyzer {
 			break;
 		case "*":
 			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after *
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before *
+			// ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before *
 			break;
 		case "/":
 			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after /
@@ -553,6 +546,7 @@ public class FunctionAnalyzer extends Analyzer {
 		}
 	}
 	
+	/*
 	private void checkForOperands(String op)
 	{
 		switch(op)
@@ -604,12 +598,13 @@ public class FunctionAnalyzer extends Analyzer {
 					}
 				}
 			}
-			*/
+			
 			break;
 		}
 		
 		//ParsedObjectManager.getInstance().currentFunc.addOperator(op);
 	}
+	*/
 	
 	/**
 	 * Checks if the given token should increase the function's cyclomatic complexity
@@ -644,50 +639,4 @@ public class FunctionAnalyzer extends Analyzer {
 			return processCurrentFunction(tokens);
 		}
 	}
-	
-	/**
-	 * Checks if the given tokens form a classname::function(); -type of line
-	 * @param tokens The tokens that form the line
-	 * @param di The index of found "::" token
-	 * @return true if the line is of form classname::function(), false otherwise
-	 */
-	private boolean isFuncWithBody(String[] tokens, int di)
-	{
-		/*
-		if(di > 0)
-		{
-			for(int i = 0; i < tokens[di-1].length(); ++i)
-			{
-				char c = tokens[di-1].charAt(i);
-				if(c == '=') return false;
-			}
-		}
-		
-		if(tokens.length > di + 2)
-		{
-			if(tokens[di + 2].equals("("))
-			{
-				return true;
-			}
-		}
-		*/
-		
-		for(int j = 0; j < tokens.length; ++j)
-		{
-			if(tokens[j].equals("(") && tokens[tokens.length - 1].equals("{"))
-			{
-				return true;
-			}
-		}
-		
-		
-		return false;
-	}
-	
-	private boolean isFuncDecl(String[] tokens, int di)
-	{
-		return false;
-	}
-
-	
 }

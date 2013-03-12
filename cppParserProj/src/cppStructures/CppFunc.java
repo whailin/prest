@@ -28,6 +28,7 @@ public class CppFunc {
 	public ArrayList<CppFuncParam> parameters = new ArrayList<CppFuncParam>();
 	
 	// Container for non-completely parsed lines (unknown references etc.)
+	@SuppressWarnings("unused")
 	private ArrayList<String[]> nonCompleteLines = new ArrayList<String[]>();
 	
 	private ArrayList<MemberVariable> members = new ArrayList<MemberVariable>();

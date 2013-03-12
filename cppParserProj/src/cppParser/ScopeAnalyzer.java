@@ -1,7 +1,5 @@
 package cppParser;
 
-import java.util.ArrayList;
-
 import cppStructures.CppNamespace;
 
 /**
@@ -33,6 +31,7 @@ public class ScopeAnalyzer extends Analyzer {
 					
 					ParsedObjectManager.getInstance().getScopes().add(ns);
 					sentenceAnalyzer.cppScopeStack.add(ns);
+					return true;
 				}
 			}
 		}

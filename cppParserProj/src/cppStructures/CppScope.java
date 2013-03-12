@@ -2,8 +2,6 @@ package cppStructures;
 
 import java.util.ArrayList;
 
-import cppParser.Log;
-
 /**
  * CPP Scope
  * 

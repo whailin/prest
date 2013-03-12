@@ -44,6 +44,7 @@ public class ProtoParser {
            
            //fa.formSentences((ParsedObject)obj.getChildren().get(0));
            List<FunctionCall> fcs=fa.findFunctionCalls((ParsedObject)obj.getChildren().get(0)); 
+           @SuppressWarnings("unused")
            List<Variable> vars=fa.findVariables(null,(ParsedObject)obj.getChildren().get(0));
            
            System.out.println("Number of calls:"+fcs.size());

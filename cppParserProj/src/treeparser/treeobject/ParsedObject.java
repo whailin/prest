@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import treeparser.SentenceFormer;
 import treeparser.Type;
 
 /**
@@ -81,11 +80,11 @@ public class ParsedObject extends BaseParsedObject{
         
     }
     
-    
+    /*
     private static void listObjects(ParsedObject root) {
         System.out.println("Listing");
-        ArrayList<Iterator<BaseParsedObject>> iters=new ArrayList();
-        BaseParsedObject current;
+        ArrayList<Iterator<BaseParsedObject>> iters=new ArrayList<Iterator<BaseParsedObject>>();
+        // BaseParsedObject current;
         Iterator<BaseParsedObject> i=root.getChildren().iterator();
         iters.add(i);
         while(iters.size()>0){
@@ -115,6 +114,7 @@ public class ParsedObject extends BaseParsedObject{
         }
         
     }
+    */
 
     @Override
     public void printCode() {

@@ -1,7 +1,6 @@
 package cppParser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * A collection of parsing and lexing -related string tools
@@ -10,6 +9,20 @@ import java.util.HashMap;
  */
 public class StringTools
 {
+	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted
+	public static String[] keywords_notypes = {"alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", 
+		                                       "bitor", "break", "case", "catch", "class", "compl", "const",
+		                                       "constexpr", "const_cast", "continue", "decltype", "default", 
+		                                       "delete", "do", "dynamic_cast", "else", "enum", "explicit", 
+		                                       "export", "extern", "false", "for", "friend", "goto", "if", 
+		                                       "inline", "mutable", "namespace", "new", "noexcept", "not", 
+		                                       "not_eq", "nullptr", "operator", "or", "or_eq", "private", 
+		                                       "protected", "public", "register", "reinterpret_cast", "return", 
+		                                       "sizeof", "static", "static_assert", "static_cast", "struct", 
+		                                       "switch", "template", "this", "thread_local", "throw", "true", 
+		                                       "try", "typedef", "typeid", "typename", "union", "using", 
+		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
+	
 	
 	/**
 	 * A simple non-regex-splitter that splits the given string into tokens with the given deliminators.
@@ -118,5 +131,19 @@ public class StringTools
 			}
 		}
 		return count;
+	}
+	
+	/**
+	 * Checks whether or not a given string is a reserved keyword of C++.
+	 * @param s The string to check
+	 * @return 'True' if the string is a keyword, 'false' otherwise
+	 */
+	public static boolean isKeyword(String s)
+	{
+		for(int i = 0; i < keywords_notypes.length; ++i)
+		{
+			if(keywords_notypes[i].equals(s)) return true;
+		}
+		return false;
 	}
 }

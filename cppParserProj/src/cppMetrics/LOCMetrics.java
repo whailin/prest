@@ -1,8 +1,5 @@
 package cppMetrics;
 
-import cppParser.*;
-import java.io.*;
-
 public class LOCMetrics implements Metrics {
 	private long cmtLines = 0;			//comment lines
 	private long logicalLOC = 0;		//logical lines of codes

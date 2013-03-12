@@ -33,7 +33,10 @@ public class ClassAnalyzer extends Analyzer {
 		
 		if(!processNewClass(tokens) && ParsedObjectManager.getInstance().currentScope != null)
 		{
-			return processCurrentClass(tokens);
+
+			
+			if(objManager.currentScope instanceof CppClass)
+				return processCurrentClass(tokens);
 		}
 		return false;
 	}
@@ -49,10 +52,11 @@ public class ClassAnalyzer extends Analyzer {
 		this.tokens = tokens;
 		this.i = 0;
 		
-		
+		// Index for an assignment operator (if there's one)
+		int assignIndex = -1;
 		
 		// Check if the sentence forms a function declaration (or a function with a body)
-		for(i = 0; i < tokens.length; ++i)
+		for(i = 0; i < tokens.length - 1; ++i)
 		{
 			switch(tokens[i])
 			{
@@ -60,32 +64,196 @@ public class ClassAnalyzer extends Analyzer {
 				return handleOpeningParenthesis();
 			case "enum":
 				// TODO handle enums properly
-				if(tokens[1].equals("class") || tokens[1].equals("struct"))
+				if(tokens[i+1].equals("class") || tokens[i+1].equals("struct"))
 				{
-					Log.d("\tFound a scope enum " + tokens[2] + "\n");					
+					Log.d("\tFound a scope enum " + tokens[i+2] + "\n");					
 				}
 				else
 				{
-					Log.d("\tFound an enum " + tokens[1] + "\n");					
+					Log.d("\tFound an enum " + tokens[i + 1] + "\n");					
 				}
 				return true;
 			case "typedef":
 				// TODO handle typedefs properly
 				Log.d("\tFound a typedef " + tokens[1] + "\n");				
 				return true;
+			case "struct":
+				// TODO handle structs
+				return true;
+			case "=":
+				assignIndex = i;
+				break;
 			}
-			
 		}
 		
+		// At this point, we know the line cannot be a function declaration.
 		// Check for a member variable declaration
-		if(tokens.length > 2 && tokens[tokens.length - 1].equals(";"))
+		if(tokens.length > 2)
 		{
-			Log.d("\tFound a member variable: " + tokens[tokens.length - 2] + " (type: " + tokens[tokens.length - 3] + ")");
-			//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[tokens.length-3]);		//operator type of variable
-			//ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[tokens.length-2]);		//operand name of variable
-			//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[tokens.length-1]);		//operator semi-colon
+			String mvName = "", mvType = "";
+			if(assignIndex > 0)
+			{
+				// Build the type backwards
+				for(int j = assignIndex - 2; j >= 0; --j)
+				{
+					if(!StringTools.isKeyword(tokens[j]))
+					{
+						mvType = tokens[j] + (mvType.equals("") ? "" : " ") + mvType;
+					}
+				}
+				mvName = tokens[assignIndex - 1];
+			}
+			else
+			{
+				// Build the type backwards
+				for(int j = tokens.length - 3; j >= 0; --j)
+				{
+					if(!StringTools.isKeyword(tokens[j]))
+					{
+						mvType = tokens[j] + (mvType.equals("") ? "" : " ") + mvType;
+					}
+				}
+				mvName = tokens[tokens.length - 2];
+			}
+			
+			
+			
+			Log.d("\tVar: " + mvType + " | " + mvName);
+			return true;
 		}
-		// Log.d();
+		
+		Log.d("Could not process line " + Extractor.lineno);
+		return false;
+	}
+	
+	/**
+	 * Handles function declarations.
+	 * Currently working:
+	 * - Function names
+	 * - Return types
+	 * - Parameter lists
+	 * - Parameterless functions (either empty parameter list or 'void')
+	 * Not yet implemented / problems:
+	 * - Commas in template parameters cause false splitting of params (i.e. Foo<T, U> bar)
+	 * - No separation between static, virtual, const etc. function attributes
+	 * @return
+	 */
+	private boolean handleFunctionDeclaration()
+	{
+		// Check if there's a body and bail out
+		if(tokens[tokens.length - 1].equals("{"))
+		{
+			Log.d("\t... with a body, don't handle it here.");
+			return false;
+		}
+		
+		// Find out the return type of the function
+		String type = "";
+		for(int j = i - 2; j >= 0; --j)
+		{
+			if(tokens[j].equals(":") && (tokens[j-1].equals("public") || tokens[j-1].equals("protected") || tokens[j-1].equals("private"))) break;
+			
+			if(!tokens[j].equals("virtual"))
+			{
+				if(!StringTools.isKeyword(tokens[j]))
+				{
+					type = tokens[j] + (type.length() > 0 ? " " : "") + type;
+				}
+			}
+		}
+		
+		String name = tokens[i-1];
+		
+		if(type.equals(""))
+		{
+			if(name.contains(objManager.currentScope.getName()))
+			{
+				type = "ctor";
+				if(name.startsWith("~")) type = "dtor";
+			}
+		}
+		
+		Log.d("\tFunction: " + type + " | " + name);
+
+		// Create the CppFunc object
+		CppFunc cf = new CppFunc(type, name);
+		
+		// Search for parameters
+		if(!tokens[i+1].equals(")"))
+		{
+			String paramType = "";
+			String paramName = "";
+			boolean skipCommas = false;
+			for(int j = i + 1; j < tokens.length - 1; ++j)
+			{
+				if(tokens[j].equals(")")) break;
+				
+				if(tokens[j].contains("<"))
+				{
+					skipCommas = true;
+				}
+				if(tokens[j].contains(">"))
+				{
+					skipCommas = false;
+				}
+				
+				if(!skipCommas && (tokens[j].equals(",") || tokens[j].equals("=")))
+				{
+					CppFuncParam attrib = new CppFuncParam(paramType, paramName);
+					cf.parameters.add(attrib);
+					paramType = "";
+					paramName = "";
+					try
+					{
+						if(tokens[j].equals("=")) while(!tokens[j].equals(",") && !tokens[j+1].equals(")")) j++;
+					}catch(ArrayIndexOutOfBoundsException e)
+					{
+						Log.d("E: " + Extractor.currentFile + " - " + Extractor.lineno);
+						Log.d("Tokens follow...");
+						for(String s : tokens)
+						{
+							Log.d(s);
+						}
+						throw e;
+					}
+				}
+				else
+				{
+					if(tokens[j+1].equals(",") || tokens[j+1].equals(")") || tokens[j+1].equals("="))
+					{
+						if(!paramType.equals("")) paramName = tokens[j];
+						else paramType = tokens[j];
+					}
+					else
+					{
+						paramType += (paramType.length() > 0 ? " " : "") + tokens[j];
+					}
+				}
+			}
+			
+			if(!paramType.equals("") || !paramName.equals(""))
+			{
+				if(!paramName.equals("") && !paramType.equals("void"))
+				{
+					CppFuncParam attrib = new CppFuncParam(paramType, paramName);
+					cf.parameters.add(attrib);
+				}
+			}
+		}
+		
+		// Print the parameters for debugging purposes
+		if(cf.parameters.size() > 0)
+		{
+			Log.d("\t\tParameters:");
+			for(CppFuncParam cfa : cf.parameters)
+			{
+				Log.d("\t\t   " + cfa.type + " | " + cfa.name);
+			}
+		}
+		
+		// Finally, store the CppFunc object
+		cf.fileOfFunc = Extractor.currentFile;
+		ParsedObjectManager.getInstance().currentScope.addFunc(cf);
 		
 		return true;
 	}
@@ -94,111 +262,7 @@ public class ClassAnalyzer extends Analyzer {
 	{
 		if(i > 0 && tokens[i].equals("("))
 		{
-			Log.d("\tFound a function > " + tokens[i-1]);
-			//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]); 	//operator ()
-			//ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i-1]);	//operand name of function
-			
-			// Check if there's a body
-			if(tokens[tokens.length - 1].equals("{"))
-			{
-				Log.d("\t... with a body, don't handle it here.");
-				return false;
-			}
-			
-			// Find out the return type of the function
-			String type = "";
-			if(i == 1)
-			{
-				if(type.startsWith("~")) type = "dtor";
-				else type = "ctor";
-			}
-			else if(i > 1)
-			{
-				type = tokens[i-2];
-			}
-			
-			String name = tokens[i-1];
-			
-			//ParsedObjectManager.getInstance().currentFunc.addOperator(type);	//operator type of function			
-			
-			// Create the CppFunc object
-			CppFunc cf = new CppFunc(type, name);
-			
-			// Search for attributes
-			if(!tokens[i+1].equals(")"))
-			{
-				String paramType = "";
-				String paramName = "";
-				boolean skipCommas = false;
-				for(int j = i + 1; j < tokens.length - 1; ++j)
-				{
-					if(tokens[j].equals(")")) break;
-					
-					if(tokens[j].contains("<"))
-					{
-
-						//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[j]);	//operator comma
-						
-
-						skipCommas = true;
-					}
-					if(tokens[j].contains(">"))
-					{
-						skipCommas = false;
-					}
-					
-					if(!skipCommas && tokens[j].equals(","))
-					{
-
-						CppFuncParam attrib = new CppFuncParam(paramType, paramName);
-						cf.parameters.add(attrib);
-						paramType = "";
-						paramName = "";
-					}
-					else
-					{
-						if(tokens[j+1].equals(",") || tokens[j+1].equals(")") || tokens[j+1].equals("="))
-						{
-							if(skipCommas)
-							{
-								paramName = tokens[j];
-								if(tokens[j+1].equals("="))
-								{
-									while(j < tokens.length - 1 && !tokens[j+1].equals(",") && !tokens[j+1].equals(")")) j++;
-								}
-							}
-							//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[j+1]);	//operator comma
-						}
-						else
-						{
-							paramType += (paramType.length() > 0 ? " " : "") + tokens[j];
-						}
-					}
-				}
-				
-				if(!paramType.equals("") && !paramName.equals(""))
-				{
-					CppFuncParam attrib = new CppFuncParam(paramType, paramName);
-					cf.parameters.add(attrib);
-				}
-				
-				//ParsedObjectManager.getInstance().currentFunc.addOperator(paramType);
-				//ParsedObjectManager.getInstance().currentFunc.addOperand(paramName);
-			}
-			
-			if(cf.parameters.size() > 0)
-			{
-				Log.d("\t\tParameters:");
-				for(CppFuncParam cfa : cf.parameters)
-				{
-					Log.d("\t\t   " + cfa.type + " " + cfa.name);
-				}
-			}
-			// Finally, store the CppFunc object
-			cf.fileOfFunc = Extractor.currentFile;
-			ParsedObjectManager.getInstance().currentScope.addFunc(cf);
-			
-			return true;
+			return handleFunctionDeclaration();
 		}
 		return false;
 	}

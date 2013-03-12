@@ -8,7 +8,12 @@ package treeparser.exception;
  */
 public class StringParseException extends ParseException{
 
-    public StringParseException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7294771851499149304L;
+
+	public StringParseException() {
         super();
     }
 
