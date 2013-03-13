@@ -78,44 +78,6 @@ public class SentenceAnalyzer {
 		}
 	}
 	
-	/*
-	private void lexDefine(String[] tokens)
-	{
-		for(int i = 0; i < tokens.length; ++i)
-		{
-			if(tokens[i].equals("#define"))
-			{
-				ParsedObjectManager.getInstance().defines.add(tokens[i+1]);
-				i++;
-			}
-		}
-	}
-	*/
-	
-	/*
-	private void lexInclude(String[] tokens)
-	{
-		for(int i = 0; i < tokens.length; ++i)
-		{
-			if(tokens[i].equals("#include"))
-			{
-				ParsedObjectManager.getInstance().includes.add(tokens[i+1]);
-				i++;
-			}
-		}
-	}
-	*/
-	
-	/*
-	private void currentScopeToClass()
-	{
-		CppScope cs = cppScopeStack.pop();
-		CppClass cc = new CppClass(cs);
-		Log.d("Found a scope that is a class > " + cc.name);
-		cppScopeStack.push(cc);
-	}
-	*/
-	
 	/**
 	 * Handles an ending brace.
 	 * In the case of a function body, the current function handling is ended.
@@ -162,11 +124,6 @@ public class SentenceAnalyzer {
 	 */
 	public void lexLine(String line)
 	{
-		if(Extractor.lineno == 3194)
-		{
-			Log.d("start dbg");
-		}
-		
 		// TODO Create a preprocessor analyzer and remove this
 		if(line.startsWith("#")) return;
 		
@@ -208,11 +165,5 @@ public class SentenceAnalyzer {
 		{
 			if(a.processSentence(tokens)) break;
 		}
-		
-		/*
-		lexDefine(tokens);
-		lexInclude(tokens);
-		lexClass(tokens);
-		*/
 	}
 }

@@ -8,9 +8,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Stack;
 
+import cppStructures.CppClass;
 import cppStructures.CppFunc;
 import cppStructures.CppFuncParam;
+import cppStructures.CppNamespace;
 import cppStructures.CppScope;
+import cppStructures.MemberVariable;
 
 /**
  * Extractor.java
@@ -244,10 +247,6 @@ public class Extractor
 					line += ' ';
 				}
 				
-				
-				
-				
-				
 				// If the line ends, start lexing it
 				if(!stringOpen &&  (c == ';' || c == '{' || c == '}'))
 				{
@@ -259,6 +258,8 @@ public class Extractor
 					commentLine = "";
 				}
 			}
+			
+			loc++;
 			
 			// Finally, close the reader
 			reader.close();
@@ -285,27 +286,50 @@ public class Extractor
 			writer = new BufferedWriter(new FileWriter("treedump.txt"));
 			for(CppScope cc : objManager.getScopes())
 			{
+				if(cc instanceof CppNamespace)
+				{
+					writer.write("Namespace: ");
+				}
+				else if(cc instanceof CppClass)
+				{
+					writer.write("Class: ");
+				}
 				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")\n");
 				for(CppScope cs : cc.children)
 				{
-					writer.write("   - Parent of " + cs.getName() + "\n");
+					writer.write("  Parent of " + cs.getName() + "\n");
 				}
 				for(CppScope cs : cc.parents)
 				{
-					writer.write("   - Child of " + cs.getName() + "\n");
+					writer.write("  Child of " + cs.getName() + "\n");
 				}
 				
+				if(cc instanceof CppClass)
+				{
+					writer.write("  Child count: " + cc.children.size() + "\n");
+					writer.write("  Depth of inheritance: " + ((CppClass) cc).getDepthOfInheritance() + "\n");
+					writer.write("  Weighted methods per class: " + cc.getFunctions().size() + "\n");
+				}
+				
+				
 				// Dump functions
+				writer.write("  FUNCTIONS\n");
 				for(CppFunc mf : cc.getFunctions())
 				{
-					writer.write("    Function: " + mf.getType() + "\t\t" + mf.getName() + "\t\t(file: " + mf.fileOfFunc + ")\n");
-					
-					// Dump parameters
-					writer.write("        Params: " + mf.parameters.size() + "\n");
-					for(CppFuncParam cfp : mf.parameters)
+					writer.write("    " + mf.getType() + " " + mf.getName() + " (");
+					for(int i = 0; i < mf.parameters.size(); ++i)
 					{
-						writer.write("         - " + cfp.type + "\t\t" + cfp.name + "\n");
+						writer.write(mf.parameters.get(i).type + " " + mf.parameters.get(i).name);
+						if(i < mf.parameters.size() - 1) writer.write(", ");
 					}
+					writer.write(")\n");
+				}
+				
+				// Dump variables
+				writer.write("  VARIABLES\n");
+				for(MemberVariable mv : cc.getMembers())
+				{
+					writer.write("    " + mv.getType() + " " + mv.getName() + "\n");
 				}
 				
 				writer.write("\n");

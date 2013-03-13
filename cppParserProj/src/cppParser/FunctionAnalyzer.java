@@ -90,34 +90,23 @@ public class FunctionAnalyzer extends Analyzer {
 
 				String returnType = "";
 
-				// String returnType = "NORETURNTYPE";
-
-				if(i == 3 && tokens[i-2].equals("::"))
+				// Parse the type backwards
+				if(i > 1)
+				{
+					for(int j = i - 2; j >= 0; --j)
+					{
+						if(tokens[j].equals(":") || StringTools.isKeyword(tokens[j]))
+						{
+							break;
+						}
+						returnType = tokens[j] + (returnType.length() > 0 ? " " : "") + returnType;
+					}
+				}
+				
+				if(returnType == "")
 				{
 					returnType = "ctor";
-					if(funcName.startsWith("~")) returnType = "dtor";
-				}
-				else
-				{
-					if(i == 1 && !tokens[0].contains("protected") && !tokens[0].contains("private")) returnType = tokens[0];
-					else if(i != 2) returnType = tokens[i-2];
-					else returnType = funcName;
-					
-					if(returnType.equals(tokens[i-1]) && i == 1)
-					{
-						if(funcName.startsWith("~")) returnType = "dtor";
-						else returnType = "ctor";
-					}
-					else
-					{
-						if(i > 1)
-						{
-							for(int j = 1; j < i - 3; ++j)
-							{
-								returnType += (tokens[j].equals("*") ? "" : " ") + tokens[j];
-							}
-						}
-					}
+					if(tokens[i-1].startsWith("~")) returnType = "dtor";
 				}
 				
 				//ParsedObjectManager.getInstance().currentFunc.addOperator(returnType);		//operator return
@@ -305,13 +294,6 @@ public class FunctionAnalyzer extends Analyzer {
 				}
 				// Log.d("      (line: " + Extractor.lineno + ") Function call > " + funcName);
 				func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
-				/*
-				Log.d("      Function call > " + funcName + " | params: ");
-				for(String s : params)
-				{
-					Log.d("         - " + s);
-				}
-				*/
 				return j;
 			case "(":
 				// Recurse through inner function calls

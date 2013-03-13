@@ -98,7 +98,14 @@ public class ClassAnalyzer extends Analyzer {
 				{
 					if(!StringTools.isKeyword(tokens[j]))
 					{
+						if(tokens[j].equals(":"))
+						{
+							if(j > 0 && !tokens[j-1].equals(":")) break;
+						}
+						
 						mvType = tokens[j] + (mvType.equals("") ? "" : " ") + mvType;
+						
+						
 					}
 				}
 				mvName = tokens[assignIndex - 1];
@@ -110,6 +117,11 @@ public class ClassAnalyzer extends Analyzer {
 				{
 					if(!StringTools.isKeyword(tokens[j]))
 					{
+						if(tokens[j].equals(":"))
+						{
+							if(j > 0 && !tokens[j-1].equals(":")) break;
+						}
+						
 						mvType = tokens[j] + (mvType.equals("") ? "" : " ") + mvType;
 					}
 				}
@@ -119,6 +131,8 @@ public class ClassAnalyzer extends Analyzer {
 			
 			
 			Log.d("\tVar: " + mvType + " | " + mvName);
+			MemberVariable mv = new MemberVariable(mvType, mvName);
+			objManager.currentScope.addMember(mv);
 			return true;
 		}
 		
@@ -151,12 +165,19 @@ public class ClassAnalyzer extends Analyzer {
 		String type = "";
 		for(int j = i - 2; j >= 0; --j)
 		{
-			if(tokens[j].equals(":") && (tokens[j-1].equals("public") || tokens[j-1].equals("protected") || tokens[j-1].equals("private"))) break;
-			
 			if(!tokens[j].equals("virtual"))
 			{
 				if(!StringTools.isKeyword(tokens[j]))
 				{
+					if(tokens[j].equals(":"))
+					{
+						if(j > 0)
+						{
+							if(!tokens[j-1].equals(":")) break;
+							else if(StringTools.isKeyword(tokens[j-1])) break;
+						}
+					}
+					
 					type = tokens[j] + (type.length() > 0 ? " " : "") + type;
 				}
 			}
@@ -203,19 +224,7 @@ public class ClassAnalyzer extends Analyzer {
 					cf.parameters.add(attrib);
 					paramType = "";
 					paramName = "";
-					try
-					{
-						if(tokens[j].equals("=")) while(!tokens[j].equals(",") && !tokens[j+1].equals(")")) j++;
-					}catch(ArrayIndexOutOfBoundsException e)
-					{
-						Log.d("E: " + Extractor.currentFile + " - " + Extractor.lineno);
-						Log.d("Tokens follow...");
-						for(String s : tokens)
-						{
-							Log.d(s);
-						}
-						throw e;
-					}
+					if(tokens[j].equals("=")) while(!tokens[j].equals(",") && !tokens[j+1].equals(")")) j++;
 				}
 				else
 				{
