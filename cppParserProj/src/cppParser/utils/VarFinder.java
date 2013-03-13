@@ -1,6 +1,7 @@
 package cppParser.utils;
 
 import cppParser.Log;
+import cppParser.StringTools;
 import java.util.ArrayList;
 import java.util.List;
 import cppParser.utils.Constants;
@@ -9,21 +10,22 @@ import treeparser.treeobject.Variable;
 
 
 /**
- *
+ * This class is responsible for finding variable declarations inside a c++ function
  * @author Tomi
  */
 public class VarFinder{
     private static final boolean silenced=false;
+    private static final String[] delims={"<",">"};
     public VarFinder(){
         variables=new ArrayList<>();
     }
     private VarFinder(List<Variable> variables){
         this.variables=variables;
-        isRecursive=true;
+        //isRecursive=true;
     }
     private List<Variable> variables;
     private VarFinder recursive=null;
-    private boolean isRecursive=false;
+    //private boolean isRecursive=false;
             
     private static final int TYPE=0,NAME=1,ARRAY=2,EQUALS=3, RESET=4, TEMPLATE=5;
     private boolean foundStringLiteral=false;
@@ -38,13 +40,14 @@ public class VarFinder{
      * RESET is used when it's known that current statement/sentence will not contain variable
      * declarations. It should switch back to TYPE when valid declarations can be received 
      * eg after ";" token.
-     * TEMPLATE checks if the variable contains template eg 
+     * TEMPLATE picks template for variable eg std::vector<std::pair<std::string, int>> values; 
      * 
     */
     private boolean primitive=false;
     
-    private String currentType="", currentName="", currentArray="";
-    
+    private String currentType="", currentName="", currentArray="", currentTemplate="", literal="";
+    private int templateDepth=0;
+    private boolean checkForOperator;
     
     private int i=0; //Current index in the token array
     
@@ -59,32 +62,56 @@ public class VarFinder{
                 
              if(i+1<tokens.length)
                     next=tokens[i+1];
+             
+             //Log.d("Root Pushing tokens "+token+" "+next+ " "+foundStringLiteral);
+             
+             //String literals are ignored
              if(foundStringLiteral){
-                 if(token.contentEquals("\\")) i++;
-                 else if(token.contentEquals("\"")) foundStringLiteral=false;
-                    
+                 if(next!=null){
+                    if(token.charAt(token.length()-1)!='\\'){  //Well make sure that there's no escape char before "
+                        if(next.contentEquals("\"")){
+                            i++;
+                            foundStringLiteral=false;
+
+                        }
+                    }
+                 }
              }else{
-                 if(token.contains("\""))
-                        foundStringLiteral=true;
+                 if(token.contains("\"")){
+                     if(next!=null){
+                        if(next.charAt(0)=='\''){
+                            foundStringLiteral=false;
+                            return;
+                        }
+                     }
+                     foundStringLiteral=true;
+                     if(next.contains("\"")){
+                         i++;
+                         foundStringLiteral=false;
+                     }
+                 }else{
+                     
+                     pushTokens(token, next);
+                 }
              }
-             pushTokens(token, next);
+             
              
         }
     }
     
     
     public boolean pushTokens(String token, String nextToken){
+        //Log.d("Pushing tokens "+token+" "+nextToken+ " "+foundStringLiteral);
         this.token=token;
         this.next=nextToken;
         if(recursive!=null){
             if(recursive.pushTokens(token, nextToken)){
                 recursive=null;
-                if(mode==RESET)
-                    reset();
+                if(mode==RESET){
+                    reset();}
             }
-        }
-        else if(token.contentEquals("(")||token.contentEquals("{")){
-            //Log.d("Rec");
+        }else if(token.contentEquals("(")||token.contentEquals("{")){
+            //Log.d("new Rec");
              recursive=new VarFinder(variables);
         }
         else if(token.contentEquals(")")||token.contentEquals("}")){
@@ -107,7 +134,7 @@ public class VarFinder{
                         }catch(Exception e){}
                         break;
                     case NAME:
-                        lookForNames();
+                        lookForNames(token,next);
                         break;
                     case RESET:
                         checkForReset();
@@ -118,6 +145,8 @@ public class VarFinder{
                     case EQUALS:
                         waitForEndOfAssign();
                         break;
+                    case TEMPLATE:
+                        pushTokenForTemplate(token,true);
                 }
     }
     
@@ -144,20 +173,45 @@ public class VarFinder{
     }*/
 
     private void checkForReset(){
+        //Log.d("cReset "+token);
         if(token.contentEquals(";"));
         else if(token.contentEquals("{"));
         else return;
         reset();
     }
+    private void endOfDeclaration(){
+       //Log.d("eod");
+        createVariable();
+        reset();
+    }
     private void reset(){
-        
+        templateDepth=0;
         currentType="";
         currentName="";
         currentArray="";
+        currentTemplate="";
         primitive=false;
         mode=TYPE;
         arrays=0;
+        checkForOperator=false;
+        literal="";
     }
+    
+    private void createVariable() {
+        if(!(currentType.isEmpty()|| currentName.isEmpty())) 
+            // TBD sometimes some variables pop that have no type or name... They should not make it here
+            if(!silenced)
+                Log.d("Found variable "+currentType+currentTemplate+" "+currentName+currentArray);
+        currentName="";
+        currentArray="";
+        currentTemplate="";
+        templateDepth=0;
+        checkForOperator=false;
+        literal="";
+    }
+    
+
+    
 
     private void lookForType() throws ParseException{
         
@@ -165,9 +219,20 @@ public class VarFinder{
             return;
         if(token.contentEquals(";"))
             reset();
-        else{
+        else if(token.contains("<")){
+            
+            String[] splitted=StringTools.split(token, delims, true);
+            mode=TEMPLATE;
+            if(!splitted[0].contentEquals("<"))
+                currentType+=splitted[0];
+            else pushTokenForTemplate(splitted[0], false);
+            for(int a=1;a<splitted.length;a++)
+                    pushTokenForTemplate(splitted[a], false);
+        }else{
             //Log.d("lft:"+token);
             if(isWordToken(token)){
+                if(canSkip(token))
+                    return;
                 //Log.d("lft:"+token);
                 if(currentType.isEmpty())
                     currentType+=token;
@@ -200,7 +265,8 @@ public class VarFinder{
                             return;
                         }
                     mode=NAME;
-                }else
+                }else if(next.contains("<"));
+                else
                     mode=RESET;
             }else{
                 mode=RESET;
@@ -227,12 +293,13 @@ public class VarFinder{
         return true;
     }
 
-    private void lookForNames() {
+    private void lookForNames(String token, String next) {
+        
         //Log.d("lfn:"+token+" "+next);
         if(token.contentEquals("*") ||token.contentEquals("&")){
             currentName+=token;
-        }
-        else if(isWordToken(token)){
+        
+        }else if(isWordToken(token)){            
             currentName+=token;
             if(next!=null){
                 switch(next){
@@ -261,7 +328,8 @@ public class VarFinder{
                         i++;
                         break;   
                     default:
-                        Log.d("Found token "+next);
+                        i++;
+                        reset();
                 }
             }else throw new Error("Unexpected nullpointer");
         }
@@ -286,17 +354,7 @@ public class VarFinder{
         }
     }
     
-    private void endOfDeclaration(){
-        createVariable();
-        reset();
-    }
-
-    private void createVariable() {
-        if(!silenced)
-            Log.d("Found variable "+currentType+" "+currentName+currentArray);
-        currentName="";
-        currentArray="";
-    }
+    
 
     private void waitForEndOfAssign() {
         //Log.d("wfeoa" + token);
@@ -308,6 +366,67 @@ public class VarFinder{
                 createVariable();
                 mode=NAME;
                 break;
+        }
+    }
+    
+    private void pushTokenForTemplate(String token, boolean needsSplitting) {
+        
+        if(needsSplitting){
+            String[] tokens=StringTools.split(token, delims, true);
+            for(int a=0;a<tokens.length;a++)
+                 pushTokenForTemplate(tokens[a],false);      
+        }else{
+            //Log.d("ptft: "+token);
+            if(token.contentEquals(";")){
+                reset();
+            }else if(token.contentEquals("<")){
+                if(checkForOperator){
+                    //Log.d("not template "+currentTemplate);
+                    reset();
+                    return;
+                }
+                templateDepth++;
+                checkForOperator=true;
+                currentTemplate+=token;
+                return;
+            }else checkForOperator=false;
+            if(checkForOperator){
+                if(token.contentEquals("=")){
+                   reset();
+                }
+            }
+            if(templateDepth>0){
+                currentTemplate+=token;
+                if(token.contentEquals(">")){
+                    templateDepth--;
+                    
+                }
+            }else{
+                mode=NAME;
+                lookForNames(token, this.next);
+            }
+        }
+    }
+/**
+ * Method checks if given token can be skipped in the variable declaration:
+ * returns true for if token is one of following: const, extern, mutable, register or thread_local
+ * @param token
+ * @return 
+ */
+    private boolean canSkip(String token) {
+        switch(token){
+            case "const":
+                return true;
+            case "extern":
+                return true;
+            case "mutable":
+                return true;
+            case "register":
+                return true;
+            case "thread_local":
+                return true;
+            default:
+                return false;
         }
     }
 
