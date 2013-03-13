@@ -1,5 +1,3 @@
-
-
 package cppParser.utils;
 
 import cppParser.Log;
@@ -15,18 +13,19 @@ import treeparser.treeobject.Variable;
  * @author Tomi
  */
 public class VarFinder{
-    private static final boolean silenced=true;
+    private static final boolean silenced=false;
     public VarFinder(){
         variables=new ArrayList<>();
     }
-    public VarFinder(List<Variable> variables){
+    private VarFinder(List<Variable> variables){
         this.variables=variables;
+        isRecursive=true;
     }
-    @SuppressWarnings("unused")
-	private List<Variable> variables;
+    private List<Variable> variables;
+    private VarFinder recursive=null;
+    private boolean isRecursive=false;
             
-    @SuppressWarnings("unused")
-	private static final int TYPE=0,NAME=1,ARRAY=2,EQUALS=3, RESET=4, TEMPLATE=5;
+    private static final int TYPE=0,NAME=1,ARRAY=2,EQUALS=3, RESET=4, TEMPLATE=5;
     private boolean foundStringLiteral=false;
     private int mode=TYPE;
     /*
@@ -49,8 +48,7 @@ public class VarFinder{
     
     private int i=0; //Current index in the token array
     
-    @SuppressWarnings("unused")
-	private int arrays=0; // This is for checking arrays inside arrays
+    private int arrays=0; // This is for checking arrays inside arrays
     private String token,next;
     
     public void findVariables(String[] tokens){
@@ -68,20 +66,37 @@ public class VarFinder{
              }else{
                  if(token.contains("\""))
                         foundStringLiteral=true;
-             }   
-             if(!foundStringLiteral){
-                 if(token.contentEquals(";"))
-                     reset();
-                 else
-                    decideAction();
-                
-            }
+             }
+             pushTokens(token, next);
+             
         }
     }
+    
+    
+    public boolean pushTokens(String token, String nextToken){
+        this.token=token;
+        this.next=nextToken;
+        if(recursive!=null){
+            if(recursive.pushTokens(token, nextToken)){
+                recursive=null;
+                if(mode==RESET)
+                    reset();
+            }
+        }
+        else if(token.contentEquals("(")||token.contentEquals("{")){
+            //Log.d("Rec");
+             recursive=new VarFinder(variables);
+        }
+        else if(token.contentEquals(")")||token.contentEquals("}")){
+             return true;
+        }else if(!foundStringLiteral){
+                    decideAction();
+                
+        }
+        return false;
+    }
     /**
-     * This method decides what to do with the next tokens
-     * return; had to be used instead of break; because different methods that are
-     * called here caused some tokens to be handled more than once.
+     * This method decides what to do with the next tokens.
      */
     private void decideAction(){
         //Log.d("token:"+token+" "+mode);
@@ -148,44 +163,48 @@ public class VarFinder{
         
         if(next==null)
             return;
-        //Log.d("lft:"+token);
-        if(isWordToken(token)){
+        if(token.contentEquals(";"))
+            reset();
+        else{
             //Log.d("lft:"+token);
-            if(currentType.isEmpty())
-                currentType+=token;
-            else
-                currentType+=" "+token;
-            if(Constants.isPrimitiveType(token)){
-                primitive=true;
-            }
-            if(primitive){
-                    //Log.d("found primitive type");
-                    if(!Constants.isPrimitiveType(next)){
-                        mode=NAME;
-                    }else return;
-                
-            }
-            if(next.contentEquals("::")){
-                this.i++;
-                currentType+=next;
-            }else if(isWordToken(next)){
-                if(!primitive)
-                    if(Constants.isKeyword(currentType)){
-                        mode=RESET;
-                        return;
-                    }
-                mode=NAME;
-            }else if(next.contentEquals("*") || next.contentEquals("&")){
-                if(!primitive)
-                    if(Constants.isKeyword(currentType)){
-                        mode=RESET;
-                        return;
-                    }
-                mode=NAME;
-            }else
+            if(isWordToken(token)){
+                //Log.d("lft:"+token);
+                if(currentType.isEmpty())
+                    currentType+=token;
+                else
+                    currentType+=" "+token;
+                if(Constants.isPrimitiveType(token)){
+                    primitive=true;
+                }
+                if(primitive){
+                        //Log.d("found primitive type");
+                        if(!Constants.isPrimitiveType(next)){
+                            mode=NAME;
+                        }else return;
+
+                }
+                if(next.contentEquals("::")){
+                    this.i++;
+                    currentType+=next;
+                }else if(isWordToken(next)){
+                    if(!primitive)
+                        if(Constants.isKeyword(currentType)){
+                            mode=RESET;
+                            return;
+                        }
+                    mode=NAME;
+                }else if(next.contentEquals("*") || next.contentEquals("&")){
+                    if(!primitive)
+                        if(Constants.isKeyword(currentType)){
+                            mode=RESET;
+                            return;
+                        }
+                    mode=NAME;
+                }else
+                    mode=RESET;
+            }else{
                 mode=RESET;
-        }else{
-            mode=RESET;
+            }
         }
         
         
@@ -194,7 +213,7 @@ public class VarFinder{
         
     }
     
-/*
+/**
  * This method checks if the given token is a word that can be a name(variable, class...)
  */
     private boolean isWordToken(String token) {
@@ -209,6 +228,7 @@ public class VarFinder{
     }
 
     private void lookForNames() {
+        //Log.d("lfn:"+token+" "+next);
         if(token.contentEquals("*") ||token.contentEquals("&")){
             currentName+=token;
         }
@@ -222,7 +242,10 @@ public class VarFinder{
                         break;
                     case "(":
                         reset();
-                        i++;
+                        //i++;
+                        break;
+                    case ")":
+                        endOfDeclaration();;
                         break;
                     case ";":
                         endOfDeclaration();
@@ -276,6 +299,7 @@ public class VarFinder{
     }
 
     private void waitForEndOfAssign() {
+        //Log.d("wfeoa" + token);
         switch(token){
             case ";":
                 endOfDeclaration();
