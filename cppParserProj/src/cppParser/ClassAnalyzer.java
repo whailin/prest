@@ -15,6 +15,9 @@ public class ClassAnalyzer extends Analyzer {
 	// Current index of the tokens (stored here for performance)
 	private int i = 0;
 	
+	boolean enumOpen = false;
+	boolean structOpen = false;
+	
 	/**
 	 * Constructs a new class analyzer
 	 * @param sa The sentence analyzer
@@ -56,7 +59,7 @@ public class ClassAnalyzer extends Analyzer {
 		int assignIndex = -1;
 		
 		// Check if the sentence forms a function declaration (or a function with a body)
-		for(i = 0; i < tokens.length - 1; ++i)
+		for(i = 0; i < tokens.length; ++i)
 		{
 			switch(tokens[i])
 			{
@@ -72,6 +75,8 @@ public class ClassAnalyzer extends Analyzer {
 				{
 					Log.d("\tFound an enum " + tokens[i + 1] + "\n");					
 				}
+				enumOpen = true;
+				
 				return true;
 			case "typedef":
 				// TODO handle typedefs properly
@@ -79,12 +84,26 @@ public class ClassAnalyzer extends Analyzer {
 				return true;
 			case "struct":
 				// TODO handle structs
+				structOpen = true;
 				return true;
 			case "=":
 				assignIndex = i;
 				break;
+			case "}":
+				if(enumOpen)
+				{
+					Log.d("Enum closed on line: " + Extractor.lineno);
+					enumOpen = false;
+				}
+				else if(structOpen)
+				{
+					structOpen = false;
+				}
+				return true;
 			}
 		}
+		
+		if(enumOpen || structOpen) return true;
 		
 		// At this point, we know the line cannot be a function declaration.
 		// Check for a member variable declaration
@@ -165,7 +184,7 @@ public class ClassAnalyzer extends Analyzer {
 		String type = "";
 		for(int j = i - 2; j >= 0; --j)
 		{
-			if(!tokens[j].equals("virtual"))
+			if(!tokens[j].equals("virtual") || !tokens[j].equals("_OgreExport")) // TODO Fix _OgreExport
 			{
 				if(!StringTools.isKeyword(tokens[j]))
 				{
@@ -177,7 +196,6 @@ public class ClassAnalyzer extends Analyzer {
 							else if(StringTools.isKeyword(tokens[j-1])) break;
 						}
 					}
-					
 					type = tokens[j] + (type.length() > 0 ? " " : "") + type;
 				}
 			}
@@ -228,7 +246,7 @@ public class ClassAnalyzer extends Analyzer {
 				}
 				else
 				{
-					if(tokens[j+1].equals(",") || tokens[j+1].equals(")") || tokens[j+1].equals("="))
+					if(!skipCommas && (tokens[j+1].equals(",") || tokens[j+1].equals(")") || tokens[j+1].equals("=")))
 					{
 						if(!paramType.equals("")) paramName = tokens[j];
 						else paramType = tokens[j];

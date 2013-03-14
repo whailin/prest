@@ -316,10 +316,10 @@ public class Extractor
 				writer.write("  FUNCTIONS\n");
 				for(CppFunc mf : cc.getFunctions())
 				{
-					writer.write("    " + mf.getType() + " " + mf.getName() + " (");
+					writer.write("    " + mf.getType() + " | " + mf.getName() + " (");
 					for(int i = 0; i < mf.parameters.size(); ++i)
 					{
-						writer.write(mf.parameters.get(i).type + " " + mf.parameters.get(i).name);
+						writer.write(mf.parameters.get(i).type + " | " + mf.parameters.get(i).name);
 						if(i < mf.parameters.size() - 1) writer.write(", ");
 					}
 					writer.write(")\n");
@@ -329,7 +329,7 @@ public class Extractor
 				writer.write("  VARIABLES\n");
 				for(MemberVariable mv : cc.getMembers())
 				{
-					writer.write("    " + mv.getType() + " " + mv.getName() + "\n");
+					writer.write("    " + mv.getType() + " | " + mv.getName() + "\n");
 				}
 				
 				writer.write("\n");

@@ -13,23 +13,19 @@ import treeparser.treeobject.Variable;
  * This class is responsible for finding variable declarations inside a c++ function
  * @author Tomi
  */
-public class VarFinder{
-    private static final boolean silenced=false;
-    private static final String[] delims={"<",">"};
-    public VarFinder(){
-        variables=new ArrayList<>();
-    }
-    private VarFinder(List<Variable> variables){
-        this.variables=variables;
-        //isRecursive=true;
-    }
+public class VarFinder
+{
+    private static final boolean silenced = false;
+    private static final String[] delims = {"<", ">"};
     private List<Variable> variables;
+    
     private VarFinder recursive=null;
     //private boolean isRecursive=false;
             
     private static final int TYPE=0,NAME=1,ARRAY=2,EQUALS=3, RESET=4, TEMPLATE=5;
     private boolean foundStringLiteral=false;
     private int mode=TYPE;
+    
     /*
      * Mode determines how tokens are handled.
      * 
@@ -53,6 +49,16 @@ public class VarFinder{
     
     private int arrays=0; // This is for checking arrays inside arrays
     private String token,next;
+    
+    public VarFinder()
+    {
+        variables=new ArrayList<>();
+    }
+    
+    private VarFinder(List<Variable> variables){
+        this.variables=variables;
+        //isRecursive=true;
+    }
     
     public void findVariables(String[] tokens){
         

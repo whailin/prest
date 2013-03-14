@@ -12,8 +12,8 @@ import java.util.ArrayList;
 public class FileLoader {
 
 	// List of allowed file extensions
-	 private String[] allowedExtensions = new String[] {".cpp", ".h", ".cxx"};
-	//private String[] allowedExtensions = new String[] {".h"};
+	// private String[] allowedExtensions = new String[] {".cpp", ".h", ".cxx"};
+	private String[] allowedExtensions = new String[] {".h"};
 	
 	// If 'true', files are sorted in "headers first, sources last" order
 	private boolean shouldSort = true;
