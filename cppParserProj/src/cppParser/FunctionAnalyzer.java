@@ -217,7 +217,7 @@ public class FunctionAnalyzer extends Analyzer {
 	private boolean processCurrentFunction(String[] tokens)
 	{
                 
-                varFinder.findVariables(tokens);
+        varFinder.findVariables(tokens);
 		currentOperands = new ArrayList<String>();
 		currentOperators = new ArrayList<String>();
 		handledOperatorIndices.clear();
