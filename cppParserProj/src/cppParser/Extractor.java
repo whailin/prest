@@ -87,11 +87,14 @@ public class Extractor
 			Log.d("Processing " + s + " ...");
 			process(s);
 			Log.d();
-		}
-		
+		}		
+
+		Log.d("Processing done. Dumping...");	
+
 		// TODO Second pass: fix unknown references / types / ambiguities
 		
 		Log.d("Processing done. Dumping...");
+		
 		
 		// Dump tree results to a file
 		dumpTreeResults();
@@ -150,13 +153,15 @@ public class Extractor
 				{
 					loc++;
 					lineno++;
+					ploc++;
 					
 					// Preprocess lines should be processed on endline
 					if(!stringOpen && line.startsWith("#"))
 					{
+						lloc++;
 						sentenceAnalyzer.lexLine(line);
 						line = "";
-						commentLine = "";
+						commentLine = "";						
 					}
 				}
 				
@@ -183,8 +188,7 @@ public class Extractor
 						}
 					}
 					
-					if(skipComment) commentLine += c;
-					
+					if(skipComment) commentLine += c;					
 					continue;
 				}
 				
@@ -238,17 +242,17 @@ public class Extractor
 					else
 					{
 						line += c;
-					}
+					}				
 					
 				}
 				else if(line.length() > 0 && line.charAt(line.length() - 1) != ' ')
 				{
 					// Add a space (just one, even if there's multiple)
-					line += ' ';
+					line += ' ';					
 				}
 				
 				// If the line ends, start lexing it
-				if(!stringOpen &&  (c == ';' || c == '{' || c == '}'))
+				if(!stringOpen &&  (c == ';' || c == '{'))
 				{
 					lloc++;
 					// lexLine(line);
@@ -321,8 +325,24 @@ public class Extractor
 					{
 						writer.write(mf.parameters.get(i).type + " | " + mf.parameters.get(i).name);
 						if(i < mf.parameters.size() - 1) writer.write(", ");
-					}
+					}					
+
 					writer.write(")\n");
+					writer.write("Operator count = " + mf.getOperatorCount() + "\n");
+					writer.write("Operand count = " + mf.getOperandCount() + "\n");
+					writer.write("Unique Operator count = " + mf.getUniqueOperatorCount() + "\n");
+					writer.write("Unique Operand count = " + mf.getUniqueOperandCount() + "\n");
+					writer.write("Vocabulary = " + mf.getVocabulary() + "\n");
+					writer.write("Length = " + mf.getLength() + "\n");
+					writer.write("Volume = " + mf.getVolume() + "\n");
+					writer.write("Difficulty = " + mf.getDifficulty() + "\n");
+					writer.write("Effort = " + mf.getEffort() + "\n");
+					writer.write("Programming time = " + mf.getTimeToProgram() + "\n");
+					writer.write("Deliver bugs = " + mf.getDeliveredBugs() + "\n");
+					writer.write("Level = " + mf.getLevel() + "\n");
+					writer.write("Intelligent content = " + mf.getIntContent() + "\n");	
+					writer.newLine();
+					
 				}
 				
 				// Dump variables
@@ -334,11 +354,12 @@ public class Extractor
 				
 				writer.write("\n");
 			}
-			
+						
 			writer.write("\n");
 			writer.write("Total amount of lines: " + loc + "\n");
 			writer.write("Logical lines of code: " + lloc + "\n");
-			writer.write("Physical lines of code: " + ploc + "\n");
+			writer.write("Physical lines of code: " + ploc + "\n");	
+			writer.write("Comment lines: " + cmtLineNo + "\n");
 			
 			writer.close();
 		}
@@ -410,6 +431,12 @@ public class Extractor
 			Log.d("multiline comments");
 			for(String s : objManager.multiLineComments) Log.d(" - " + s);
 			Log.d();
+		}
+		
+		// Print halstead counting
+		if (ParsedObjectManager.getInstance().currentFunc.getOperatorCount() > 0){
+			Log.d("Operators");
+			Log.d("" + ParsedObjectManager.getInstance().currentFunc.getLength());
 		}
 	}
 	*/

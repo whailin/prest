@@ -93,7 +93,21 @@ public class FunctionAnalyzer extends Analyzer {
 				// Parse the type backwards
 				if(i > 1)
 				{
+					returnType = "ctor";
+					if(funcName.startsWith("~")) returnType = "dtor";
+				}
+				else
+				{
+					if(i == 1 && !tokens[0].contains("protected") && !tokens[0].contains("private")) 
+						returnType = tokens[0];
+					else if(i != 2) 
+							returnType = tokens[i-2];
+						else returnType = funcName;
+					
+					if(returnType.equals(tokens[i-1]) && i == 1)
+
 					for(int j = i - 2; j >= 0; --j)
+
 					{
 						if(tokens[j].equals(":") || StringTools.isKeyword(tokens[j]))
 						{
@@ -234,7 +248,7 @@ public class FunctionAnalyzer extends Analyzer {
 			checkForCC();
 			
 			// Check for halstead complexity operators
-			checkOpsAndOds();
+			checkOpsAndOds();			
 			
 		}
 		/*
@@ -249,8 +263,7 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			Log.d("         - " + s);
 		}
-		*/
-		
+		*/		
 		// Log.d();
 		return true;
 	}
@@ -376,7 +389,7 @@ public class FunctionAnalyzer extends Analyzer {
 			break;
 		}
 		
-		ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[index-1]);		//operator at before index
+		//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[index-1]);		//operator at before index
 		ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);		//operand at index
 		
 		return index;
