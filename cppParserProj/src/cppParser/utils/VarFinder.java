@@ -1,12 +1,12 @@
 package cppParser.utils;
 
 import cppParser.Log;
+import cppParser.ParsedObjectManager;
 import cppParser.StringTools;
+import cppStructures.MemberVariable;
 import java.util.ArrayList;
 import java.util.List;
-import cppParser.utils.Constants;
 import treeparser.exception.ParseException;
-import treeparser.treeobject.Variable;
 
 
 /**
@@ -17,7 +17,7 @@ public class VarFinder
 {
     private static final boolean silenced = false;
     private static final String[] delims = {"<", ">"};
-    private List<Variable> variables;
+    private List<MemberVariable> variables;
     
     private VarFinder recursive = null;
     //private boolean isRecursive=false;
@@ -41,7 +41,8 @@ public class VarFinder
     */
     private boolean primitive = false;
     
-    private String currentType = "", currentName = "", currentArray = "", currentTemplate = "", literal = "";
+    private String currentType = "", currentName = "", currentArray = "", currentTemplate = "", literal = "",
+            currentPtr="";
     private int templateDepth = 0;
     private boolean checkForOperator;
     
@@ -55,7 +56,7 @@ public class VarFinder
         variables=new ArrayList<>();
     }
     
-    private VarFinder(List<Variable> variables)
+    private VarFinder(List<MemberVariable> variables)
     {
         this.variables=variables;
         //isRecursive=true;
@@ -227,6 +228,7 @@ public class VarFinder
     {
         templateDepth = 0;
         currentType = "";
+        currentPtr="";
         currentName = "";
         currentArray = "";
         currentTemplate = "";
@@ -240,9 +242,16 @@ public class VarFinder
     private void createVariable()
     {
         if(!(currentType.isEmpty() || currentName.isEmpty())) 
+        {
             // TBD sometimes some variables pop that have no type or name... They should not make it here
             if(!silenced)
                 Log.d("Found variable " + currentType+currentTemplate + " " + currentName+currentArray);
+            MemberVariable member=new MemberVariable(currentType, currentName);
+            member.setTemplate(currentTemplate);
+            member.setArray(currentArray);
+            ParsedObjectManager.getInstance().currentFunc.addMember(member);
+        }
+        currentPtr="";
         currentName = "";
         currentArray = "";
         currentTemplate = "";
@@ -357,7 +366,7 @@ public class VarFinder
         //Log.d("lfn:"+token+" "+next);
         if(token.contentEquals("*") || token.contentEquals("&"))
         {
-            currentName += token;
+            currentPtr += token;
         }
         else if(isWordToken(token))
         {            
@@ -371,7 +380,8 @@ public class VarFinder
                         i++;
                         break;
                     case "(":
-                        reset();
+                        endOfDeclaration();
+                        //reset();
                         //i++;
                         break;
                     case ")":
