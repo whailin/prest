@@ -127,6 +127,11 @@ public class SentenceAnalyzer {
 		// TODO Create a preprocessor analyzer and remove this
 		if(line.startsWith("#")) return;
 		
+		if(Extractor.lineno == 365)
+		{
+			Log.d("dbg start");
+		}
+		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, splitterChars, true);
 

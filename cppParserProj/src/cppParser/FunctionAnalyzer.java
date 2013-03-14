@@ -79,7 +79,7 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(tokens[i].equals("("))
 			{
-				// Log.d("   FUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
+				Log.d("   FUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
 				
 				// Get scope
 				String scope = getScope(tokens, i);
