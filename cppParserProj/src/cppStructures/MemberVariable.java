@@ -3,7 +3,10 @@ package cppStructures;
 public class MemberVariable {
 
 	private String type = "";
+        private String template ="";
+        private String pointer = ""; //This is for storing pointer and reference operators
 	private String name = "";
+        private String array ="";
 	private String value = "";
 	private boolean valueSet = false;
 	
@@ -46,4 +49,34 @@ public class MemberVariable {
 	{
 		return valueSet;
 	}
+        
+        public String getPointer() 
+        {
+            return pointer;
+        }
+
+        public void setPointer(String pointer) 
+        {
+            this.pointer = pointer;
+        }
+
+        public String getTemplate() 
+        {
+            return template;
+        }
+
+        public void setTemplate(String template) 
+        {
+            this.template = template;
+        }
+
+        public String getArray() 
+        {
+            return array;
+        }
+
+        public void setArray(String array) 
+        {
+            this.array = array;
+        }
 }
