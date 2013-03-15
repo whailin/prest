@@ -20,6 +20,7 @@ public class VarFinder
     private List<MemberVariable> variables;
     
     private VarFinder recursive = null;
+    private VarFinder parent=null;
     //private boolean isRecursive=false;
             
     private static final int TYPE = 0, NAME = 1, ARRAY = 2, EQUALS = 3, RESET = 4, TEMPLATE = 5;
@@ -56,9 +57,10 @@ public class VarFinder
         variables=new ArrayList<>();
     }
     
-    private VarFinder(List<MemberVariable> variables)
+    private VarFinder(List<MemberVariable> variables, VarFinder parent)
     {
         this.variables=variables;
+        this.parent=parent;
         //isRecursive=true;
     }
     
@@ -72,8 +74,6 @@ public class VarFinder
                 
              if(i+1 < tokens.length)
                     next = tokens[i+1];
-             
-             //Log.d("Root Pushing tokens "+token+" "+next+ " "+foundStringLiteral);
              
              //String literals are ignored
              if(foundStringLiteral)
@@ -120,7 +120,8 @@ public class VarFinder
     
     public boolean pushTokens(String token, String nextToken)
     {
-        //Log.d("Pushing tokens "+token+" "+nextToken+ " "+foundStringLiteral);
+        /*if(recursive==null)
+            Log.d("Pushing tokens "+token+" "+nextToken+ " "+mode);*/
         this.token = token;
         this.next = nextToken;
         
@@ -138,7 +139,7 @@ public class VarFinder
         else if(token.contentEquals("(") || token.contentEquals("{"))
         {
             //Log.d("new Rec");
-            recursive = new VarFinder(variables);
+            recursive = new VarFinder(variables, this);
         }
         else if(token.contentEquals(")") || token.contentEquals("}"))
         {
@@ -241,16 +242,29 @@ public class VarFinder
     
     private void createVariable()
     {
+        // TBD sometimes some variables pop that have no type or name... They should not make it here
         if(!(currentType.isEmpty() || currentName.isEmpty())) 
         {
+            //This will sort out some of false positives, eg a * b; is recognized as declaration of variable *b of type a, when a is variable
+            if(!primitive){
+                if(!currentPtr.isEmpty())
+                {
+                    if(isDefined(currentType)){
+                        //Log.d("Found false positive " + currentType+currentTemplate + " " + currentPtr+currentName+currentArray);
+                        reset();
+                        return;
+                    }
+                }
+            }
             // TBD sometimes some variables pop that have no type or name... They should not make it here
             if(!silenced)
-                Log.d("Found variable " + currentType+currentTemplate + " " + currentName+currentArray);
+                Log.d("Found variable " + currentType+currentTemplate + " " + currentPtr+currentName+currentArray);
             MemberVariable member=new MemberVariable(currentType, currentName);
             member.setTemplate(currentTemplate);
             member.setArray(currentArray);
+            variables.add(member);
             ParsedObjectManager.getInstance().currentFunc.addMember(member);
-        }
+        }//else Log.d("Var without name or type "+ token+ " "+next+" "+mode);
         currentPtr="";
         currentName = "";
         currentArray = "";
@@ -289,14 +303,15 @@ public class VarFinder
                 if(canSkip(token))
                     return;
                 //Log.d("lft:"+token);
-                if(currentType.isEmpty())
-                    currentType += token;
-                else
-                    currentType += " " + token;
                 if(Constants.isPrimitiveType(token))
                 {
                     primitive = true;
                 }
+                if(primitive && !currentType.isEmpty())
+                    currentType += " " + token;
+                else
+                    currentType += token;
+                
                 if(primitive){
                         //Log.d("found primitive type");
                         if(!Constants.isPrimitiveType(next))
@@ -308,7 +323,7 @@ public class VarFinder
                 }
                 if(next.contentEquals("::"))
                 {
-                    this.i++;
+                    skip();
                     currentType+=next;
                 }
                 else if(isWordToken(next))
@@ -377,12 +392,13 @@ public class VarFinder
                 {
                     case "=":
                         mode = EQUALS;
-                        i++;
+                        endOfDeclaration();
+                        skip();
                         break;
                     case "(":
                         endOfDeclaration();
                         //reset();
-                        //i++;
+                        //skip();
                         break;
                     case ")":
                         endOfDeclaration();
@@ -392,16 +408,16 @@ public class VarFinder
                         break;
                     case ",":
                         createVariable();
-                        i++;
+                        skip();
                         break;
                     case "[":
                         mode = ARRAY;
                         arrays++;
                         currentArray += "[";
-                        i++;
+                        skip();
                         break;   
                     default:
-                        i++;
+                        skip();
                         reset();
                 }
             }
@@ -422,12 +438,12 @@ public class VarFinder
             {
                 currentArray+="[";
                 arrays++;
-                i++;
+                skip();
             }
             else if(next.contentEquals(";"))
             {
                 endOfDeclaration();
-                i++;
+                skip();
             }
         }
     }
@@ -437,6 +453,9 @@ public class VarFinder
         //Log.d("wfeoa" + token);
         switch(token)
         {
+            case "(":
+                recursive=new VarFinder(variables, this);
+                break;
             case ";":
                 endOfDeclaration();
                 break;
@@ -509,7 +528,8 @@ public class VarFinder
  * @param token
  * @return 
  */
-    private boolean canSkip(String token) {
+    private boolean canSkip(String token) 
+    {
         switch(token){
             case "const":
                 return true;
@@ -524,5 +544,28 @@ public class VarFinder
             default:
                 return false;
         }
+    }
+/**
+ * Method checks if given name is already defined in the function that is analyzed.
+ * @param name
+ * @return 
+ */
+    private boolean isDefined(String name) 
+    {
+        //TBD check for member variables in known scopes
+        for(MemberVariable var:variables){
+            if(var.getName().contentEquals(name))
+                return true;
+        }
+        return false;
+    }
+    /**
+     * This method will skip the next token
+     */
+    private void skip(){
+        if(parent==null)
+            i++;
+        else
+            parent.skip();
     }
 }
