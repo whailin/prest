@@ -16,7 +16,7 @@ import treeparser.exception.ParseException;
  */
 public class VarFinder
 {
-    private static final boolean silenced = false;
+    private static final boolean silenced = false, showTokens=false;
     private static final String[] delims = {"<", ">"};
     private List<MemberVariable> variables;
     
@@ -67,19 +67,18 @@ public class VarFinder
     
     private VarFinder(List<MemberVariable> variables, VarFinder parent)
     {
-        this.variables = variables;
+        this.variables=variables;
         this.parent=parent;
         //isRecursive=true;
     }
     
     public void findVariables(String[] tokens)
     {
-    	if(originalTokens == null) originalTokens = tokens;
+        if(originalTokens == null) originalTokens = tokens;
     	
     	// Clear the handled indices when the processing starts
     	handledIndices.clear();
-    	
-        for(i = 0; i < tokens.length; i++)
+        for(i=0; i < tokens.length; i++)
         {
                 
              token = tokens[i];
@@ -97,7 +96,7 @@ public class VarFinder
                         if(next.contentEquals("\""))
                         {
                             i++;
-                            foundStringLiteral = false;
+                            foundStringLiteral=false;
                         }
                     }
                  }
@@ -106,15 +105,15 @@ public class VarFinder
              {
                  if(token.contains("\""))
                  {
-                     if(next != null)
+                     if(next!=null)
                      {
                         if(next.charAt(0) == '\'')
                         {
-                            foundStringLiteral = false;
+                            foundStringLiteral=false;
                             return;
                         }
                      }
-                     foundStringLiteral = true;
+                     foundStringLiteral=true;
                      if(next.contains("\""))
                      {
                          i++;
@@ -132,8 +131,8 @@ public class VarFinder
     
     public boolean pushTokens(String token, String nextToken)
     {
-        /*if(recursive==null)
-            Log.d("Pushing tokens "+token+" "+nextToken+ " "+mode);*/
+        if(recursive==null && !silenced && showTokens)
+            Log.d("Pushing tokens "+token+" "+nextToken+ " "+mode);
         this.token = token;
         this.next = nextToken;
         
@@ -172,31 +171,31 @@ public class VarFinder
     {
         //Log.d("token:"+token+" "+mode);
         switch(mode){
-            case TYPE:
-                try
-                {
-                    lookForType();
+                    case TYPE:
+                        try
+                        {
+                            lookForType();
+                        }
+                        catch(Exception e)
+                        {
+                        	
+                        }
+                        break;
+                    case NAME:
+                        lookForNames(token,next);
+                        break;
+                    case RESET:
+                        checkForReset();
+                        break;
+                    case ARRAY:
+                        lookForArrays();
+                        break;
+                    case EQUALS:
+                        waitForEndOfAssign();
+                        break;
+                    case TEMPLATE:
+                        pushTokenForTemplate(token,true);
                 }
-                catch(Exception e)
-                {
-                	
-                }
-                break;
-            case NAME:
-                lookForNames(token,next);
-                break;
-            case RESET:
-                checkForReset();
-                break;
-            case ARRAY:
-                lookForArrays();
-                break;
-            case EQUALS:
-                waitForEndOfAssign();
-                break;
-            case TEMPLATE:
-                pushTokenForTemplate(token,true);
-        }
     }
     
      /**
@@ -251,7 +250,6 @@ public class VarFinder
         checkForOperator = false;
         literal = "";
     }
-    
     public ArrayList<Integer> getHandledIndices()
     {
     	return handledIndices;
@@ -290,12 +288,11 @@ public class VarFinder
             member.setArray(currentArray);
             variables.add(member);
             ParsedObjectManager.getInstance().currentFunc.addMember(member);
-        }//else Log.d("Var without name or type "+ token+ " "+next+" "+mode);
             ParsedObjectManager.getInstance().currentFunc.addOperand(member.getName());
             
             int index = getIndexOfToken(currentName);
             if(index > -1) handledIndices.add(new Integer(index));
-        }
+        }//else Log.d("Var without name or type "+ token+ " "+next+" "+mode);
         currentPtr="";
         currentName = "";
         currentArray = "";
@@ -408,7 +405,10 @@ public class VarFinder
 
     private void lookForNames(String token, String next) 
     {
-        
+        if(token.contentEquals(";")){
+            endOfDeclaration();
+            return;
+        }
         //Log.d("lfn:"+token+" "+next);
         if(token.contentEquals("*") || token.contentEquals("&"))
         {
@@ -423,11 +423,12 @@ public class VarFinder
                 {
                     case "=":
                         mode = EQUALS;
-                        endOfDeclaration();
-                        skip();
+                        createVariable();
+                        //skip();
                         break;
+                    case "{":
                     case "(":
-                        endOfDeclaration();
+                        createVariable();
                         //reset();
                         //skip();
                         break;
@@ -436,6 +437,7 @@ public class VarFinder
                         break;
                     case ";":
                         endOfDeclaration();
+                        skip();
                         break;
                     case ",":
                         createVariable();
