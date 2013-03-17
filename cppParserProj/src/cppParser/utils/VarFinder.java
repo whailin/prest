@@ -50,7 +50,7 @@ public class VarFinder
     
     private int i = 0; //Current index in the token array
     
-    public static String[] originalTokens = null;
+    private String[] originalTokens = null;
     
     private int arrays = 0; // This is for checking arrays inside arrays
     private String token, next;
@@ -70,6 +70,19 @@ public class VarFinder
         this.variables=variables;
         this.parent=parent;
         //isRecursive=true;
+    }
+    
+    public String[] getOriginalTokens(){
+        if(parent==null)
+            return originalTokens;
+        else 
+            return parent.getOriginalTokens();
+    }
+    public void setOriginalTokens(String[] tokens){
+        if(parent==null)
+            originalTokens=tokens;
+        else
+            parent.setOriginalTokens(tokens);
     }
     
     public void findVariables(String[] tokens)
@@ -255,11 +268,13 @@ public class VarFinder
     	return handledIndices;
     }
     
+    
+    
     public int getIndexOfToken(String s)
     {
-    	for(int j = 0; j < originalTokens.length; ++j)
+    	for(int j = 0; j < getOriginalTokens().length; ++j)
     	{
-    		if(originalTokens[j].equals(s)) return j;
+    		if(getOriginalTokens()[j].equals(s)) return j;
     	}
     	return -1;
     }

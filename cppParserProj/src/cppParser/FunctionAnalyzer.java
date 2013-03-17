@@ -217,7 +217,7 @@ public class FunctionAnalyzer extends Analyzer {
 		// Log.d();
 		
 		// Finally, set varFinder's originalTokens to null
-		VarFinder.originalTokens = null;
+		varFinder.setOriginalTokens(null);
 		
 		return true;
 	}
@@ -350,7 +350,7 @@ public class FunctionAnalyzer extends Analyzer {
 		objManager.currentFunc.addOperator(op);
 		
 		String leftSide = tokens[i-1];
-		Log.d("Leftside: " + leftSide);
+		//Log.d("Leftside: " + leftSide);
 		
 		if(!StringTools.isOperator(leftSide))
 			{
@@ -370,7 +370,7 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(StringTools.isOperator(tokens[i]))
 			{
-				Log.d("Found operator: " + tokens[i]);
+				//Log.d("Found operator: " + tokens[i]);
 				op = tokens[i];
 				if(tokens[i-1].equals(op) || tokens[i+1].equals(op))
 				{
@@ -380,7 +380,7 @@ public class FunctionAnalyzer extends Analyzer {
 			}
 			else
 			{
-				Log.d("Found something else: " + tokens[i]);
+				//Log.d("Found something else: " + tokens[i]);
 				if(tokens[i].equals(";")) continue;
 				
 				if(StringTools.isOperator(tokens[i-1]))
