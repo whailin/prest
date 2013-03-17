@@ -315,7 +315,6 @@ public class Extractor
 					writer.write("  Weighted methods per class: " + cc.getFunctions().size() + "\n");
 				}
 				
-				
 				// Dump functions
 				writer.write("  FUNCTIONS\n");
 				for(CppFunc mf : cc.getFunctions())
@@ -328,19 +327,40 @@ public class Extractor
 					}					
 
 					writer.write(")\n");
-					writer.write("Operator count = " + mf.getOperatorCount() + "\n");
-					writer.write("Operand count = " + mf.getOperandCount() + "\n");
-					writer.write("Unique Operator count = " + mf.getUniqueOperatorCount() + "\n");
-					writer.write("Unique Operand count = " + mf.getUniqueOperandCount() + "\n");
-					writer.write("Vocabulary = " + mf.getVocabulary() + "\n");
-					writer.write("Length = " + mf.getLength() + "\n");
-					writer.write("Volume = " + mf.getVolume() + "\n");
-					writer.write("Difficulty = " + mf.getDifficulty() + "\n");
-					writer.write("Effort = " + mf.getEffort() + "\n");
-					writer.write("Programming time = " + mf.getTimeToProgram() + "\n");
-					writer.write("Deliver bugs = " + mf.getDeliveredBugs() + "\n");
-					writer.write("Level = " + mf.getLevel() + "\n");
-					writer.write("Intelligent content = " + mf.getIntContent() + "\n");	
+					
+					writer.write("      Operator count = " + mf.getOperatorCount() + "\n");
+					for(String s : mf.getOperators())
+					{
+						writer.write("        " + s + "\n");
+					}
+					
+					writer.write("      Operand count = " + mf.getOperandCount() + "\n");
+					for(String s : mf.getOperands())
+					{
+						writer.write("        " + s + "\n");
+					}
+					
+					writer.write("      Unique Operator count = " + mf.getUniqueOperatorCount() + "\n");
+					for(String s : mf.getUniqueOperators())
+					{
+						writer.write("        " + s + "\n");
+					}
+					
+					writer.write("      Unique Operand count = " + mf.getUniqueOperandCount() + "\n");
+					for(String s : mf.getUniqueOperands())
+					{
+						writer.write("        " + s + "\n");
+					}
+					
+					writer.write("      Vocabulary = " + mf.getVocabulary() + "\n");
+					writer.write("      Length = " + mf.getLength() + "\n");
+					writer.write("      Volume = " + mf.getVolume() + "\n");
+					writer.write("      Difficulty = " + mf.getDifficulty() + "\n");
+					writer.write("      Effort = " + mf.getEffort() + "\n");
+					writer.write("      Programming time = " + mf.getTimeToProgram() + "\n");
+					writer.write("      Deliver bugs = " + mf.getDeliveredBugs() + "\n");
+					writer.write("      Level = " + mf.getLevel() + "\n");
+					writer.write("      Intelligent content = " + mf.getIntContent() + "\n");	
 					writer.newLine();
 					
 				}

@@ -1,5 +1,6 @@
 package cppParser.utils;
 
+import cppParser.FunctionAnalyzer;
 import cppParser.Log;
 import cppParser.ParsedObjectManager;
 import cppParser.StringTools;
@@ -49,25 +50,36 @@ public class VarFinder
     
     private int i = 0; //Current index in the token array
     
+    public static String[] originalTokens = null;
+    
     private int arrays = 0; // This is for checking arrays inside arrays
     private String token, next;
     
-    public VarFinder()
+    private FunctionAnalyzer functionAnalyzer;
+    
+    private ArrayList<Integer> handledIndices = new ArrayList<Integer>();
+    
+    public VarFinder(FunctionAnalyzer fa)
     {
-        variables=new ArrayList<>();
+    	this.functionAnalyzer = fa;
+        variables = new ArrayList<>();
     }
     
     private VarFinder(List<MemberVariable> variables, VarFinder parent)
     {
-        this.variables=variables;
+        this.variables = variables;
         this.parent=parent;
         //isRecursive=true;
     }
     
     public void findVariables(String[] tokens)
     {
-        
-        for(i=0; i < tokens.length; i++)
+    	if(originalTokens == null) originalTokens = tokens;
+    	
+    	// Clear the handled indices when the processing starts
+    	handledIndices.clear();
+    	
+        for(i = 0; i < tokens.length; i++)
         {
                 
              token = tokens[i];
@@ -85,7 +97,7 @@ public class VarFinder
                         if(next.contentEquals("\""))
                         {
                             i++;
-                            foundStringLiteral=false;
+                            foundStringLiteral = false;
                         }
                     }
                  }
@@ -94,15 +106,15 @@ public class VarFinder
              {
                  if(token.contains("\""))
                  {
-                     if(next!=null)
+                     if(next != null)
                      {
                         if(next.charAt(0) == '\'')
                         {
-                            foundStringLiteral=false;
+                            foundStringLiteral = false;
                             return;
                         }
                      }
-                     foundStringLiteral=true;
+                     foundStringLiteral = true;
                      if(next.contains("\""))
                      {
                          i++;
@@ -160,31 +172,31 @@ public class VarFinder
     {
         //Log.d("token:"+token+" "+mode);
         switch(mode){
-                    case TYPE:
-                        try
-                        {
-                            lookForType();
-                        }
-                        catch(Exception e)
-                        {
-                        	
-                        }
-                        break;
-                    case NAME:
-                        lookForNames(token,next);
-                        break;
-                    case RESET:
-                        checkForReset();
-                        break;
-                    case ARRAY:
-                        lookForArrays();
-                        break;
-                    case EQUALS:
-                        waitForEndOfAssign();
-                        break;
-                    case TEMPLATE:
-                        pushTokenForTemplate(token,true);
+            case TYPE:
+                try
+                {
+                    lookForType();
                 }
+                catch(Exception e)
+                {
+                	
+                }
+                break;
+            case NAME:
+                lookForNames(token,next);
+                break;
+            case RESET:
+                checkForReset();
+                break;
+            case ARRAY:
+                lookForArrays();
+                break;
+            case EQUALS:
+                waitForEndOfAssign();
+                break;
+            case TEMPLATE:
+                pushTokenForTemplate(token,true);
+        }
     }
     
      /**
@@ -240,6 +252,20 @@ public class VarFinder
         literal = "";
     }
     
+    public ArrayList<Integer> getHandledIndices()
+    {
+    	return handledIndices;
+    }
+    
+    public int getIndexOfToken(String s)
+    {
+    	for(int j = 0; j < originalTokens.length; ++j)
+    	{
+    		if(originalTokens[j].equals(s)) return j;
+    	}
+    	return -1;
+    }
+    
     private void createVariable()
     {
         // TBD sometimes some variables pop that have no type or name... They should not make it here
@@ -265,6 +291,11 @@ public class VarFinder
             variables.add(member);
             ParsedObjectManager.getInstance().currentFunc.addMember(member);
         }//else Log.d("Var without name or type "+ token+ " "+next+" "+mode);
+            ParsedObjectManager.getInstance().currentFunc.addOperand(member.getName());
+            
+            int index = getIndexOfToken(currentName);
+            if(index > -1) handledIndices.add(new Integer(index));
+        }
         currentPtr="";
         currentName = "";
         currentArray = "";

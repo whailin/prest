@@ -103,6 +103,16 @@ public class CppFunc {
 		return uniqueOperators;
 	}
 	
+	public ArrayList<String> getOperands()
+	{
+		return operands;
+	}
+	
+	public ArrayList<String> getUniqueOperands()
+	{
+		return uniqueOperands;
+	}
+	
 	/**
 	 * Retrieves the name of this function
 	 * @return The name of this function
