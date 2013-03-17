@@ -32,8 +32,8 @@ public class FunctionAnalyzer extends Analyzer {
 	// The function currently under analysis
 	private CppFunc func = null;
         
-        //Helper class for finding variables
-        private VarFinder varFinder=new VarFinder();
+    //Helper class for finding variables
+    private VarFinder varFinder = new VarFinder(this);
 	
 	/**
 	 * Constructs a new function analyzer
@@ -50,8 +50,6 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(tokens[j].equals("::"))
 			{
-				//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[j]);
-				//ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[j-1]);
 				return tokens[j-1];
 			}
 		}
@@ -61,6 +59,7 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			return ParsedObjectManager.getInstance().currentScope.getName();
 		}
+		
 		return null;
 	}
 	
@@ -123,8 +122,6 @@ public class FunctionAnalyzer extends Analyzer {
 					if(tokens[i-1].startsWith("~")) returnType = "dtor";
 				}
 				
-				//ParsedObjectManager.getInstance().currentFunc.addOperator(returnType);		//operator return
-				
 				CppFunc func = new CppFunc(returnType, funcName);
 				
 				// Parse parameters
@@ -161,9 +158,6 @@ public class FunctionAnalyzer extends Analyzer {
 						CppFuncParam attrib = new CppFuncParam(paramType, paramName);
 						func.parameters.add(attrib);
 					}
-					
-					//ParsedObjectManager.getInstance().currentFunc.addOperator(paramType);		//operator type of arg
-					//ParsedObjectManager.getInstance().currentFunc.addOperand(paramName);		//operator name of arg
 				}
 				
 				ParsedObjectManager.getInstance().currentFunc = func;
@@ -173,51 +167,6 @@ public class FunctionAnalyzer extends Analyzer {
 				
 				return true;
 			}
-			
-			/*
-			// Either a classname::function or a classname::member found
-			if((tokens[i].equals("::") || (ParsedObjectManager.getInstance().currentScope != null && tokens[tokens.length - 1].equals("{"))) && i > 0)
-			{
-				if(SentenceAnalyzer.ignoreStd && tokens[i-1].equals("std")) continue;
-				
-				// Check if tokens form a function with a body
-				if(isFuncWithBody(tokens, i))
-				{
-					Log.d("   FUNCTION " + tokens[i+1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
-					
-					if(ParsedObjectManager.getInstance().currentScope == null) sentenceAnalyzer.setCurrentScope(tokens[i-1], false);
-					
-					String currentFuncName = tokens[i+1];
-					
-					String returnType = tokens[0];
-					if(returnType.equals(tokens[i-1]) && i == 1)
-					{
-						if(currentFuncName.startsWith("~")) returnType = "dtor";
-						else returnType = "ctor";
-					}else{
-						if(i > 1)
-						{
-							for(int j = 1; j < i - 1; ++j)
-							{
-								returnType += (tokens[j].equals("*") ? "" : " ") + tokens[j];
-							}
-						}
-					}
-
-					ParsedObjectManager.getInstance().currentFunc = new CppFunc(returnType, currentFuncName);
-					ParsedObjectManager.getInstance().currentScope.addFunc(ParsedObjectManager.getInstance().currentFunc);
-					
-					ParsedObjectManager.getInstance().currentFunc.funcBraceCount = sentenceAnalyzer.braceCount;
-					ParsedObjectManager.getInstance().currentFunc.fileOfFunc = Extractor.currentFile;
-					
-					return true;
-				}
-				else if(isFuncDecl(tokens, i))
-				{
-					
-				}
-			}
-			*/
 		}
 		
 		return false;
@@ -230,8 +179,9 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processCurrentFunction(String[] tokens)
 	{
-                
+        // TODO Make findVariables() return a boolean value and quit the reading if 'true'        
         varFinder.findVariables(tokens);
+        
 		currentOperands = new ArrayList<String>();
 		currentOperators = new ArrayList<String>();
 		handledOperatorIndices.clear();
@@ -265,6 +215,10 @@ public class FunctionAnalyzer extends Analyzer {
 		}
 		*/		
 		// Log.d();
+		
+		// Finally, set varFinder's originalTokens to null
+		VarFinder.originalTokens = null;
+		
 		return true;
 	}
 	
@@ -361,28 +315,6 @@ public class FunctionAnalyzer extends Analyzer {
 			// Log.d("      (line: " + Extractor.lineno + ") if-statement");
 			func.recognizedLines.add("      (line: " + Extractor.lineno + ") if-statement");
 			break;
-		case "(":
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after (
-			break;
-		case "+":
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after +
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before +
-			break;
-		case "-":
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after -
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before -
-			break;
-		case "*":
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after *
-			// ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before *
-			break;
-		case "/":
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index]);	//operand after /
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before /
-			break;			
-		case ")":
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[index-2]);	//operand before )
-			break;
 		default:
 			// TODO Change from 'default' case to actual function handling case
 			index = handleFunctionCall(index);
@@ -395,11 +327,94 @@ public class FunctionAnalyzer extends Analyzer {
 		return index;
 	}
 	
+	/**
+	 * When an operator is found, this method handles the line,
+	 * searching for operators and operands in the sentence.
+	 */
+	private void handleOperator()
+	{
+		if(i < 1) return;
+		
+		String origOp = tokens[i];
+		String op = tokens[i];
+		if(tokens[i-1].equals(op))
+		{
+			op = op + op;
+		}
+		else if(tokens[i+1].equals(op))
+		{
+			op = op + op;
+			i++;
+		}
+		
+		objManager.currentFunc.addOperator(op);
+		
+		String leftSide = tokens[i-1];
+		Log.d("Leftside: " + leftSide);
+		
+		if(!StringTools.isOperator(leftSide))
+			{
+			boolean canAddOperand = true;
+			for(Integer integer : varFinder.getHandledIndices())
+			{
+				if(integer.intValue() == i - 1)
+				{
+					canAddOperand = false;
+				}
+			}
+			
+			if(canAddOperand) objManager.currentFunc.addOperand(leftSide);
+		}
+		
+		for(i = i + 1; i < tokens.length; ++i)
+		{
+			if(StringTools.isOperator(tokens[i]))
+			{
+				Log.d("Found operator: " + tokens[i]);
+				op = tokens[i];
+				if(tokens[i-1].equals(op) || tokens[i+1].equals(op))
+				{
+					op = op + op;
+				}
+				objManager.currentFunc.addOperator(op);
+			}
+			else
+			{
+				Log.d("Found something else: " + tokens[i]);
+				if(tokens[i].equals(";")) continue;
+				
+				if(StringTools.isOperator(tokens[i-1]))
+				{
+					// TODO Construct a whole operand, if it consists of multiple tokens
+					
+					if(!StringTools.isOperator(tokens[i]))
+					{
+						boolean canAddOperand = true;
+						for(Integer integer : varFinder.getHandledIndices())
+						{
+							if(integer.intValue() == i)
+							{
+								canAddOperand = false;
+							}
+						}
+						if(canAddOperand) objManager.currentFunc.addOperand(tokens[i]);
+					}
+				}
+			}
+		}
+	}
+	
 	private void checkOpsAndOds()
 	{
 		// Early bail out on tokens that are too long to be delimiters
 		if(tokens[i].length() > 2) return;
 		
+		if(StringTools.isOperator(tokens[i]))
+		{
+			handleOperator();
+		}
+		
+		/*
 		if(tokens[i].startsWith("++") || tokens[i].startsWith("--"))
 		{
 			String op = tokens[i];			
@@ -412,10 +427,6 @@ public class FunctionAnalyzer extends Analyzer {
 			addOperator(i, op);
 			addOperand(i, tokens[i].substring(2));
 			
-			ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i-2]);
-			
-			// Log.d("        Op: (Pre) " + op);
 			return;
 		}
 		else if(tokens[i].endsWith("++") || tokens[i].endsWith("--"))
@@ -424,9 +435,6 @@ public class FunctionAnalyzer extends Analyzer {
 			addOperand(i, tokens[i].substring(0, tokens[i].indexOf(tokens[i].charAt(tokens[i].length() - 1))));
 			Log.d("        Op: ++ or -- (post)");
 			
-			ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);	//operator ++ or --
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i-2]);	//operand before ++/--
-			
 			return;
 		}
 		
@@ -434,8 +442,6 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			// TODO Handle pointer operator
 			//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i-1]);	//operand before ->
-			ParsedObjectManager.getInstance().currentFunc.addOperand(tokens[i+1]);	//operand after ->
 		}
 		else if(tokens[i].equals("("))
 		{
@@ -469,9 +475,7 @@ public class FunctionAnalyzer extends Analyzer {
 			addOperand(i, stringLiteral);
 			
 		}
-		
-		ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[i]);	//operator at i position
-
+		*/
 		
 		// Check for operators
 		/*

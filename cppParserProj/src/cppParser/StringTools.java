@@ -23,6 +23,8 @@ public class StringTools
 		                                       "try", "typedef", "typeid", "typename", "union", "using", 
 		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
 	
+	public static String[] operators = { "+", "-", "*", "/", "%", ".", "->", "=", "<", ">", "<=", ">=", "!="};
+	
 	
 	/**
 	 * A simple non-regex-splitter that splits the given string into tokens with the given deliminators.
@@ -144,6 +146,21 @@ public class StringTools
 		{
 			if(keywords_notypes[i].equals(s)) return true;
 		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether or not a given string is an operator (according to Halstead).
+	 * @param s The string to check
+	 * @return 'true' if the string is an operator, 'false' otherwise
+	 */
+	public static boolean isOperator(String s)
+	{
+		for(int i = 0; i < operators.length; ++i)
+		{
+			if(operators[i].equals(s)) return true;
+		}
+		
 		return false;
 	}
 }

@@ -30,6 +30,7 @@ public class ScopeAnalyzer extends Analyzer {
 					Log.d("NAMESPACE " + ns.name + " START (line: " + Extractor.lineno + ")");
 					
 					ParsedObjectManager.getInstance().getScopes().add(ns);
+					ParsedObjectManager.getInstance().currentScope = ns;
 					sentenceAnalyzer.cppScopeStack.add(ns);
 					return true;
 				}
