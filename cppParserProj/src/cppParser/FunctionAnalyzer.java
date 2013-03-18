@@ -328,6 +328,25 @@ public class FunctionAnalyzer extends Analyzer {
 	}
 	
 	/**
+	 * Checks if the operand at index 'index' isn't added already
+	 * by VarFinder.
+	 * @param index The index of the operand
+	 * @return 'true' if the operand isn't yet added, 'false' if it is already added
+	 */
+	private boolean canAddOperand(int index)
+	{
+		for(Integer integer : varFinder.getHandledIndices())
+		{
+			if(integer.intValue() == i - 1)
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * When an operator is found, this method handles the line,
 	 * searching for operators and operands in the sentence.
 	 */
@@ -337,13 +356,23 @@ public class FunctionAnalyzer extends Analyzer {
 		
 		String origOp = tokens[i];
 		String op = tokens[i];
+		
+		// Handle the pre- and post-increment / -decrement operators differently
 		if(tokens[i-1].equals(op))
 		{
 			op = op + op;
+			Log.d("Found1: " + tokens[i-1] + " " + tokens[i] + " " + tokens[i+1]);
+			op += " PRE";
+			if(canAddOperand(i+1)) objManager.currentFunc.addOperand(tokens[i+1]);
+			i++;
+			
 		}
 		else if(tokens[i+1].equals(op))
 		{
 			op = op + op;
+			Log.d("Found2: " + tokens[i-1] + " " + tokens[i] + " " + tokens[i+1]);
+			op += " POST";
+			if(canAddOperand(i-1)) objManager.currentFunc.addOperand(tokens[i-1]);
 			i++;
 		}
 		
@@ -352,20 +381,13 @@ public class FunctionAnalyzer extends Analyzer {
 		String leftSide = tokens[i-1];
 		//Log.d("Leftside: " + leftSide);
 		
+		// Add the leftside operand
 		if(!StringTools.isOperator(leftSide))
-			{
-			boolean canAddOperand = true;
-			for(Integer integer : varFinder.getHandledIndices())
-			{
-				if(integer.intValue() == i - 1)
-				{
-					canAddOperand = false;
-				}
-			}
-			
-			if(canAddOperand) objManager.currentFunc.addOperand(leftSide);
+		{
+			if(canAddOperand(i-1)) objManager.currentFunc.addOperand(leftSide);
 		}
 		
+		// Process the rest of the tokens
 		for(i = i + 1; i < tokens.length; ++i)
 		{
 			if(StringTools.isOperator(tokens[i]))
@@ -389,15 +411,7 @@ public class FunctionAnalyzer extends Analyzer {
 					
 					if(!StringTools.isOperator(tokens[i]))
 					{
-						boolean canAddOperand = true;
-						for(Integer integer : varFinder.getHandledIndices())
-						{
-							if(integer.intValue() == i)
-							{
-								canAddOperand = false;
-							}
-						}
-						if(canAddOperand) objManager.currentFunc.addOperand(tokens[i]);
+						if(canAddOperand(i)) objManager.currentFunc.addOperand(tokens[i]);
 					}
 				}
 			}
