@@ -50,14 +50,14 @@ public class VarFinder
     
     private int i = 0; //Current index in the token array
     
-    private String[] originalTokens = null;
+    private static String[] originalTokens = null;
     
     private int arrays = 0; // This is for checking arrays inside arrays
     private String token, next;
     
     private FunctionAnalyzer functionAnalyzer;
     
-    private ArrayList<Integer> handledIndices = new ArrayList<Integer>();
+    private static ArrayList<Integer> handledIndices = new ArrayList<Integer>();
     
     public VarFinder(FunctionAnalyzer fa)
     {
@@ -90,7 +90,6 @@ public class VarFinder
         if(originalTokens == null) originalTokens = tokens;
     	
     	// Clear the handled indices when the processing starts
-    	handledIndices.clear();
         for(i=0; i < tokens.length; i++)
         {
                 
@@ -616,4 +615,8 @@ public class VarFinder
         else
             parent.skip();
     }
+
+	public void clearHandledIndices() {
+		handledIndices.clear();
+	}
 }

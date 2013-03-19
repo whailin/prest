@@ -9,6 +9,10 @@ import java.util.ArrayList;
  */
 public class StringTools
 {
+	// List of "splitters" that are used to tokenize a single line of source code
+	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\""};
+		
+	
 	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted
 	public static String[] keywords_notypes = {"alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", 
 		                                       "bitor", "break", "case", "catch", "class", "compl", "const",
@@ -23,7 +27,7 @@ public class StringTools
 		                                       "try", "typedef", "typeid", "typename", "union", "using", 
 		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
 	
-	public static String[] operators = { "+", "-", "*", "/", "%", ".", "->", "=", "<", ">", "<=", ">=", "!="};
+	public static String[] operators = {")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">"};
 	
 	
 	/**
@@ -36,6 +40,8 @@ public class StringTools
 	 */
 	public static String[] split(String src, String[] delims, boolean includeDelims)
 	{
+		if(delims == null) delims = StringTools.delims;
+		
 		// Bail out on trivial input
 		if(src == null || src.length() == 0) return null;
 		if(src.length() == 1 || delims == null || delims.length == 0) return new String[]{src};
