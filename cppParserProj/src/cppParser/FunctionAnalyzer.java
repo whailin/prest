@@ -90,7 +90,7 @@ public class FunctionAnalyzer extends Analyzer {
 				String returnType = "";
 
 				// Parse the type backwards
-				if(i > 1)
+				if(i == 1)
 				{
 					returnType = "ctor";
 					if(funcName.startsWith("~")) returnType = "dtor";
@@ -179,7 +179,7 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processCurrentFunction(String[] tokens)
 	{
-        // TODO Make findVariables() return a boolean value and quit the reading if 'true'        
+		varFinder.clearHandledIndices();
         varFinder.findVariables(tokens);
         
 		currentOperands = new ArrayList<String>();
@@ -241,7 +241,7 @@ public class FunctionAnalyzer extends Analyzer {
 		// Check if the function call is parameterless
 		if(tokens[index+1].equals(")"))
 		{
-			// Log.d("      (line: " + Extractor.lineno + ") Function call np > " + funcName);
+			Log.d("      (line: " + Extractor.lineno + ") Function call np > " + funcName);
 			func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
 			return index + 1;
 		}
@@ -258,8 +258,9 @@ public class FunctionAnalyzer extends Analyzer {
 				if(!currentParam.equals(""))
 				{
 					params.add(currentParam);
+					handleParameter(currentParam);
 				}
-				// Log.d("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+				Log.d("      (line: " + Extractor.lineno + ") Function call > " + funcName);
 				func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
 				return j;
 			case "(":
@@ -269,6 +270,7 @@ public class FunctionAnalyzer extends Analyzer {
 				break;
 			case ",":
 				params.add(currentParam);
+				handleParameter(currentParam);
 				currentParam = "";
 				break;
 			default:
@@ -281,6 +283,14 @@ public class FunctionAnalyzer extends Analyzer {
 		
 		// This should never happen, but if it does, this is the last one that was checked
 		return tokens.length - 1;
+	}
+	
+	/**
+	 * Disseminates a parameter to see if it includes operators or operands
+	 */
+	private void handleParameter(String p)
+	{
+		String[] pTokens = StringTools.split(p, null, true);
 	}
 	
 	/**
@@ -347,6 +357,115 @@ public class FunctionAnalyzer extends Analyzer {
 	}
 	
 	/**
+	 * Constructs an operator from the token at the current index
+	 * and stores the related operand, if the operator is a unary operator (!, ++ or --).
+	 * 
+	 * The main purpose for this method is to check if the token
+	 * is part of a multi-token operator, for example when "<" is found,
+	 * this method checks if there is a "=" following it.
+	 * 
+	 * @return String representation of the operator
+	 */
+	private String constructOperator()
+	{
+		String op = tokens[i];
+		
+		switch(op)
+		{
+		case "+":
+		case "-":
+			if(tokens[i-1].equals(op))
+			{
+				op = op + op;
+				op += " PRE";
+				if(canAddOperand(i+1)) objManager.currentFunc.addOperand(tokens[i+1]);
+				i++;
+			}
+			else if(tokens[i+1].equals(op))
+			{
+				op = op + op;
+				op += " POST";
+				if(canAddOperand(i-1)) objManager.currentFunc.addOperand(tokens[i-1]);
+				i++;
+			}
+			break;
+		case "=":
+			if(tokens[i-1].equals(op))
+			{
+				op = op + op;
+				
+			}
+			else if(tokens[i+1].equals(op))
+			{
+				op = op + op;
+				i++;
+			}
+			else switch(tokens[i-1])
+			{
+			case "<":
+			case ">":
+				op = tokens[i-1] + op;
+				
+				break;
+			}
+			break;
+		case "<":
+		case ">":
+			if(tokens[i+1].equals("="))
+			{
+				op += "=";
+				i++;
+			}
+			else if(tokens[i+1].equals(op) || tokens[i-1].equals(op))
+			{
+				op = op + op;
+				i++;
+			}
+			break;
+		}
+		
+		return op;
+	}
+	
+	/**
+	 * Constructs a string literal from the given index onwards until the closing '"' is found.
+	 * @param index The index of the beginning '"'
+	 * @param reverse If 'true', the search is done backwards (the current index is the ending '"')
+	 * @return The string literal
+	 */
+	private String constructStringLiteral(int index, boolean reverse)
+	{
+		String literal = "";
+		if(!reverse)
+		{
+			
+			for(int j = index; j < tokens.length; ++j)
+			{
+				literal += tokens[j];
+				if(j != index && tokens[j].equals("\""))
+				{
+					i = j;
+					break;
+				}
+			}
+		}
+		else
+		{
+			for(int j = index; j >= 0; --j)
+			{
+				literal = tokens[j] + literal;
+				if(j != index && tokens[j].equals("\""))
+				{
+					i = index ;
+					break;
+				}
+			}
+		}
+		if(!literal.startsWith("\"") || !literal.endsWith("\"")) return null;
+		return literal;
+	}
+	
+	/**
 	 * When an operator is found, this method handles the line,
 	 * searching for operators and operands in the sentence.
 	 */
@@ -354,37 +473,29 @@ public class FunctionAnalyzer extends Analyzer {
 	{
 		if(i < 1) return;
 		
-		String origOp = tokens[i];
-		String op = tokens[i];
-		
-		// Handle the pre- and post-increment / -decrement operators differently
-		if(tokens[i-1].equals(op))
-		{
-			op = op + op;
-			Log.d("Found1: " + tokens[i-1] + " " + tokens[i] + " " + tokens[i+1]);
-			op += " PRE";
-			if(canAddOperand(i+1)) objManager.currentFunc.addOperand(tokens[i+1]);
-			i++;
-			
-		}
-		else if(tokens[i+1].equals(op))
-		{
-			op = op + op;
-			Log.d("Found2: " + tokens[i-1] + " " + tokens[i] + " " + tokens[i+1]);
-			op += " POST";
-			if(canAddOperand(i-1)) objManager.currentFunc.addOperand(tokens[i-1]);
-			i++;
-		}
+		int origIndex = i;
+		String op = constructOperator();
 		
 		objManager.currentFunc.addOperator(op);
 		
-		String leftSide = tokens[i-1];
-		//Log.d("Leftside: " + leftSide);
-		
-		// Add the leftside operand
-		if(!StringTools.isOperator(leftSide))
+		if(!op.startsWith("++") && !op.startsWith("--"))
 		{
-			if(canAddOperand(i-1)) objManager.currentFunc.addOperand(leftSide);
+			String leftSide = tokens[origIndex-1];
+			// Log.d("Leftside: " + leftSide);
+			
+			if(leftSide.equals("\""))
+			{
+				leftSide = constructStringLiteral(origIndex-i, true);
+			}
+			
+			// Add the leftside operand
+			if(!StringTools.isOperator(leftSide))
+			{
+				if(leftSide != null && canAddOperand(i-1)) 
+				{
+					objManager.currentFunc.addOperand(leftSide);
+				}
+			}
 		}
 		
 		// Process the rest of the tokens
@@ -408,24 +519,34 @@ public class FunctionAnalyzer extends Analyzer {
 				if(StringTools.isOperator(tokens[i-1]))
 				{
 					// TODO Construct a whole operand, if it consists of multiple tokens
-					
-					if(!StringTools.isOperator(tokens[i]))
+					String operand = tokens[i];
+					if(operand.equals("\"")) operand = constructStringLiteral(i, false);
+					if(operand != null && canAddOperand(i))
 					{
-						if(canAddOperand(i)) objManager.currentFunc.addOperand(tokens[i]);
+						objManager.currentFunc.addOperand(operand);
 					}
+					
 				}
 			}
 		}
 	}
+	
+	private boolean openString = false;
 	
 	private void checkOpsAndOds()
 	{
 		// Early bail out on tokens that are too long to be delimiters
 		if(tokens[i].length() > 2) return;
 		
-		if(StringTools.isOperator(tokens[i]))
+		if(tokens[i].equals("\"")) openString = !openString;
+		
+		if(!openString && StringTools.isOperator(tokens[i]))
 		{
 			handleOperator();
+		}
+		else if(tokens[i].equals("("))
+		{
+			handleOpeningParenthesis(i);
 		}
 		
 		/*

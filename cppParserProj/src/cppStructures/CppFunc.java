@@ -184,6 +184,7 @@ public class CppFunc {
 	 */
 	public void addOperator(String op)
 	{
+		op = formatOperator(op);
 		boolean isUnique = true;
 		for(String s : operators)
 		{
@@ -216,6 +217,28 @@ public class CppFunc {
 		operands.add(od);
 		if(isUnique) uniqueOperands.add(od);
 		
+	}
+	
+	/**
+	 * Format the given operator for cleaner representation
+	 * @param op The operator to format
+	 * @return The formatted operator
+	 */
+	private String formatOperator(String op)
+	{
+		switch(op)
+		{
+		case ")":
+			op = "()";
+			break;
+		case "}":
+			op = "{}";
+			break;
+		case "]":
+			op = "[]";
+			break;
+		}
+		return op;
 	}
 	
 	/**

@@ -41,6 +41,9 @@ public class FileLoader {
 	{
 		// this.path = path;
 		File f = new File(path);
+		
+		Log.d("f exists: " + f.exists());
+		
 		if(f.isDirectory())
 		{
 			files = getFilesFrom(path);
