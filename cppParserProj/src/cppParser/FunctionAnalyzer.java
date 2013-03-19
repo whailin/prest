@@ -260,7 +260,10 @@ public class FunctionAnalyzer extends Analyzer {
 					params.add(currentParam);
 					handleParameter(currentParam);
 				}
-				Log.d("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+                                String param="";
+                                for(String str:params)
+                                    param+=str;
+				Log.d("      (line: " + Extractor.lineno + ") Function call > " + funcName+" Parameters:"+param);
 				func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
 				return j;
 			case "(":

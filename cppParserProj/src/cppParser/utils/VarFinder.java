@@ -7,7 +7,6 @@ import cppParser.StringTools;
 import cppStructures.MemberVariable;
 import java.util.ArrayList;
 import java.util.List;
-import treeparser.exception.ParseException;
 
 
 /**
@@ -184,14 +183,7 @@ public class VarFinder
         //Log.d("token:"+token+" "+mode);
         switch(mode){
                     case TYPE:
-                        try
-                        {
-                            lookForType();
-                        }
-                        catch(Exception e)
-                        {
-                        	
-                        }
+                        lookForType();
                         break;
                     case NAME:
                         lookForNames(token,next);
@@ -319,7 +311,7 @@ public class VarFinder
 
     
 
-    private void lookForType() throws ParseException
+    private void lookForType()
     {
         
         if(next == null)
@@ -616,7 +608,15 @@ public class VarFinder
             parent.skip();
     }
 
-	public void clearHandledIndices() {
-		handledIndices.clear();
-	}
+    public void clearHandledIndices() {
+        handledIndices.clear();
+    }
+    
+    public MemberVariable getLastFoundVariable(){
+        if(variables==null)
+            return null;
+        if(variables.isEmpty())
+            return null;
+        return variables.get(variables.size()-1);
+    }
 }
