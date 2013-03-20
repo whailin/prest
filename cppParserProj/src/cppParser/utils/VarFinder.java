@@ -589,7 +589,7 @@ public class VarFinder
  * @param name
  * @return 
  */
-    private boolean isDefined(String name) 
+    public boolean isDefined(String name) 
     {
         //TBD check for member variables in known scopes
         for(MemberVariable var:variables){

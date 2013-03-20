@@ -197,7 +197,7 @@ public class Extractor
 				{
 					commentLine += c;
 					if(commentLine.length() > 1)
-					{						
+					{
 						if(commentLine.startsWith("//"))
 						{
 							if(StringTools.getQuoteCount(line) % 2 == 0)
@@ -226,10 +226,15 @@ public class Extractor
 								commentLine = "";
 							}
 						}
-						cmtLineNo++;
+                                                cmtLineNo++;
 					}					
 					continue;
-				}
+				}else{
+                                    if(commentLine.length()==1){
+                                        commentLine="";
+                                        line+="/";
+                                    }
+                                }
 				
 				// Add a character to the "line"
 				if(c != '\r' && c != '\n' && c != '\t')
