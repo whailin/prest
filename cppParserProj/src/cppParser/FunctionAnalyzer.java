@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import cppStructures.*;
 import cppParser.utils.VarFinder;
+import java.util.List;
 
 /**
  * This class is responsible of analyzing and constructing functions found in the source code.
@@ -180,7 +181,7 @@ public class FunctionAnalyzer extends Analyzer {
 	private boolean processCurrentFunction(String[] tokens)
 	{
 		varFinder.clearHandledIndices();
-        varFinder.findVariables(tokens);
+                varFinder.findVariables(tokens);
         
 		currentOperands = new ArrayList<String>();
 		currentOperators = new ArrayList<String>();
@@ -233,7 +234,7 @@ public class FunctionAnalyzer extends Analyzer {
 	private int handleFunctionCall(int index)
 	{
 		// Store the function name
-		String funcName = tokens[index-1];
+		String funcName = tokens[index-1]; //Array out of bounds if first token is "(" ?
 		
 		//ParsedObjectManager.getInstance().currentFunc.addOperand(funcName);
 		//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[index]);
@@ -241,30 +242,69 @@ public class FunctionAnalyzer extends Analyzer {
 		// Check if the function call is parameterless
 		if(tokens[index+1].equals(")"))
 		{
+                    if(varFinder.isDefined(funcName)){
+                        Log.d(funcName+" is known variable, not function call...");
+                    }else{
 			Log.d("      (line: " + Extractor.lineno + ") Function call np > " + funcName);
 			func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+                    }
 			return index + 1;
 		}
-		
-		ArrayList<String> params = new ArrayList<String>();
-		String currentParam = "";
-		// Loop through the parameters
+                // Owners List should contain the owners of the function call eg myObj in "myObj->hello();"
+		List<String> owners=new ArrayList<>(); 
+		List<List<String>> params = new ArrayList<>();
+		List<String> currentParam = new ArrayList<>();
+		boolean even;
+                int skipped=0;
+                for(int j= 2; index-j >= 0;j++){
+                    if(tokens[index-j].contentEquals("*"))
+                        skipped++;
+                    else{
+                        if((j+skipped)%2==0)
+                            even=true;
+                        else even=false;
+                        if(even){
+                            switch(tokens[index-j]){
+                                case "->":
+                                case ".":
+                                    owners.add(0, tokens[index-j]);
+                                    break;
+                                case "::":
+                                    Log.d("Line:"+Extractor.lineno+ " contains :: when . or -> was expected");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }else{
+                            owners.add(0, tokens[index-j]);
+                        }
+                    }
+                }
+                if(!owners.isEmpty()){
+                    String str="";
+                    for(String s:owners)
+                        str+=s;
+                    Log.d("Owner"+str);
+                }
+                
+                // Loop through the parameters
 		for(int j = index + 1; j < tokens.length; ++j)
 		{
 			switch(tokens[j])
 			{
 			case ")":
 				// Close the function call
-				if(!currentParam.equals(""))
+				if(!currentParam.isEmpty())
 				{
 					params.add(currentParam);
-					handleParameter(currentParam);
+					//handleParameter(currentParam);
 				}
-                                String param="";
-                                for(String str:params)
-                                    param+=str;
-				Log.d("      (line: " + Extractor.lineno + ") Function call > " + funcName+" Parameters:"+param);
-				func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+                                if(varFinder.isDefined(funcName)){
+                                    Log.d(funcName+" is known variable, not function call...");
+                                }else{
+                                    Log.d("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+                                    func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+                                }
 				return j;
 			case "(":
 				// Recurse through inner function calls
@@ -273,11 +313,11 @@ public class FunctionAnalyzer extends Analyzer {
 				break;
 			case ",":
 				params.add(currentParam);
-				handleParameter(currentParam);
-				currentParam = "";
+				//handleParameter(currentParam);
+				currentParam = new ArrayList<>();
 				break;
 			default:
-				currentParam += " " + tokens[j];
+				currentParam.add(tokens[j]);
 				break;
 			}
 			
@@ -312,7 +352,7 @@ public class FunctionAnalyzer extends Analyzer {
 		int origIndex = index;
 		
 		if(index < 1) return index;
-		
+		Log.d("hop:"+tokens[index-1]);
 		// Check the token before the opening parenthesis
 		switch(tokens[index-1])
 		{
@@ -330,7 +370,7 @@ public class FunctionAnalyzer extends Analyzer {
 			break;
 		default:
 			// TODO Change from 'default' case to actual function handling case
-			index = handleFunctionCall(index);
+			//index = handleFunctionCall(index);
 			break;
 		}
 		
@@ -538,6 +578,7 @@ public class FunctionAnalyzer extends Analyzer {
 	
 	private void checkOpsAndOds()
 	{
+            Log.d("coao "+tokens[i]);
 		// Early bail out on tokens that are too long to be delimiters
 		if(tokens[i].length() > 2) return;
 		
@@ -547,7 +588,7 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			handleOperator();
 		}
-		else if(tokens[i].equals("("))
+                else if(tokens[i].equals("("))
 		{
 			handleOpeningParenthesis(i);
 		}
