@@ -85,7 +85,7 @@ public class FunctionFinder {
                 FunctionCall fc;
 		for(int j = index + 1; j < tokens.length; ++j)
 		{
-                    skip++;
+                    skip();
 			switch(tokens[j])
 			{
 			case ")":
@@ -104,7 +104,7 @@ public class FunctionFinder {
                                     Log.d("      (line: " + Extractor.lineno + ") Function call > " + fc.toString());
 //                                    func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
                                 }
-                                skip(skip);
+                                //skip(skip);
 				return fc;
 			case "(":
 				// Recurse through inner function calls
