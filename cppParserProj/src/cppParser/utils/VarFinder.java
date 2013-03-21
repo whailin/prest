@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class VarFinder
 {
-    private static final boolean silenced = false, showTokens=false;
+    private static final boolean silenced = true, showTokens=false;
     private static final String[] delims = {"<", ">"};
     private List<MemberVariable> variables;
     
@@ -332,7 +332,7 @@ public class VarFinder
         else
         {
             //Log.d("lft:"+token);
-            if(isWordToken(token))
+            if(Constants.isWordToken(token))
             {
                 if(canSkip(token))
                     return;
@@ -360,7 +360,7 @@ public class VarFinder
                     skip();
                     currentType+=next;
                 }
-                else if(isWordToken(next))
+                else if(Constants.isWordToken(next))
                 {
                     if(!primitive)
                         if(Constants.isKeyword(currentType))
@@ -392,22 +392,6 @@ public class VarFinder
             }
         }
     }
-    
-/**
- * This method checks if the given token is a word that can be a name(variable, class...)
- */
-    private boolean isWordToken(String token) 
-    {
-        char c = token.charAt(0);
-        if(!Constants.isValidNameChar(c))
-            return false;
-        else
-        {
-            if((c >= '0') && c <= '9')
-                return false;
-        }
-        return true;
-    }
 
     private void lookForNames(String token, String next) 
     {
@@ -420,7 +404,7 @@ public class VarFinder
         {
             currentPtr += token;
         }
-        else if(isWordToken(token))
+        else if(Constants.isWordToken(token))
         {            
             currentName += token;
             if(next != null)

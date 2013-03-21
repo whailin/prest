@@ -1,5 +1,6 @@
 package cppParser;
 
+import cppParser.utils.FunctionFinder;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -31,8 +32,9 @@ public class FunctionAnalyzer extends Analyzer {
 	// The function currently under analysis
 	private CppFunc func = null;
         
-    // Helper class for finding variables
+    // Helper class for finding variables and function calls
     private VarFinder varFinder = new VarFinder(this);
+    private FunctionFinder funcFinder = new FunctionFinder(varFinder,func);
 	
     private OperatorAnalyzer operatorAnalyzer;
     
@@ -189,8 +191,10 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processCurrentFunction(String[] tokens)
 	{
-		varFinder.clearHandledIndices();
-        varFinder.findVariables(tokens);
+            varFinder.clearHandledIndices();
+            varFinder.findVariables(tokens);
+            funcFinder.findFunctions(tokens);
+        
         
         operatorAnalyzer.processSentence(tokens);
         
@@ -206,11 +210,11 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			// Check for cyclomatic complexity
 			checkForCC();		
-			
+			/*
 			if(tokens[i].equals("("))
 			{
 				handleOpeningParenthesis(i);
-			}
+			}*/
 		}
 		
 		// Finally, set varFinder's originalTokens to null
