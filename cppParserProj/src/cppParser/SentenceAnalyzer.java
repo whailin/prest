@@ -147,6 +147,10 @@ public class SentenceAnalyzer {
 				}
 				if(tokens[i].equals("}"))
 				{
+					if(ParsedObjectManager.getInstance().currentFunc != null)
+					{
+						ParsedObjectManager.getInstance().currentFunc.addOperator("}");
+					}
 					lexEndBrace();
 					continue;
 				}
