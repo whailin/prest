@@ -77,4 +77,8 @@ void Foo::Operators()
 	
 	// Sizeof
 	a51 = sizeof(b51);
+	
+	// Templates
+	vector<int> a52;
+	vector<vector<int>> a53; 
 }
