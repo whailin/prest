@@ -27,7 +27,8 @@ public class StringTools
 		                                       "try", "typedef", "typeid", "typename", "union", "using", 
 		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
 	
-	public static String[] operators = {")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">"};
+	// List of Halstead operators
+	public static String[] operators = {")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^"};
 	
 	
 	/**
