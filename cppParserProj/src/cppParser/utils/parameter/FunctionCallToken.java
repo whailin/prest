@@ -1,0 +1,21 @@
+
+
+package cppParser.utils.parameter;
+
+import cppParser.utils.FunctionCall;
+
+/**
+ *
+ * @author Tomi
+ */
+public class FunctionCallToken implements ParameterToken{
+    public FunctionCall functionCall;
+    public FunctionCallToken(FunctionCall fc){
+        this.functionCall=fc;
+    }
+    
+    @Override
+    public String toString(){
+        return functionCall.toString();
+    }
+}

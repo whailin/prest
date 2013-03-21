@@ -194,4 +194,20 @@ public class Constants {
             return false;
         
     }
+    
+    /**
+ * This method checks if the given token is a word that can be a name(variable, class...)
+ */
+    public static boolean isWordToken(String token) 
+    {
+        char c = token.charAt(0);
+        if(!Constants.isValidNameChar(c))
+            return false;
+        else
+        {
+            if((c >= '0') && c <= '9')
+                return false;
+        }
+        return true;
+    }
 }
