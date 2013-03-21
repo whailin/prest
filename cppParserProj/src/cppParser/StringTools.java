@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class StringTools
 {
 	// List of "splitters" that are used to tokenize a single line of source code
-	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\""};
+	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "!"};
 		
 	
 	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted

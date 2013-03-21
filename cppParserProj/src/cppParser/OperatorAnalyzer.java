@@ -2,6 +2,8 @@ package cppParser;
 
 public class OperatorAnalyzer extends Analyzer 
 {
+	private String[] operandSkipList = {"{", "(", ";", "="};
+	
 	private int i = -1;
 	private String[] tokens = null;
 	
@@ -77,15 +79,11 @@ public class OperatorAnalyzer extends Analyzer
 		{
 			if(StringTools.isOperator(tokens[i]))
 			{
-				//Log.d("Found operator: " + tokens[i]);
 				op = constructOperator();
 				objManager.currentFunc.addOperator(op);
 			}
 			else
 			{
-				//Log.d("Found something else: " + tokens[i]);
-				if(tokens[i].equals(";")) continue;
-				
 				if(StringTools.isOperator(tokens[i-1]))
 				{
 					// TODO Construct a whole operand, if it consists of multiple tokens
@@ -102,6 +100,20 @@ public class OperatorAnalyzer extends Analyzer
 	}
 	
 	/**
+	 * Checks if the given 'possible operand' should be skipped.
+	 * @param t The operand to inspect
+	 * @return 'True' if the operand should be skipped (not an operand), 'false' otherwise
+	 */
+	private boolean skipPossibleOperand(String t)
+	{
+		for(String s : operandSkipList)
+		{
+			if(t.equals(s)) return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * Constructs an operator from the token at the current index
 	 * and stores the related operand, if the operator is a unary operator (!, ++ or --).
 	 * 
@@ -115,10 +127,83 @@ public class OperatorAnalyzer extends Analyzer
 	{
 		String op = tokens[i];
 		
-		switch(op)
+		switch(tokens[i])
 		{
 		case "+":
 		case "-":
+			return constructPlusMinusOperator();
+		case "*":
+		case "/":
+		case "%":
+		case "&":
+		case "|":
+		case "^":
+		case "=":
+		case "!":
+			return constructCompoundOperator();
+		case "<":
+		case ">":
+		case "<<":
+		case ">>":
+			return constructAngleBracketOperator();
+		}
+		
+		return op;
+	}
+	
+	/**
+	 * Constructs an operator that has '<' or '>' in it.
+	 * @return The constructed operator ('<', '<<', '<=', '<<=' etc.)
+	 */
+	private String constructAngleBracketOperator()
+	{
+		String op = tokens[i];
+		if(tokens[i+1].equals("="))
+		{
+			op += "=";
+			i++;
+		}
+		else if(tokens[i+1].equals(op) || tokens[i-1].equals(op))
+		{
+			op = op + op;
+			i++;
+			if(tokens[i+1].equals("="))
+			{
+				op += "=";
+				i++;
+			}
+		}
+		return op;
+	}
+	
+	/**
+	 * Constructs an operator that may be a part of a compoun
+	 * operator (i.e. + can be a part of +=)
+	 * @return The operator itself, or the compound operator if one is found.
+	 */
+	private String constructCompoundOperator()
+	{
+		String op = tokens[i];
+		if(tokens[i+1].equals("="))
+		{
+			op += "=";
+			i++;
+		}
+		return op;
+	}
+	
+	/**
+	 * Constructs an operator which has '+' or '-' in it.
+	 * @return The constructed operator ('+', '++', '+=' etc.)
+	 */
+	private String constructPlusMinusOperator()
+	{
+		String op = tokens[i];
+		
+		String compound = constructCompoundOperator();
+		if(!compound.equals(op)) return compound;
+		else
+		{
 			if(tokens[i-1].equals(op) && !tokens[i+1].equals(op))
 			{
 				op = op + op;
@@ -140,70 +225,14 @@ public class OperatorAnalyzer extends Analyzer
 				op = op + tokens[i+1];
 				i++;
 			}
-			break;
-		case "*":
-		case "/":
-		case "%":
-		case "&":
-		case "|":
-		case "^":
-			if(tokens[i+1].equals("="))
-			{
-				op = op + tokens[i+1];
-				i++;
-			}
-			break;
-		case "=":
-			if(tokens[i-1].equals(op))
-			{
-				op = op + op;
-				
-			}
-			else if(tokens[i+1].equals(op))
-			{
-				op = op + op;
-				i++;
-			}
-			else switch(tokens[i-1])
-			{
-			case "<":
-			case ">":
-			case "+":
-			case "-":
-			case "*":
-			case "/":
-			case "%":
-				op = tokens[i-1] + op;
-				
-				break;
-			}
-			break;
-		case "<":
-		case ">":
-			if(tokens[i+1].equals("="))
-			{
-				op += "=";
-				i++;
-			}
-			else if(tokens[i+1].equals(op) || tokens[i-1].equals(op))
-			{
-				op = op + op;
-				i++;
-				if(tokens[i+1].equals("="))
-				{
-					op += "=";
-					i++;
-				}
-			}
-			break;
+			
+			return op;
 		}
-		
-		return op;
 	}
 	
 	/**
 	 * Checks if the operand at index 'index' isn't added already
-	 * by VarFinder.
+	 * by VarFinder and if the operand is in fact not a suitable operand.
 	 * @param index The index of the operand
 	 * @return 'true' if the operand isn't yet added, 'false' if it is already added
 	 */
@@ -212,6 +241,14 @@ public class OperatorAnalyzer extends Analyzer
 		for(Integer integer : functionAnalyzer.getVarFinder().getHandledIndices())
 		{
 			if(integer.intValue() == i - 1)
+			{
+				return false;
+			}
+		}
+		
+		for(String s : operandSkipList)
+		{
+			if(tokens[index].equals(s))
 			{
 				return false;
 			}
@@ -231,7 +268,6 @@ public class OperatorAnalyzer extends Analyzer
 		String literal = "";
 		if(!reverse)
 		{
-			
 			for(int j = index; j < tokens.length; ++j)
 			{
 				literal += tokens[j];
