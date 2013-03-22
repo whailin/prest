@@ -29,8 +29,11 @@ public class ScopeAnalyzer extends Analyzer {
 					ns.nameOfFile = Extractor.currentFile;
 					Log.d("NAMESPACE " + ns.name + " START (line: " + Extractor.lineno + ")");
 					
+					/*
 					ParsedObjectManager.getInstance().getScopes().add(ns);
 					ParsedObjectManager.getInstance().currentScope = ns;
+					*/
+					ParsedObjectManager.getInstance().addNamespace(ns);
 					sentenceAnalyzer.cppScopeStack.add(ns);
 					return true;
 				}

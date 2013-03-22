@@ -257,7 +257,7 @@ public class Extractor
 				}
 				
 				// If the line ends, start lexing it
-				if(!stringOpen &&  (c == ';' || c == '{'))
+				if(!stringOpen &&  (c == ';' || c == '{' || c == '}'))
 				{
 					lloc++;
 					// lexLine(line);

@@ -80,7 +80,17 @@ public class OperatorAnalyzer extends Analyzer
 			if(StringTools.isOperator(tokens[i]))
 			{
 				op = constructOperator();
-				objManager.currentFunc.addOperator(op);
+				if(canAddOperator(i))
+				{
+					objManager.currentFunc.addOperator(op);
+				}
+				else
+				{
+					if(tokens[i].equals("."))
+					{
+						constructFloatingPointOperand();
+					}
+				}
 			}
 			else
 			{
@@ -97,6 +107,18 @@ public class OperatorAnalyzer extends Analyzer
 				}
 			}
 		}
+	}
+	
+	private void constructFloatingPointOperand()
+	{
+		String od = "";
+		for(int j = i - 1; j < i + 2 && j < tokens.length; ++j)
+		{
+			od += tokens[j];
+			i = j;
+		}
+		objManager.currentFunc.addOperand(od);
+		
 	}
 	
 	/**
@@ -254,6 +276,37 @@ public class OperatorAnalyzer extends Analyzer
 			}
 		}
 		
+		if(index < tokens.length - 2 && tokens[index+1].equals("."))
+		{
+			try
+			{
+				Integer.parseInt(tokens[index]);
+				return false;
+			}
+			catch(NumberFormatException e)
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	private boolean canAddOperator(int index)
+	{
+		switch(tokens[index])
+		{
+		case ".":
+			try
+			{
+				Integer.parseInt(tokens[index-1]);
+				return false;
+			}
+			catch(NumberFormatException e)
+			{
+				return true;
+			}
+		}
 		return true;
 	}
 	

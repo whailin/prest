@@ -50,10 +50,19 @@ public class CppScope
 	/**
 	 * Adds a new function to the scope
 	 * @param func Function to add
+	 * @return The function itself, or an existing one
 	 */
-	public void addFunc(CppFunc func)
+	public CppFunc addFunc(CppFunc func)
 	{
-		if(!hasFunc(func)) functions.add(func);
+		if(!hasFunc(func))
+		{
+			functions.add(func);
+			return func;
+		}
+		else
+		{
+			return getFunc(func);
+		}
 	}
 	
 	/**
@@ -75,13 +84,12 @@ public class CppScope
 	}
 
 	/**
-	 * Checks whether or not a given function can be found in this scope
-	 * @param mf The function to search for
-	 * @return 'true' if the function was found, 'false' otherwise
+	 * Retrieves the given function
+	 * @param mf The function to retrieve
+	 * @return The function, or null if not found
 	 */
-	public boolean hasFunc(CppFunc mf)
+	public CppFunc getFunc(CppFunc mf)
 	{
-		// TODO Check parameter count and types of parameters for overloaded functions as well
 		String mfName = mf.getName();
 		for(CppFunc mem : functions)
 		{
@@ -90,6 +98,7 @@ public class CppScope
 				// If the parameter count differs, skip the parameter check
 				if(mem.parameters.size() != mf.parameters.size()) continue;
 				
+				// Compare the parameters
 				int paramCount = mem.parameters.size();
 				int matchingParams = 0;
 				
@@ -101,18 +110,42 @@ public class CppScope
 					}
 				}
 				
-				/*
-				for(CppFuncParam cfp0 : mem.parameters)
+				if(matchingParams == paramCount)
 				{
-					for(CppFuncParam cfp1 : mf.parameters)
+					return mem;
+				}
+			}
+			
+		}
+		return null;
+	}
+	
+	/**
+	 * Checks whether or not a given function can be found in this scope
+	 * @param mf The function to search for
+	 * @return 'true' if the function was found, 'false' otherwise
+	 */
+	public boolean hasFunc(CppFunc mf)
+	{
+		String mfName = mf.getName();
+		for(CppFunc mem : functions)
+		{
+			if(mem.getName().equals(mfName))
+			{
+				// If the parameter count differs, skip the parameter check
+				if(mem.parameters.size() != mf.parameters.size()) continue;
+				
+				// Compare the parameters
+				int paramCount = mem.parameters.size();
+				int matchingParams = 0;
+				
+				for(int i = 0; i < paramCount; ++i)
+				{
+					if(mem.parameters.get(i).type.equals(mf.parameters.get(i).type))
 					{
-						if(cfp0.type.equals(cfp1.type))
-						{
-							matchingParams++;
-						}
+						matchingParams++;
 					}
 				}
-				*/
 				
 				if(matchingParams == paramCount)
 				{
