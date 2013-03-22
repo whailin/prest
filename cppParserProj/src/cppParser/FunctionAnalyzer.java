@@ -62,7 +62,12 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(tokens[j].equals("::"))
 			{
-				return tokens[j-1];
+				String scope = tokens[j-1];
+				if(scope.startsWith("&") || scope.startsWith("*"))
+				{
+					scope = scope.substring(1);
+				}
+				return scope;
 			}
 		}
 		
@@ -94,7 +99,7 @@ public class FunctionAnalyzer extends Analyzer {
 				
 				// Get scope
 				String scope = getScope(tokens, i);
-				if(scope == null) return false; // TODO Fix this
+				// if(scope == null) return false; // TODO Fix this
 				sentenceAnalyzer.setCurrentScope(scope, false);
 				
 				String funcName = tokens[i-1];
@@ -102,33 +107,30 @@ public class FunctionAnalyzer extends Analyzer {
 				String returnType = "";
 
 				// Parse the type backwards
-				if(i == 1)
+				if(i > 2 && tokens[i-2].equals("::"))
 				{
-					returnType = "ctor";
-					if(funcName.startsWith("~")) returnType = "dtor";
+					for(int j = i - 4; j >= 0; --j)
+					{
+						returnType = tokens[j] + (returnType.length() > 0 ? " " : "") + returnType;
+					}
 				}
 				else
 				{
-					if(i == 1 && !tokens[0].contains("protected") && !tokens[0].contains("private")) 
-						returnType = tokens[0];
-					else if(i != 2) 
-							returnType = tokens[i-2];
-						else returnType = funcName;
-					
-					if(returnType.equals(tokens[i-1]) && i == 1)
-
 					for(int j = i - 2; j >= 0; --j)
-
 					{
-						if(tokens[j].equals(":") || StringTools.isKeyword(tokens[j]))
-						{
-							break;
-						}
 						returnType = tokens[j] + (returnType.length() > 0 ? " " : "") + returnType;
 					}
 				}
 				
-				if(returnType == "")
+				if(returnType.equals(funcName))
+				{
+					returnType = "ctor";
+				}
+				else if(returnType.equals("~" + funcName))
+				{
+					returnType = "dtor";
+				}
+				else if(returnType == "")
 				{
 					returnType = "ctor";
 					if(tokens[i-1].startsWith("~")) returnType = "dtor";
@@ -172,11 +174,16 @@ public class FunctionAnalyzer extends Analyzer {
 					}
 				}
 				
+				func.funcBraceCount = sentenceAnalyzer.braceCount;
+				func.fileOfFunc = Extractor.currentFile;
+				ParsedObjectManager.getInstance().addFunction(func, true);
+				
+				/*
 				ParsedObjectManager.getInstance().currentFunc = func;
 				ParsedObjectManager.getInstance().currentScope.addFunc(ParsedObjectManager.getInstance().currentFunc);
 				ParsedObjectManager.getInstance().currentFunc.funcBraceCount = sentenceAnalyzer.braceCount;
 				ParsedObjectManager.getInstance().currentFunc.fileOfFunc = Extractor.currentFile;
-				
+				*/
 				return true;
 			}
 		}
@@ -191,10 +198,9 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processCurrentFunction(String[] tokens)
 	{
-            varFinder.clearHandledIndices();
-            varFinder.findVariables(tokens);
-            funcFinder.findFunctions(tokens);
-        
+        varFinder.clearHandledIndices();
+        varFinder.findVariables(tokens);
+        // funcFinder.findFunctions(tokens);
         
         operatorAnalyzer.processSentence(tokens);
         

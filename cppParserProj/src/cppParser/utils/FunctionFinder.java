@@ -64,28 +64,29 @@ public class FunctionFinder {
 		//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[index]);
 		
 		
-                // Owners List should contain the owners of the function call eg myObj in "myObj->hello();"
-		List<String> owners=getOwners(index);
+        // Owners List should contain the owners of the function call eg myObj in "myObj->hello();"
+		List<String> owners = getOwners(index);
 		List<List<ParameterToken>> params = new ArrayList<>();
 		List<ParameterToken> currentParam = new ArrayList<>();
                 // Check if the function call is parameterless
-		if(tokens[index+1].equals(")"))
+		if(index < tokens.length - 1 && tokens[index+1].equals(")"))
 		{
-                    if(varFinder.isDefined(funcName)){
-                        Log.d(funcName+" is known variable, not function call...");
-                    }else{
-			Log.d("      (line: " + Extractor.lineno + ") Function call np > " + funcName);
-//			func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
-                    }
-                    skip();
-                    return new FunctionCall(funcName);
+            if(varFinder.isDefined(funcName)){
+                Log.d(funcName+" is known variable, not function call...");
+            }else{
+            	Log.d("      (line: " + Extractor.lineno + ") Function call np > " + funcName);
+            	// func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+            }
+            skip();
+            return new FunctionCall(funcName);
 		}
-                // Loop through the parameters
-                int skip=0;
-                FunctionCall fc;
-		for(int j = index + 1; j < tokens.length; ++j)
+		
+        // Loop through the parameters
+        int skip=0;
+        FunctionCall fc;
+        for(int j = index + 1; j < tokens.length; ++j)
 		{
-                    skip();
+            skip();
 			switch(tokens[j])
 			{
 			case ")":
@@ -96,25 +97,27 @@ public class FunctionFinder {
 					//handleParameter(currentParam);
 				}
                                 
-                                if(varFinder.isDefined(funcName)){
-                                    Log.d(funcName+" is known variable, not function call...");
-                                    fc= null;
-                                }else{
-                                    fc=new FunctionCall(owners,funcName);
-                                    Log.d("      (line: " + Extractor.lineno + ") Function call > " + fc.toString());
-//                                    func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
-                                }
-                                //skip(skip);
+                if(varFinder.isDefined(funcName))
+                {
+                    Log.d(funcName+" is known variable, not function call...");
+                    fc = null;
+                }
+                else
+                {
+                    fc=new FunctionCall(owners,funcName);
+                    Log.d("      (line: " + Extractor.lineno + ") Function call > " + fc.toString());
+                    // func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
+                }
+                //skip(skip);
 				return fc;
 			case "(":
 				// Recurse through inner function calls
 				// j = handleFunctionCall(j);
-                                if(isFuncCall(j)){
-                                    
-                                    fc=handleFunctionCall(true); 
-                                    if(fc!=null)
-                                        currentParam.add(new FunctionCallToken(fc));
-                                }
+                if(isFuncCall(j)){
+                    fc = handleFunctionCall(true); 
+                    if(fc != null)
+                        currentParam.add(new FunctionCallToken(fc));
+                }
 				break;
 			case ",":
 				params.add(currentParam);

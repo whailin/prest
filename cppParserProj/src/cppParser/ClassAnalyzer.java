@@ -7,7 +7,8 @@ import cppStructures.*;
  * 
  * @author Harri Pellikka 
  */
-public class ClassAnalyzer extends Analyzer {
+public class ClassAnalyzer extends Analyzer
+{
 
 	// List of tokens currently under analysis (stored here for performance)
 	private String[] tokens = null;
@@ -22,7 +23,8 @@ public class ClassAnalyzer extends Analyzer {
 	 * Constructs a new class analyzer
 	 * @param sa The sentence analyzer
 	 */
-	public ClassAnalyzer(SentenceAnalyzer sa) {
+	public ClassAnalyzer(SentenceAnalyzer sa)
+	{
 		super(sa);
 	}
 
@@ -31,15 +33,16 @@ public class ClassAnalyzer extends Analyzer {
 	 * (Derived from Analyzer.java)
 	 * Processes a sentence
 	 */
-	public boolean processSentence(String[] tokens) {
+	public boolean processSentence(String[] tokens) 
+	{
 		if(ParsedObjectManager.getInstance().currentFunc != null) return false;
 		
 		if(!processNewClass(tokens) && ParsedObjectManager.getInstance().currentScope != null)
 		{
-
-			
 			if(objManager.currentScope instanceof CppClass)
+			{
 				return processCurrentClass(tokens);
+			}
 		}
 		return false;
 	}
@@ -280,7 +283,9 @@ public class ClassAnalyzer extends Analyzer {
 		
 		// Finally, store the CppFunc object
 		cf.fileOfFunc = Extractor.currentFile;
-		ParsedObjectManager.getInstance().currentScope.addFunc(cf);
+		
+		// ParsedObjectManager.getInstance().currentScope.addFunc(cf);
+		ParsedObjectManager.getInstance().addFunction(cf, false);
 		
 		return true;
 	}

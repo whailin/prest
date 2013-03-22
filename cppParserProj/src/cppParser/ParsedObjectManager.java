@@ -85,4 +85,28 @@ public class ParsedObjectManager {
 		
 		return newClass;
 	}
+
+	public void addNamespace(CppNamespace ns) 
+	{
+		for(CppScope cs : scopes)
+		{
+			if(cs instanceof CppNamespace)
+			{
+				if(cs.getName().equals(ns.getName())) return;
+			}
+		}
+		
+		scopes.add(ns);
+	}
+
+	/**
+	 * Stores the given function
+	 * @param func Function to store
+	 * @param b If 'true', set the new function as the current function
+	 */
+	public void addFunction(CppFunc func, boolean b)
+	{
+		func = currentScope.addFunc(func);
+		if(b) currentFunc = func;
+	}
 }
