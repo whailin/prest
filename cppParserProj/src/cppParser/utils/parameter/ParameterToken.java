@@ -9,5 +9,7 @@ package cppParser.utils.parameter;
  * @author Tomi
  */
 public interface ParameterToken {
+    public String toString();
+    public boolean isFunctionCall();
     
 }
