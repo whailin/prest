@@ -1,3 +1,4 @@
+
 void Foo::Operators()
 {
 	// Basic comparison operators
@@ -81,4 +82,13 @@ void Foo::Operators()
 	// Templates
 	vector<int> a52;
 	vector<vector<int>> a53; 
+}
+
+
+void Foo::operands()
+{
+	int a1;
+	int a2, b2;
+	int a3 = 1;
+	int a4 = 2, b4 = 7;
 }

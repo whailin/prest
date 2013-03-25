@@ -28,7 +28,7 @@ public class StringTools
 		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
 	
 	// List of Halstead operators
-	public static String[] operators = {")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or"};
+	public static String[] operators = {";", ")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or"};
 	
 	
 	/**

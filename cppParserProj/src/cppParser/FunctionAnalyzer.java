@@ -38,6 +38,9 @@ public class FunctionAnalyzer extends Analyzer {
 	
     private OperatorAnalyzer operatorAnalyzer;
     
+    // Stores "handled" indices
+    private ArrayList<Integer> handledIndices = new ArrayList<Integer>();
+    
     // Indicator for "open string" (this is true if odd number of quotes has been read)
     private boolean openString = false;
     
@@ -198,7 +201,9 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processCurrentFunction(String[] tokens)
 	{
-        varFinder.clearHandledIndices();
+		handledIndices.clear();
+		
+        // varFinder.clearHandledIndices();
         varFinder.findVariables(tokens);
         // funcFinder.findFunctions(tokens);
         
@@ -433,5 +438,9 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			return processCurrentFunction(tokens);
 		}
+	}
+
+	public ArrayList<Integer> getHandledIndices() {
+		return handledIndices;
 	}
 }
