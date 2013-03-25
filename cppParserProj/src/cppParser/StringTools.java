@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class StringTools
 {
 	// List of "splitters" that are used to tokenize a single line of source code
-	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "!"};
+	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\""};
 		
 	
 	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted
@@ -28,19 +28,20 @@ public class StringTools
 		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
 	
 	// List of Halstead operators
-	public static String[] operators = {")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^"};
+	public static String[] operators = {")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or"};
 	
 	
 	/**
-	 * A simple non-regex-splitter that splits the given string into tokens with the given deliminators.
+	 * A simple non-regex-splitter that splits the given string into tokens with the given delimiters.
 	 * 
 	 * @param src Source string to split
-	 * @param delims Array of deliminators
-	 * @param includeDelims if 'true', the deliminators are included in the resulting array
+	 * @param delims Array of delimiters
+	 * @param includeDelims if 'true', the delimiters are included in the resulting array
 	 * @return Array of tokens representing the original string
 	 */
 	public static String[] split(String src, String[] delims, boolean includeDelims)
 	{
+		// If the delims list is null, use the default set
 		if(delims == null) delims = StringTools.delims;
 		
 		// Bail out on trivial input
@@ -109,6 +110,33 @@ public class StringTools
 		return listToArray(parts);
 	}
 
+	/**
+	 * A simple non-regex-splitter that splits the given string array into tokens with the given deliminators.
+	 * 
+	 * @param src Array of strings to split
+	 * @param delims List of delimiters
+	 * @param includeDelims If 'true', delimiters are included in the resulting array
+	 * @return String array of the produced tokens
+	 */
+	public static String[] split(String[] src, String[] delims, boolean includeDelims)
+	{
+		// ArrayList for storing the parts
+		ArrayList<String> parts = new ArrayList<String>();
+		
+		// Call the single string version for each of the strings in the input array
+		for(String s : src)
+		{
+			String[] tmpParts = StringTools.split(s, delims, includeDelims);
+			for(String s2 : tmpParts)
+			{
+				parts.add(s2);
+			}
+		}
+		
+		// Finally, convert the ArrayList to a simple array and return it
+		return listToArray(parts);
+	}
+	
 	/**
 	 * Converts an arraylist into an array
 	 * @param list An arraylist to convert

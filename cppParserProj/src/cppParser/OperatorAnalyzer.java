@@ -4,6 +4,8 @@ public class OperatorAnalyzer extends Analyzer
 {
 	private String[] operandSkipList = {"{", "(", ";", "="};
 	
+	private String[] splitters = {"!", "~"};
+	
 	private int i = -1;
 	private String[] tokens = null;
 	
@@ -22,16 +24,18 @@ public class OperatorAnalyzer extends Analyzer
 	 */
 	public boolean processSentence(String[] tokens) {
 		i = 0;
-		this.tokens = tokens;
+		this.tokens = StringTools.split(tokens, splitters, true);
 		
-		for(i = 0; i < tokens.length; ++i)
+		Log.d("asd");
+		
+		for(i = 0; i < this.tokens.length; ++i)
 		{
 			// Early bail out on tokens that are too long to be delimiters
-			if(tokens[i].length() > 2) continue;
+			// if(tokens[i].length() > 2) continue;
 			
-			if(tokens[i].equals("\"")) openString = !openString;
+			if(this.tokens[i].equals("\"")) openString = !openString;
 			
-			if(!openString && StringTools.isOperator(tokens[i]))
+			if(!openString && StringTools.isOperator(this.tokens[i]))
 			{
 				handleOperator();
 			}
@@ -67,7 +71,7 @@ public class OperatorAnalyzer extends Analyzer
 			// Add the leftside operand
 			if(!StringTools.isOperator(leftSide))
 			{
-				if(leftSide != null && canAddOperand(i-1)) 
+				if(leftSide != null && canAddOperand(origIndex-1)) 
 				{
 					objManager.currentFunc.addOperand(leftSide);
 				}
@@ -151,6 +155,8 @@ public class OperatorAnalyzer extends Analyzer
 		
 		switch(tokens[i])
 		{
+		case "~":
+			return handleBitwiseNotOperator();
 		case "+":
 		case "-":
 			return constructPlusMinusOperator();
@@ -171,6 +177,12 @@ public class OperatorAnalyzer extends Analyzer
 		}
 		
 		return op;
+	}
+	
+	private String handleBitwiseNotOperator()
+	{
+		objManager.currentFunc.addOperand(tokens[i+1]);
+		return "~";
 	}
 	
 	/**
@@ -285,7 +297,7 @@ public class OperatorAnalyzer extends Analyzer
 			}
 			catch(NumberFormatException e)
 			{
-				return false;
+				return true;
 			}
 		}
 		
