@@ -18,4 +18,9 @@ public class FunctionCallToken implements ParameterToken{
     public String toString(){
         return functionCall.toString();
     }
+
+    @Override
+    public boolean isFunctionCall() {
+        return true;
+    }
 }

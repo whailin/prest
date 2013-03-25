@@ -15,5 +15,9 @@ public class StringToken implements ParameterToken{
     public String toString(){
         return token;
     }
+    @Override
+    public boolean isFunctionCall() {
+        return false;
+    }
     
 }

@@ -205,7 +205,7 @@ public class FunctionAnalyzer extends Analyzer {
 		
         // varFinder.clearHandledIndices();
         varFinder.findVariables(tokens);
-        // funcFinder.findFunctions(tokens);
+        funcFinder.findFunctions(tokens);
         
         operatorAnalyzer.processSentence(tokens);
         

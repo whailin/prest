@@ -2,7 +2,9 @@
 
 package cppParser.utils;
 
+import cppParser.Log;
 import cppParser.utils.parameter.ParameterToken;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,21 +25,21 @@ public class FunctionCall {
     
     
     public int ownerType=0;
-    public List<String> owners=null;
+    public List<ParameterToken> owners=null;
    
     public String name=null;
-    public List<List<ParameterToken>> parameters=null;
+    public List<List<ParameterToken>> parameters=new ArrayList<>();
 
     public FunctionCall(String name) {
         this.name=name;
     }
 
-    public FunctionCall(List<String> owners,String name) {
+    public FunctionCall(List<ParameterToken> owners,String name) {
         this.owners=owners;
         this.name=name;
     }
     
-    public FunctionCall(List<String> owners,String name, List<List<ParameterToken>> parameters) {
+    public FunctionCall(List<ParameterToken> owners,String name, List<List<ParameterToken>> parameters) {
         this.owners=owners;
         this.name=name;
         this.parameters=parameters;
@@ -51,8 +53,9 @@ public class FunctionCall {
     public String toString(){
         String owner="", params="";
         if(owners!=null){
-            for(String s:owners)
-                owner+=s;
+            if(!owners.isEmpty())
+            for(ParameterToken s:owners)
+                owner+=s.toString();
         }
         if(parameters!=null){
             for(int i=0;i<parameters.size();i++){

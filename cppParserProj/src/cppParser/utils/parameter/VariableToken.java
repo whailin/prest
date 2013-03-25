@@ -12,4 +12,9 @@ public class VariableToken implements ParameterToken{
     public String type;
     public boolean primitive;
 
+    @Override
+    public boolean isFunctionCall() {
+        return false;
+    }
+
 }
