@@ -66,20 +66,24 @@ public class VarFinder
     
     private VarFinder(List<MemberVariable> variables, VarFinder parent)
     {
-        this.variables=variables;
-        this.parent=parent;
-        //isRecursive=true;
+        this.variables = variables;
+        this.parent = parent;
+        this.functionAnalyzer = parent.functionAnalyzer;
+        // isRecursive = true;
     }
     
-    public String[] getOriginalTokens(){
-        if(parent==null)
+    public String[] getOriginalTokens()
+    {
+        if(parent == null)
             return originalTokens;
         else 
             return parent.getOriginalTokens();
     }
-    public void setOriginalTokens(String[] tokens){
-        if(parent==null)
-            originalTokens=tokens;
+    
+    public void setOriginalTokens(String[] tokens)
+    {
+        if(parent == null)
+            originalTokens = tokens;
         else
             parent.setOriginalTokens(tokens);
     }
@@ -89,9 +93,8 @@ public class VarFinder
         if(originalTokens == null) originalTokens = tokens;
     	
     	// Clear the handled indices when the processing starts
-        for(i=0; i < tokens.length; i++)
+        for(i = 0; i < tokens.length; i++)
         {
-                
              token = tokens[i];
                 
              if(i+1 < tokens.length)
@@ -116,19 +119,19 @@ public class VarFinder
              {
                  if(token.contains("\""))
                  {
-                     if(next!=null)
+                     if(next != null)
                      {
                         if(next.charAt(0) == '\'')
                         {
-                            foundStringLiteral=false;
+                            foundStringLiteral = false;
                             return;
                         }
                      }
-                     foundStringLiteral=true;
+                     foundStringLiteral = true;
                      if(next.contains("\""))
                      {
                          i++;
-                         foundStringLiteral=false;
+                         foundStringLiteral = false;
                      }
                  }
                  else
@@ -142,8 +145,8 @@ public class VarFinder
     
     public boolean pushTokens(String token, String nextToken)
     {
-        if(recursive==null && !silenced && showTokens)
-            Log.d("Pushing tokens "+token+" "+nextToken+ " "+mode);
+        if(recursive == null && !silenced && showTokens)
+            Log.d("Pushing tokens " + token + " " + nextToken + " " + mode);
         this.token = token;
         this.next = nextToken;
         
@@ -151,7 +154,7 @@ public class VarFinder
         {
             if(recursive.pushTokens(token, nextToken))
             {
-                recursive=null;
+                recursive = null;
                 if(mode == RESET)
                 {
                     reset();
@@ -181,25 +184,26 @@ public class VarFinder
     private void decideAction()
     {
         //Log.d("token:"+token+" "+mode);
-        switch(mode){
-                    case TYPE:
-                        lookForType();
-                        break;
-                    case NAME:
-                        lookForNames(token,next);
-                        break;
-                    case RESET:
-                        checkForReset();
-                        break;
-                    case ARRAY:
-                        lookForArrays();
-                        break;
-                    case EQUALS:
-                        waitForEndOfAssign();
-                        break;
-                    case TEMPLATE:
-                        pushTokenForTemplate(token,true);
-                }
+        switch(mode)
+        {
+            case TYPE:
+                lookForType();
+                break;
+            case NAME:
+                lookForNames(token, next);
+                break;
+            case RESET:
+                checkForReset();
+                break;
+            case ARRAY:
+                lookForArrays();
+                break;
+            case EQUALS:
+                waitForEndOfAssign();
+                break;
+            case TEMPLATE:
+                pushTokenForTemplate(token, true);
+        }
     }
     
      /**
@@ -244,7 +248,7 @@ public class VarFinder
     {
         templateDepth = 0;
         currentType = "";
-        currentPtr="";
+        currentPtr= "";
         currentName = "";
         currentArray = "";
         currentTemplate = "";
@@ -288,16 +292,19 @@ public class VarFinder
             }
             // TBD sometimes some variables pop that have no type or name... They should not make it here
             if(!silenced)
-                Log.d("Found variable " + currentType+currentTemplate + " " + currentPtr+currentName+currentArray);
-            MemberVariable member=new MemberVariable(currentType, currentName);
+                Log.d("Found variable " + currentType + currentTemplate + " " + currentPtr+currentName+currentArray);
+            MemberVariable member = new MemberVariable(currentType, currentName);
             member.setTemplate(currentTemplate);
             member.setArray(currentArray);
             variables.add(member);
             ParsedObjectManager.getInstance().currentFunc.addMember(member);
             ParsedObjectManager.getInstance().currentFunc.addOperand(member.getName());
+            ParsedObjectManager.getInstance().currentFunc.addOperand(member.getType());
             
-            int index = getIndexOfToken(currentName);
-            if(index > -1) handledIndices.add(new Integer(index));
+            storeHandledIndex(getIndexOfToken(currentType));
+            storeHandledIndex(getIndexOfToken(currentName));
+            
+            
         }//else Log.d("Var without name or type "+ token+ " "+next+" "+mode);
         currentPtr="";
         currentName = "";
@@ -308,7 +315,17 @@ public class VarFinder
         literal = "";
     }
     
-
+    private void storeHandledIndex(int index)
+    {
+    	if(index < 0) return;
+    	
+    	for(Integer storedIndex : functionAnalyzer.getHandledIndices())
+    	{
+    		if(storedIndex.intValue() == index) return;
+    	}
+    	
+    	functionAnalyzer.getHandledIndices().add(new Integer(index));
+    }
     
 
     private void lookForType()

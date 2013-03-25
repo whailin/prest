@@ -1,5 +1,7 @@
 package cppParser;
 
+import java.util.ArrayList;
+
 public class OperatorAnalyzer extends Analyzer 
 {
 	private String[] operandSkipList = {"{", "(", ";", "="};
@@ -7,6 +9,7 @@ public class OperatorAnalyzer extends Analyzer
 	private String[] splitters = {"!", "~"};
 	
 	private int i = -1;
+	private String[] origTokens = null;
 	private String[] tokens = null;
 	
 	private boolean openString = false;
@@ -24,9 +27,8 @@ public class OperatorAnalyzer extends Analyzer
 	 */
 	public boolean processSentence(String[] tokens) {
 		i = 0;
+		this.origTokens = tokens;
 		this.tokens = StringTools.split(tokens, splitters, true);
-		
-		Log.d("asd");
 		
 		for(i = 0; i < this.tokens.length; ++i)
 		{
@@ -40,7 +42,6 @@ public class OperatorAnalyzer extends Analyzer
 				handleOperator();
 			}
 		}
-		
 		
 		return true;
 	}
@@ -57,6 +58,7 @@ public class OperatorAnalyzer extends Analyzer
 		String op = constructOperator();
 		
 		objManager.currentFunc.addOperator(op);
+		functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 		
 		if(!op.startsWith("++") && !op.startsWith("--"))
 		{
@@ -74,6 +76,7 @@ public class OperatorAnalyzer extends Analyzer
 				if(leftSide != null && canAddOperand(origIndex-1)) 
 				{
 					objManager.currentFunc.addOperand(leftSide);
+					functionAnalyzer.getHandledIndices().add(new Integer(origIndex-1));
 				}
 			}
 		}
@@ -83,10 +86,12 @@ public class OperatorAnalyzer extends Analyzer
 		{
 			if(StringTools.isOperator(tokens[i]))
 			{
+				origIndex = i;
 				op = constructOperator();
 				if(canAddOperator(i))
 				{
 					objManager.currentFunc.addOperator(op);
+					functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 				}
 				else
 				{
@@ -98,17 +103,17 @@ public class OperatorAnalyzer extends Analyzer
 			}
 			else
 			{
-				if(StringTools.isOperator(tokens[i-1]))
-				{
+				// if(StringTools.isOperator(tokens[i-1]))
+				// {
 					// TODO Construct a whole operand, if it consists of multiple tokens
 					String operand = tokens[i];
 					if(operand.equals("\"")) operand = constructStringLiteral(i, false);
 					if(operand != null && canAddOperand(i))
 					{
 						objManager.currentFunc.addOperand(operand);
+						functionAnalyzer.getHandledIndices().add(new Integer(i));
 					}
-					
-				}
+				// }
 			}
 		}
 	}
@@ -179,9 +184,14 @@ public class OperatorAnalyzer extends Analyzer
 		return op;
 	}
 	
+	/**
+	 * Handles the bitwise NOT operator (~)
+	 * @return The bitwise NOT operator
+	 */
 	private String handleBitwiseNotOperator()
 	{
 		objManager.currentFunc.addOperand(tokens[i+1]);
+		i++;
 		return "~";
 	}
 	
@@ -272,14 +282,16 @@ public class OperatorAnalyzer extends Analyzer
 	 */
 	private boolean canAddOperand(int index)
 	{
-		for(Integer integer : functionAnalyzer.getVarFinder().getHandledIndices())
+		// Check if the index is already handled
+		for(Integer integer : functionAnalyzer.getHandledIndices())
 		{
-			if(integer.intValue() == i - 1)
+			if(integer.intValue() == index)
 			{
 				return false;
 			}
 		}
 		
+		// Check if the token at the index is in the "skip list"
 		for(String s : operandSkipList)
 		{
 			if(tokens[index].equals(s))
@@ -288,6 +300,7 @@ public class OperatorAnalyzer extends Analyzer
 			}
 		}
 		
+		// If the operator is '.', check that it's a method call, not a decimal point
 		if(index < tokens.length - 2 && tokens[index+1].equals("."))
 		{
 			try
