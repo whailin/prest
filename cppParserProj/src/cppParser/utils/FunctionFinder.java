@@ -26,12 +26,18 @@ public class FunctionFinder {
      * depending on the tokens
      * PARAMETERS This mode expects the tokens to contain parameters that are given 
      * to the function call.
-     * 
+     * ANOTHER This mode comes after closing parenthesis of a function call. It waits 
+     * for another function call eg getMyObj()->getName(); The new function call will 
+     * get the previous function call to be it's owner.
      */
-    public static final int RESET=0, BEGIN=1, PARAMETERS=2;
+    public static final int RESET=0, BEGIN=1, PARAMETERS=2, ANOTHER=3;
     private int mode=BEGIN;
     private String token, next;
-    private boolean foundPtr=false;
+    private boolean foundPtr=false, 
+            parameter=false; //Are the tokens given to the FunctionFinder parameters for function call?
+    //When function calls are parsed recursively(function call as parameter) 
+    //all tokens must be also collected in this list
+    private List<ParameterToken> currentParameter=new ArrayList<>(); 
     
     private int parenthesisDepth=0; // used for finding parameters
     
@@ -49,6 +55,8 @@ public class FunctionFinder {
         this.varFinder=varFinder;
         this.func=currentFunc;
     }
+    
+    
     /**
      * This constructor should be used only by recursive function call search
      * @param f
@@ -59,7 +67,18 @@ public class FunctionFinder {
         this.parent=parent;
         this.varFinder=varFinder;
         this.func=currentFunc;
+        parameter=true;
+        
     }
+    /**
+     * Method converts the string to StringToken and puts it to currentParameter List if parameter==true
+     * @param token 
+     */
+    private void addToken(String token){
+        if(parameter)
+            currentParameter.add(new StringToken(token));
+    }
+    private List<ParameterToken> getCurrentParameter(){return currentParameter;}
     public void findFunctions(String[] tokens){
         this.tokens=tokenizeLiterals(tokens);
         for(index=0;tokens.length>index;index++){
@@ -87,6 +106,8 @@ public class FunctionFinder {
                 break;
             case RESET:
                 checkForReset(token, next);
+            case ANOTHER:
+                waitForAnotherFunctionCall(token, next);
         }
     }
 
@@ -200,10 +221,12 @@ public class FunctionFinder {
     {
         
         if(next == null){
+            addToken(token);
             reset();
             return null;
         }
         if(token.contentEquals(";")){
+            addToken(token);
             reset();
             return null;
         }
@@ -213,6 +236,7 @@ public class FunctionFinder {
             {
                 if(Constants.isKeyword(token)){
                     mode=RESET;
+                    addToken(token);
                     return null;
                 }
                 String temp=null;
@@ -351,7 +375,7 @@ public class FunctionFinder {
                 if(parenthesisDepth==0){
                     currentFc.parameters.add(parseParameter(parameterTokens));
                     Log.d("Found FC: "+ currentFc.toString());
-                    reset();
+                    mode=ANOTHER;
                 }else{ 
                     parenthesisDepth--;
                     parameterTokens.add(token);
@@ -371,16 +395,44 @@ public class FunctionFinder {
     }
     
     private List<ParameterToken> parseParameter(List<String> tokens){
+        FunctionFinder ff=new FunctionFinder(this, varFinder, func);
+        
+        
         List<ParameterToken> parameter=new ArrayList<>();
-        for(String s:tokens)
-            parameter.add(new StringToken(s));
-        return parameter;
+        
+        for(int i=0;i<tokens.size();i++){
+            String currentToken=tokens.get(i);
+            String nextToken;
+            if(i==(tokens.size()-1))
+                nextToken=null;
+            else nextToken=tokens.get(i+1);
+        
+            ff.pushTokens(currentToken, nextToken);
+        }
+        return ff.getCurrentParameter();
         
     }
 
     private void checkForReset(String token, String next) {
+        addToken(token);
         if(StringTools.isOperator(token))
             reset();
+    }
+
+    private void waitForAnotherFunctionCall(String token, String next) {
+        switch(token){
+            case "->":
+            case ".":
+            case "::":
+                FunctionCall temp=currentFc;
+                reset();
+                owners.add(new FunctionCallToken(temp));
+                owners.add(new StringToken(token));
+                break;
+            default:
+                addToken(token);
+                reset();
+       }
     }
     
 
