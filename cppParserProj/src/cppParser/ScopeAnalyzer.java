@@ -1,5 +1,6 @@
 package cppParser;
 
+import cppParser.utils.Log;
 import cppStructures.CppNamespace;
 
 /**
@@ -33,8 +34,7 @@ public class ScopeAnalyzer extends Analyzer {
 					ParsedObjectManager.getInstance().getScopes().add(ns);
 					ParsedObjectManager.getInstance().currentScope = ns;
 					*/
-					ParsedObjectManager.getInstance().addNamespace(ns);
-					sentenceAnalyzer.cppScopeStack.add(ns);
+					ParsedObjectManager.getInstance().addNamespace(ns, true);
 					return true;
 				}
 			}

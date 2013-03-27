@@ -1,7 +1,9 @@
 package cppParser;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
+import cppParser.utils.Log;
 import cppStructures.*;
 
 /**
@@ -24,6 +26,7 @@ public class ParsedObjectManager {
 	
 	// List of scopes found
 	private ArrayList<CppScope> scopes = new ArrayList<CppScope>();
+	private Stack<CppScope> cppScopeStack = new Stack<CppScope>();
 	
 	private CppScope defaultScope = new CppScope("DEFAULT");
 	
@@ -63,6 +66,8 @@ public class ParsedObjectManager {
 	
 	public CppClass addClass(String name)
 	{
+		assert(name != null);
+		
 		CppClass newClass = null;
 		for(CppScope cs : scopes)
 		{
@@ -86,8 +91,11 @@ public class ParsedObjectManager {
 		return newClass;
 	}
 
-	public void addNamespace(CppNamespace ns) 
+	public void addNamespace(CppNamespace ns, boolean addToStack) 
 	{
+		assert(ns != null);
+		assert(ns.name != null);
+		
 		for(CppScope cs : scopes)
 		{
 			if(cs instanceof CppNamespace)
@@ -97,6 +105,7 @@ public class ParsedObjectManager {
 		}
 		
 		scopes.add(ns);
+		if(addToStack) this.cppScopeStack.push(ns);
 	}
 
 	/**
@@ -108,5 +117,9 @@ public class ParsedObjectManager {
 	{
 		func = currentScope.addFunc(func);
 		if(b) currentFunc = func;
+	}
+
+	public Stack<CppScope> getCppScopeStack() {
+		return this.cppScopeStack;
 	}
 }

@@ -2,7 +2,6 @@
 
 package cppParser.utils;
 
-import cppParser.Log;
 import cppParser.utils.parameter.ParameterToken;
 import java.util.ArrayList;
 import java.util.List;

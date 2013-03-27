@@ -2,6 +2,8 @@ package cppParser;
 
 import java.util.ArrayList;
 
+import cppParser.utils.StringTools;
+
 public class OperatorAnalyzer extends Analyzer 
 {
 	private String[] operandSkipList = {"{", "(", ";", "="};

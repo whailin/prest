@@ -1,4 +1,5 @@
 
+/*
 void Foo::Operators()
 {
 	// Basic comparison operators
@@ -83,7 +84,7 @@ void Foo::Operators()
 	vector<int> a52;
 	vector<vector<int>> a53; 
 }
-
+*/
 
 void Foo::operands()
 {
@@ -91,4 +92,41 @@ void Foo::operands()
 	int a2, b2;
 	int a3 = 1;
 	int a4 = 2, b4 = 7;
+	
+	char** a5 = "Here's a string.";
+	char a6 = 'p';
+}
+
+void Foo::cc1()
+{
+	int a = 1;
+	
+	// For
+	for(int i = 0; i < 10; ++i)
+	{
+	
+	}
+	
+	// If
+	if(true)
+	{
+	
+	}
+	
+	// If-elseif
+	if(true)
+	{
+	
+	}
+	else if(false)
+	{
+		
+	}
+	
+	if(true && true)
+	{
+	
+	}
+	
+	
 }

@@ -1,6 +1,9 @@
 package cppParser;
 
 import cppParser.utils.FunctionFinder;
+import cppParser.utils.Log;
+import cppParser.utils.StringTools;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -61,6 +64,7 @@ public class FunctionAnalyzer extends Analyzer {
 	
 	private String getScope(String[] tokens, int i)
 	{
+		/*
 		for(int j = 1; j < i - 1; ++j)
 		{
 			if(tokens[j].equals("::"))
@@ -73,6 +77,15 @@ public class FunctionAnalyzer extends Analyzer {
 				return scope;
 			}
 		}
+		*/
+		
+		if(i > 2)
+		{
+			if(tokens[i-2].equals("::"))
+			{
+				return tokens[i-3];
+			}
+		}
 		
 		// No scope was found from the tokens, return the currentScope from ParsedObjectManager
 		if(ParsedObjectManager.getInstance().currentScope != null)
@@ -80,7 +93,7 @@ public class FunctionAnalyzer extends Analyzer {
 			return ParsedObjectManager.getInstance().currentScope.getName();
 		}
 		
-		return null;
+		return "__MAIN__";
 	}
 	
 	/**
@@ -102,7 +115,12 @@ public class FunctionAnalyzer extends Analyzer {
 				
 				// Get scope
 				String scope = getScope(tokens, i);
-				// if(scope == null) return false; // TODO Fix this
+				if(scope == null)
+				{
+					Log.d("   SCOPE WAS NULL");
+					return false; // TODO Fix this
+				}
+				
 				sentenceAnalyzer.setCurrentScope(scope, false);
 				
 				String funcName = tokens[i-1];

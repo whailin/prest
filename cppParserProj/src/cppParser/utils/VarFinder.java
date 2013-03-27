@@ -1,9 +1,7 @@
 package cppParser.utils;
 
 import cppParser.FunctionAnalyzer;
-import cppParser.Log;
 import cppParser.ParsedObjectManager;
-import cppParser.StringTools;
 import cppStructures.MemberVariable;
 import java.util.ArrayList;
 import java.util.List;
