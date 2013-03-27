@@ -3,13 +3,15 @@ package cppParser;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import cppParser.utils.Log;
+import cppParser.utils.StringTools;
 import cppStructures.CppClass;
 import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 
 public class SentenceAnalyzer {
 
-	public Stack<CppScope> cppScopeStack = new Stack<CppScope>();
+	
 	
 	public int braceCount = 0;
 	
@@ -44,13 +46,15 @@ public class SentenceAnalyzer {
 	 */
 	public void setCurrentScope(String scopeName, boolean addToStack)
 	{
+		assert(scopeName != null);
+		
 		// Search for an existing scope with the given name
 		boolean found = false;
 		for(CppScope cc : ParsedObjectManager.getInstance().getScopes())
 		{
 			if(cc.getName().equals(scopeName))
 			{
-				if(addToStack) cppScopeStack.push(cc);
+				if(addToStack) ParsedObjectManager.getInstance().getCppScopeStack().push(cc);
 				ParsedObjectManager.getInstance().currentScope = cc;
 				found = true;
 				break;
@@ -65,12 +69,12 @@ public class SentenceAnalyzer {
 			ParsedObjectManager.getInstance().currentScope = cc;
 			if(addToStack)
 			{
-				cppScopeStack.push(cc);
-				Log.d("SCOPE " + cppScopeStack.peek().getName() + " START (line: " + Extractor.lineno + ")");
+				ParsedObjectManager.getInstance().getCppScopeStack().push(cc);
+				Log.d("SCOPE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " START (line: " + Extractor.lineno + ")");
 			}
 			else
 			{
-				if(!cppScopeStack.isEmpty()) Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " PART (line: " + Extractor.lineno + ")");
+				if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty()) Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " PART (line: " + Extractor.lineno + ")");
 			}
 			
 		}
@@ -84,6 +88,7 @@ public class SentenceAnalyzer {
 	 */
 	private void lexEndBrace()
 	{
+		// if(ParsedObjectManager.getInstance().currentFunc != null) Log.d("Lexing end brace. " + ParsedObjectManager.getInstance().currentFunc.funcBraceCount + " | " + braceCount);
 		
 		// If function body is ended
 		if(ParsedObjectManager.getInstance().currentFunc != null && ParsedObjectManager.getInstance().currentFunc.funcBraceCount == braceCount)
@@ -93,14 +98,14 @@ public class SentenceAnalyzer {
 		}
 		
 		// If scope body is ended
-		if(!cppScopeStack.isEmpty() && cppScopeStack.peek().braceCount == braceCount)
+		if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty() && ParsedObjectManager.getInstance().getCppScopeStack().peek().braceCount == braceCount)
 		{
-			if(cppScopeStack.peek() instanceof CppClass) Log.d("CLASS " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")");
-			else if(cppScopeStack.peek() instanceof CppNamespace)Log.d("NAMESPACE " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")"); 
-			else Log.d("SCOPE " + cppScopeStack.peek().getName() + " END (line: " + Extractor.lineno + ")");
+			if(ParsedObjectManager.getInstance().getCppScopeStack().peek() instanceof CppClass) Log.d("CLASS " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")");
+			else if(ParsedObjectManager.getInstance().getCppScopeStack().peek() instanceof CppNamespace)Log.d("NAMESPACE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")"); 
+			else Log.d("SCOPE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")");
 			
-			cppScopeStack.pop();
-			if(cppScopeStack.size() > 0) ParsedObjectManager.getInstance().currentScope = cppScopeStack.peek();
+			ParsedObjectManager.getInstance().getCppScopeStack().pop();
+			if(ParsedObjectManager.getInstance().getCppScopeStack().size() > 0) ParsedObjectManager.getInstance().currentScope = ParsedObjectManager.getInstance().getCppScopeStack().peek();
 		}
 		
 		/*
@@ -144,7 +149,7 @@ public class SentenceAnalyzer {
 				{
 					if(ParsedObjectManager.getInstance().currentFunc != null)
 					{
-						ParsedObjectManager.getInstance().currentFunc.addOperator("}");
+						// ParsedObjectManager.getInstance().currentFunc.addOperator("}");
 					}
 					lexEndBrace();
 					continue;

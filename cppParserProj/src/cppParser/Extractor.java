@@ -8,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Stack;
 
+import cppParser.utils.Log;
+import cppParser.utils.StringTools;
 import cppStructures.CppClass;
 import cppStructures.CppFunc;
 import cppStructures.CppFuncParam;
@@ -78,7 +80,7 @@ public class Extractor
 		
 		FileLoader fileLoader = new FileLoader(this.file);
 		
-		Log.d("done in: " + (double)(System.currentTimeMillis() - startTime) / 1000.0 + " s.");
+		Log.d("Files sorted in " + (double)(System.currentTimeMillis() - startTime) / 1000.0 + " s.");
 		Log.d("Found " + fileLoader.getFiles().size() + " files.");
 		
 		// Loop through the found files
@@ -89,11 +91,11 @@ public class Extractor
 			Log.d();
 		}		
 
-		Log.d("Processing done. Dumping...");	
+		Log.d("First analysis pass done. Starting second pass...");	
 
 		// TODO Second pass: fix unknown references / types / ambiguities
 		
-		Log.d("Processing done. Dumping...");
+		Log.d("Second analysis pass done. Dumping...");
 		
 		
 		// Dump tree results to a file
@@ -146,6 +148,7 @@ public class Extractor
 			boolean isMultiLineComment = false;
 			char c;
 			boolean stringOpen = false;
+			boolean charOpen = false;
 			
 			while((c = (char)reader.read()) != (char)-1)
 			{
@@ -155,13 +158,17 @@ public class Extractor
 					lineno++;
 					ploc++;
 					
-					// Preprocess lines should be processed on endline
-					if(!stringOpen && line.startsWith("#"))
+					// Handle preprocessor directives
+					if(line.startsWith("#"))
 					{
-						lloc++;
-						sentenceAnalyzer.lexLine(line);
-						line = "";
-						commentLine = "";						
+						line = line.trim();
+						if(!stringOpen && !charOpen && line.charAt(line.length() - 1) != '\\')
+						{
+							lloc++;
+							sentenceAnalyzer.lexLine(line);
+							line = "";
+							commentLine = "";	
+						}
 					}
 				}
 				
@@ -193,7 +200,7 @@ public class Extractor
 				}
 				
 				// Check if a comment line is about to start
-				if(c == '/' || (c == '*' && commentLine.startsWith("/")))
+				if(!stringOpen && (c == '/' || (c == '*' && commentLine.startsWith("/"))))
 				{
 					commentLine += c;
 					if(commentLine.length() > 1)
@@ -226,23 +233,31 @@ public class Extractor
 								commentLine = "";
 							}
 						}
-                                                cmtLineNo++;
+                        cmtLineNo++;
 					}					
 					continue;
-				}else{
-                                    if(commentLine.length()==1){
-                                        commentLine="";
-                                        line+="/";
-                                    }
-                                }
+				}
+				else
+				{
+                    if(commentLine.length() == 1)
+                    {
+                        commentLine="";
+                        line += "/";
+                    }
+                }
 				
 				// Add a character to the "line"
 				if(c != '\r' && c != '\n' && c != '\t')
 				{
-					if(c == '"')
+					if(c == '"' && ((line.length() > 0 ? line.charAt(line.length() - 1) != '\\' : true) || (line.length() > 1 ? line.charAt(line.length() - 2) == '\\' : true)) && !charOpen)
 					{
 						line += "\"";
 						stringOpen = !stringOpen;
+					}
+					else if(c == '\'' && ((line.length() > 0 ? line.charAt(line.length() - 1) != '\\' : true) || (line.length() > 1 ? line.charAt(line.length() - 2) == '\\' : true)) && !stringOpen)
+					{
+						line += "\'";
+						charOpen = !charOpen;
 					}
 					else
 					{
@@ -257,7 +272,7 @@ public class Extractor
 				}
 				
 				// If the line ends, start lexing it
-				if(!stringOpen &&  (c == ';' || c == '{' || c == '}'))
+				if(!stringOpen && !charOpen && (c == ';' || c == '{' || c == '}' || (isVisibilityStatement(c, line))))
 				{
 					lloc++;
 					// lexLine(line);
@@ -282,6 +297,22 @@ public class Extractor
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Checks whether or not the line forms a 'visibility statement' found usually in headers
+	 * @param c The latest char to add
+	 * @param line The line formed so far
+	 * @return 'true' if the line forms either "public", "protected" or "private" statement, 'false' otherwise
+	 */
+	private boolean isVisibilityStatement(char c, String line)
+	{
+		if(c != ':') return false;
+		else
+		{
+			if(line.endsWith("public:") || line.endsWith("protected:") || line.endsWith("private:")) return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -365,7 +396,8 @@ public class Extractor
 					writer.write("      Programming time = " + mf.getTimeToProgram() + "\n");
 					writer.write("      Deliver bugs = " + mf.getDeliveredBugs() + "\n");
 					writer.write("      Level = " + mf.getLevel() + "\n");
-					writer.write("      Intelligent content = " + mf.getIntContent() + "\n");	
+					writer.write("      Intelligent content = " + mf.getIntContent() + "\n");
+					writer.write("      Cyclomatic complexity = " + mf.getCyclomaticComplexity() + "\n");
 					writer.newLine();
 					
 				}

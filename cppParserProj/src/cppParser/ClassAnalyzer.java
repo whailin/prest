@@ -1,5 +1,7 @@
 package cppParser;
 
+import cppParser.utils.Log;
+import cppParser.utils.StringTools;
 import cppStructures.*;
 
 /**
@@ -294,7 +296,7 @@ public class ClassAnalyzer extends Analyzer
 	{
 		if(i > 0 && tokens[i].equals("("))
 		{
-			return handleFunctionDeclaration();
+			// return handleFunctionDeclaration();
 		}
 		return false;
 	}

@@ -3,8 +3,6 @@
 package cppParser.utils;
 
 import cppParser.Extractor;
-import cppParser.Log;
-import cppParser.StringTools;
 import cppParser.utils.parameter.FunctionCallToken;
 import cppParser.utils.parameter.ParameterToken;
 import cppParser.utils.parameter.StringToken;
@@ -386,7 +384,7 @@ public class FunctionFinder {
             case ")":
                 if(parenthesisDepth==0){
                     currentFc.parameters.add(parseParameter(parameterTokens));
-                    Log.d("Found FC: "+ currentFc.toString());
+                    // Log.d("Found FC: "+ currentFc.toString());
                     if(next==null)
                         addToken(new FunctionCallToken(currentFc));
                     mode=ANOTHER;

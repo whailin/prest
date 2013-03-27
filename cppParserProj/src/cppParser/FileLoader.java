@@ -3,6 +3,8 @@ package cppParser;
 import java.io.File;
 import java.util.ArrayList;
 
+import cppParser.utils.Log;
+
 /**
  * Handles file loading and checks if there already exists up-to-date
  * metrics information.
@@ -53,7 +55,7 @@ public class FileLoader {
 		
 		if(shouldSort)
 		{
-			sortFiles(files);
+			files = sortFiles(files);
 		}
 	}
 	
