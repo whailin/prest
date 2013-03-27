@@ -41,7 +41,7 @@ public class FunctionFinder {
     
     private int parenthesisDepth=0; // used for finding parameters
     
-    private int index;
+    private int index, skip=0;
     private List<ParameterToken> owners=new ArrayList<>();
     private List<String> parameterTokens=new ArrayList<>();
     
@@ -78,9 +78,15 @@ public class FunctionFinder {
         if(parameter)
             currentParameter.add(new StringToken(token));
     }
+    
+    private void addToken(ParameterToken token){
+        if(parameter)
+            currentParameter.add(token);
+    }
     private List<ParameterToken> getCurrentParameter(){return currentParameter;}
     public void findFunctions(String[] tokens){
-        this.tokens=tokenizeLiterals(tokens);
+        //this.tokens=tokenizeLiterals(tokens);
+        this.tokens=tokens;
         for(index=0;tokens.length>index;index++){
             token=tokens[index];
             if(tokens.length>(index+1))
@@ -95,6 +101,11 @@ public class FunctionFinder {
     
     private void pushTokens(String token, String next) {
         //Log.d("t: "+token+" n: "+next+" "+mode);
+        if(skip>0){
+            skip--;
+            return;
+        }
+        //if(parameter) Log.d("PT: "+token+" "+next+" "+ mode);
         switch(mode){
             case BEGIN:
                 FunctionCall fc=lookForFirstPart(token, next);
@@ -198,15 +209,15 @@ public class FunctionFinder {
         return null;
     }
    
-    private void skip(int skips){
-            for(int i=0;i<skips;i++)
-                skip();
-    }  
-    private void skip(){
+     
+    /*private void skip(){
             if(parent==null)
                 index++;
             else
                 parent.skip();
+    }*/
+    private void skip(){
+        skip++;
     }
 
     private boolean isFuncCall(int ind) {
@@ -367,6 +378,7 @@ public class FunctionFinder {
         currentOwner="";
         foundPtr=false;
         parenthesisDepth=0;
+        skip=0;
     }
 
     private void parseParameters(String token, String next) {
@@ -375,6 +387,8 @@ public class FunctionFinder {
                 if(parenthesisDepth==0){
                     currentFc.parameters.add(parseParameter(parameterTokens));
                     Log.d("Found FC: "+ currentFc.toString());
+                    if(next==null)
+                        addToken(new FunctionCallToken(currentFc));
                     mode=ANOTHER;
                 }else{ 
                     parenthesisDepth--;
@@ -406,7 +420,6 @@ public class FunctionFinder {
             if(i==(tokens.size()-1))
                 nextToken=null;
             else nextToken=tokens.get(i+1);
-        
             ff.pushTokens(currentToken, nextToken);
         }
         return ff.getCurrentParameter();
