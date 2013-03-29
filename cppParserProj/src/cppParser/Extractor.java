@@ -45,11 +45,13 @@ public class Extractor
 	
 	// Current line in the source file (may not reflect the actual processing)
 	public static int lineno = 0; 
-	
 	public int loc = 0;
 	public int lloc = 0;
 	public int ploc = 0;
-	public long cmtLineNo = 0;		//comment lines	
+	public int codeLines=0;
+	public int emptyLines = 0;
+    public int commentedCodeLines = 0;
+	public int commentOnlyLines = 0;		//comment lines	
 	
 	// Reference to the singleton parsed object manager
 	private ParsedObjectManager objManager;
@@ -116,6 +118,7 @@ public class Extractor
 	 * Processing includes tasks such as constructing internal format lines,
 	 * tokenizing them and creating a structure tree of the found data.
 	 */
+    private String readLine="";
 	private void process(String file)
 	{
 		currentFile = file;
@@ -144,6 +147,8 @@ public class Extractor
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			String line = "";
 			String commentLine = "";
+			boolean commentFound=false; //Currently read line contains comments
+            boolean codeFound=false;  //Currently read line contains code
 			boolean skipComment = false;
 			boolean isMultiLineComment = false;
 			char c;
@@ -152,11 +157,16 @@ public class Extractor
 			
 			while((c = (char)reader.read()) != (char)-1)
 			{
+                
 				if(c == '\n')
 				{
 					loc++;
 					lineno++;
 					ploc++;
+                    if(!line.trim().isEmpty())
+                        codeFound=true;
+                    
+					addLine(codeFound,commentFound);
 					
 					// Handle preprocessor directives
 					if(line.startsWith("#"))
@@ -170,7 +180,13 @@ public class Extractor
 							commentLine = "";	
 						}
 					}
-				}
+                    readLine="";
+					commentFound=false;
+                    codeFound=false;
+				}else{
+                    if(c!='\r')
+                        readLine+=c;
+                }
 				
 				// Skips characters until the current comment ends
 				if(skipComment)
@@ -179,6 +195,8 @@ public class Extractor
 					{
 						if(c == '\r' || c == '\n')
 						{
+							
+								
 							skipComment = false;
 							objManager.oneLineComments.add(commentLine);
 							commentLine = "";
@@ -195,7 +213,12 @@ public class Extractor
 						}
 					}
 					
-					if(skipComment) commentLine += c;					
+					if(skipComment)
+					{ 
+						if(c!=' ' && c!='\n' && c!='\t' && c!='\r')
+							commentFound=true;
+						commentLine += c;
+					}					
 					continue;
 				}
 				
@@ -233,7 +256,6 @@ public class Extractor
 								commentLine = "";
 							}
 						}
-                        cmtLineNo++;
 					}					
 					continue;
 				}
@@ -244,7 +266,7 @@ public class Extractor
                         commentLine="";
                         line += "/";
                     }
-                }
+                		}
 				
 				// Add a character to the "line"
 				if(c != '\r' && c != '\n' && c != '\t')
@@ -280,9 +302,10 @@ public class Extractor
 					// sentenceAnalyzer.lexLineHM(line);
 					line = "";
 					commentLine = "";
+                    codeFound=true;
 				}
 			}
-			
+			addLine(codeFound,commentFound);
 			loc++;
 			
 			// Finally, close the reader
@@ -297,6 +320,25 @@ public class Extractor
 		{
 			e.printStackTrace();
 		}
+	}
+	/**
+	 * This method counts line for physical loc metrics
+	 * @param codeFound should be true if current line contains code
+	 * @param commentFound should be true if current line contains comments
+	 */
+	private void addLine(boolean codeFound, boolean commentFound){
+		if(codeFound){
+            if(commentFound)
+				commentedCodeLines++;
+			else
+				codeLines++;
+		}else{
+			if(commentFound)
+				commentOnlyLines++;
+			else
+				emptyLines++;
+		}
+        
 	}
 	
 	/**
@@ -415,14 +457,19 @@ public class Extractor
 			writer.write("\n");
 			writer.write("Total amount of lines: " + loc + "\n");
 			writer.write("Logical lines of code: " + lloc + "\n");
-			writer.write("Physical lines of code: " + ploc + "\n");	
-			writer.write("Comment lines: " + cmtLineNo + "\n");
+			writer.write("Physical lines of code: " + (codeLines+commentedCodeLines) + "\n");
+			writer.write("Empty lines:"+ emptyLines+ "\n");
+            writer.write("Comment only lines: " +commentOnlyLines + "\n");
+            writer.write("Commented code lines: " +commentedCodeLines + "\n");
+			writer.write("Total comment lines: " + (+commentedCodeLines) + "\n");
+			
 			
 			writer.close();
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+            
 		}
 	}
 	
