@@ -1,7 +1,7 @@
 package cppParser;
 
+import cppParser.utils.LLOCCounter;
 import java.util.ArrayList;
-import java.util.Stack;
 
 import cppParser.utils.Log;
 import cppParser.utils.StringTools;
@@ -23,12 +23,14 @@ public class SentenceAnalyzer {
 	private FunctionAnalyzer functionAnalyzer;
 	private ClassAnalyzer classAnalyzer;
 	private ScopeAnalyzer scopeAnalyzer;
+    private LLOCCounter llocCounter=null;
 	
 	public SentenceAnalyzer()
 	{
 		functionAnalyzer = new FunctionAnalyzer(this);
 		classAnalyzer = new ClassAnalyzer(this);
 		scopeAnalyzer = new ScopeAnalyzer(this);
+
 	
 		analyzers.add(functionAnalyzer);
 		analyzers.add(classAnalyzer);
@@ -128,7 +130,10 @@ public class SentenceAnalyzer {
 	public void lexLine(String line)
 	{
 		// TODO Create a preprocessor analyzer and remove this
-		if(line.startsWith("#")) return;
+		if(line.startsWith("#")){ 
+            llocCounter.addLloc();
+            return;
+        }
 		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, null, true);
@@ -160,6 +165,7 @@ public class SentenceAnalyzer {
 		if(ParsedObjectManager.getInstance().currentFunc != null)
 		{
 			functionAnalyzer.processSentence(tokens);
+            llocCounter.processSentenceInFuncBody(tokens);
 			return;
 		}
 		else if(ParsedObjectManager.getInstance().currentScope != null)
@@ -173,4 +179,11 @@ public class SentenceAnalyzer {
 			if(a.processSentence(tokens)) break;
 		}
 	}
+
+    public void fileChanged(String file) {
+        if(llocCounter!=null)
+            Log.d("File: "+file+" LLOC: "+llocCounter.getLloc());
+        llocCounter = new LLOCCounter();
+        llocCounter.setFile(file);
+    }
 }
