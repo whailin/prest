@@ -1,5 +1,6 @@
 package cppParser;
 
+import cppParser.utils.LLOCCounter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -12,7 +13,6 @@ import cppParser.utils.Log;
 import cppParser.utils.StringTools;
 import cppStructures.CppClass;
 import cppStructures.CppFunc;
-import cppStructures.CppFuncParam;
 import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 import cppStructures.MemberVariable;
@@ -58,6 +58,7 @@ public class Extractor
 	
 	// The sentence analyzer used to analyze each "raw" sentence
 	private SentenceAnalyzer sentenceAnalyzer;
+    
 	
 	/**
 	 * Constructor
@@ -121,6 +122,7 @@ public class Extractor
     private String readLine="";
 	private void process(String file)
 	{
+        sentenceAnalyzer.fileChanged(file);
 		currentFile = file;
 		// currentFunc = null;
 		// currentScope = null;
