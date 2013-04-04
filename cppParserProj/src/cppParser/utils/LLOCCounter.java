@@ -8,10 +8,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
+ * This class takes tokens from SentenceAnalyzer and counts how many logical lines 
+ * of code(aka logical source statements) it can find. This class does not count 
+ * preprocessor directives eg #include <iostream> and they should not be given to it through
+ * processSentence(String[] tokens). Instead they should be counted outside this class 
+ * and added to the count by using addLloc();
  * @author Tomi
  */
 public class LLOCCounter{
+    private static final boolean enableLogging=false;
     private static final int BEGIN=0, SKIPTONEXT=1, SKIPPARENTHESIS=2, SKIPTOCOLON=3, SKIPTOBRACKET=4, FOR=5;
     private int mode=BEGIN;
     private String currentForStatement;
@@ -24,26 +29,50 @@ public class LLOCCounter{
     private String file;
     private int lloc=0;
     private int index;
+    
     /**
-     * This method checks logical lines of code when the tokens are not in function body
+     * This method checks logical lines of code in the given tokens
+     * tokens should not contain preprocessor directives
      * @param tokens 
      */
     public void processSentence(String[] tokens){
-        
-    }
-    /**
-     * This method checks logical lines of code when the tokens are in function body
-     * @param tokens 
-     */
-    public void processSentenceInFuncBody(String[] tokens){
         String next;
         for(index=0;index<tokens.length;index++){//TBD bracket skipping
             next=null;
+            if(tokensFormFunction(tokens)){//If tokens form a start of a function then they can be skipped
+                if(enableLogging)Log.d("LLOC FuncB");
+                addLloc();
+                return;
+            }
             if((index+1)<tokens.length){
                 next=tokens[index+1];
             }
             chooseAction(tokens[index],next);
         }  
+    }
+    /**
+     * This method checks if tokens for beginning of a function eg. void hello() {
+     * @param tokens
+     * @return true if tokens form start of a function definition
+     */
+    private boolean tokensFormFunction(String[] tokens) {
+        try{
+            if(tokens[tokens.length-1].contentEquals("{")){
+                if(tokens[tokens.length-2].contentEquals(")")){
+                    for(int i=0;i<tokens.length;i++){
+                        if(tokens[i].contentEquals("(")){
+                            if(Constants.isKeyword(tokens[i-1]))
+                                return false;
+                            else return true;
+                        }
+                    }
+                }
+                
+            }
+        }catch(ArrayIndexOutOfBoundsException e){
+            return false;
+        }
+        return false;
     }
     
     private void chooseAction(String token, String next){
@@ -72,7 +101,7 @@ public class LLOCCounter{
     private void takeFirstTokens(String token, String next) {
         if(token.contentEquals("{"))
             return;
-        else if(token.contentEquals("{"))
+        else if(token.contentEquals("}"))
             return;
         if(Collections.binarySearch(specialCases, token)>=0){
             handleSpecialCase(token, next);
@@ -86,6 +115,7 @@ public class LLOCCounter{
                     mode=SKIPTOCOLON;
                     break;
                 default:
+                    if(enableLogging) Log.d("LLOC statement");
                     addLloc();
                     mode=SKIPTONEXT;
             }
@@ -97,6 +127,7 @@ public class LLOCCounter{
     private void handleSpecialCase(String token, String next) {
         switch(token){
             case "for":
+                if(enableLogging) Log.d("LLOC ForB");
                 addLloc();
                 mode=FOR;
                 currentForStatement="";
@@ -109,16 +140,19 @@ public class LLOCCounter{
             case "catch":
             case "while":
             case "if":
+                if(enableLogging)Log.d("LLOC switch/if/catch/while");
                 addLloc();
                 mode=SKIPPARENTHESIS;
                 break;
             case "default":
             case "case":
+                if(enableLogging)Log.d("LLOC case/default");
                 addLloc();
                 mode=SKIPTOCOLON;
                 break;
             case "else":
                 if(next.equals("if")){
+                    if(enableLogging)Log.d("LLOC else-if");
                     addLloc();
                     skip();
                     mode=SKIPPARENTHESIS;
@@ -127,12 +161,14 @@ public class LLOCCounter{
             case "private":
             case "protected":
             case "public":
+                if(enableLogging)Log.d("LLOC private/protected/public");
                 addLloc();
                 skip();
                 break;
             case "class":
             case "struct":
             case "union":
+                if(enableLogging)Log.d("LLOC class/struct/union");
                 addLloc();
                 mode=SKIPTOBRACKET;
                 
@@ -145,6 +181,7 @@ public class LLOCCounter{
             case ";":
                 if(!currentForStatement.isEmpty()){
                     currentForStatement="";
+                    if(enableLogging)Log.d("LLOC for parenthesis");
                     addLloc();
                 }
                 break;
@@ -154,8 +191,10 @@ public class LLOCCounter{
             case ")":
                 parenthesisDepth--;
                 if(parenthesisDepth==0){
-                    if(!currentForStatement.isEmpty())
+                    if(!currentForStatement.isEmpty()){
+                        if(enableLogging)Log.d("LLOC for parenthesis end");
                         addLloc();
+                    }
                     reset();
                 }
                 break;
@@ -225,6 +264,8 @@ public class LLOCCounter{
             //case ":":
         }
     }
+
+    
 
    
 
