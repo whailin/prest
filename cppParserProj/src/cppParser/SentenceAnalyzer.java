@@ -161,11 +161,10 @@ public class SentenceAnalyzer {
 				}
 			}
 		}
-		
+		llocCounter.processSentenceInFuncBody(tokens);
 		if(ParsedObjectManager.getInstance().currentFunc != null)
 		{
 			functionAnalyzer.processSentence(tokens);
-            llocCounter.processSentenceInFuncBody(tokens);
 			return;
 		}
 		else if(ParsedObjectManager.getInstance().currentScope != null)
@@ -182,8 +181,11 @@ public class SentenceAnalyzer {
 
     public void fileChanged(String file) {
         if(llocCounter!=null)
-            Log.d("File: "+file+" LLOC: "+llocCounter.getLloc());
+            Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
         llocCounter = new LLOCCounter();
         llocCounter.setFile(file);
+    }
+    public void lastFileProcessed(){
+        Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
     }
 }

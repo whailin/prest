@@ -91,8 +91,10 @@ public class Extractor
 		{
 			Log.d("Processing " + s + " ...");
 			process(s);
+            
 			Log.d();
-		}		
+		}
+        sentenceAnalyzer.lastFileProcessed();
 
 		Log.d("First analysis pass done. Starting second pass...");	
 
