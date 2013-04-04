@@ -161,7 +161,7 @@ public class SentenceAnalyzer {
 				}
 			}
 		}
-		llocCounter.processSentenceInFuncBody(tokens);
+		llocCounter.processSentence(tokens);
 		if(ParsedObjectManager.getInstance().currentFunc != null)
 		{
 			functionAnalyzer.processSentence(tokens);
