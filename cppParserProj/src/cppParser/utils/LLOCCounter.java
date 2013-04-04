@@ -12,19 +12,15 @@ import java.util.List;
  * @author Tomi
  */
 public class LLOCCounter{
-    private static final int BEGIN=0, SKIPTOTOKEN=1, SKIP=2, FOR=3, SWITCH=4;
+    private static final int BEGIN=0, SKIPTONEXT=1, SKIPPARENTHESIS=2, SKIPTOCOLON=3, SKIPTOBRACKET=4, FOR=5;
     private int mode=BEGIN;
-    private int oldMode;
-    private String skipTo;
-    private int forStatement;
     private String currentForStatement;
     
     private int parenthesisDepth=0;
-    private int skipBrackets=0;
     
     //Special cases for counting lloc in function bodies
-    private static final String[] special={"asm","catch","class","do", "else","for", "if","struct", "switch" , "throw", "try","union", "while"}; 
-    private List<String> specialCases=new ArrayList<>(Arrays.asList(special)); 
+    private static final String[] special={"case","catch","class","default","do", "else","for", "if","private","protected","public","struct", "switch" , "try","union", "while"}; 
+    private static final List<String> specialCases=new ArrayList<>(Arrays.asList(special)); 
     private String file;
     private int lloc=0;
     private int index;
@@ -40,7 +36,6 @@ public class LLOCCounter{
      * @param tokens 
      */
     public void processSentenceInFuncBody(String[] tokens){
-        if(false){//Disabled until this thing starts working
         String next;
         for(index=0;index<tokens.length;index++){//TBD bracket skipping
             next=null;
@@ -48,11 +43,7 @@ public class LLOCCounter{
                 next=tokens[index+1];
             }
             chooseAction(tokens[index],next);
-            
-        }
-        }
-            
-        
+        }  
     }
     
     private void chooseAction(String token, String next){
@@ -62,27 +53,90 @@ public class LLOCCounter{
                 break;
             case FOR:
                 handleFor(token, next);
+                break;
+            case SKIPTONEXT:
+                skipToNextStatement(token);
+                break;
+            case SKIPTOCOLON:
+                skipColon(token);
+                break;
+            case SKIPPARENTHESIS:
+                skipParenthesis(token);
+                break;
+            case SKIPTOBRACKET:
+                skipToBracket(token);
+                break;
+            
         }
     }
     private void takeFirstTokens(String token, String next) {
+        if(token.contentEquals("{"))
+            return;
+        else if(token.contentEquals("{"))
+            return;
         if(Collections.binarySearch(specialCases, token)>=0){
             handleSpecialCase(token, next);
+        }else{
+            switch(token){
+                case ";":
+                    reset(); //empty statements are not counted
+                    break;
+                case "case":
+                case "default":
+                    mode=SKIPTOCOLON;
+                    break;
+                default:
+                    addLloc();
+                    mode=SKIPTONEXT;
+            }
+           
         }
     }
+    
     
     private void handleSpecialCase(String token, String next) {
         switch(token){
             case "for":
                 addLloc();
                 mode=FOR;
-                forStatement=0;
                 currentForStatement="";
+                parenthesisDepth=0;
+                break;
+            case "try":
+            case "do":
+                break; //Do and try are not counted separately
+            case "switch":
+            case "catch":
+            case "while":
+            case "if":
+                addLloc();
+                mode=SKIPPARENTHESIS;
+                break;
+            case "default":
+            case "case":
+                addLloc();
+                mode=SKIPTOCOLON;
+                break;
+            case "else":
+                if(next.equals("if")){
+                    addLloc();
+                    skip();
+                    mode=SKIPPARENTHESIS;
+                }
+                break;
+            case "private":
+            case "protected":
+            case "public":
+                addLloc();
                 skip();
                 break;
-            case "if":
-            case "else":
-                if(next.equals("if"))addLloc();
-                break;
+            case "class":
+            case "struct":
+            case "union":
+                addLloc();
+                mode=SKIPTOBRACKET;
+                
+                
                 
         }
     }
@@ -93,25 +147,20 @@ public class LLOCCounter{
                     currentForStatement="";
                     addLloc();
                 }
-                forStatement++;
                 break;
             case "(":
                 parenthesisDepth++;
                 break;
             case ")":
+                parenthesisDepth--;
                 if(parenthesisDepth==0){
-                    if(forStatement>0)
+                    if(!currentForStatement.isEmpty())
                         addLloc();
-                    else if(!currentForStatement.isEmpty())
-                        addLloc();
-                    if(next!=null)
-                        if(next.contentEquals("{"))skipBrackets++;
-                }else{
-                    parenthesisDepth--;
-                    if(parenthesisDepth==0);
+                    reset();
                 }
                 break;
             default:
+                currentForStatement+=token;
         }
     }
 
@@ -138,7 +187,46 @@ public class LLOCCounter{
     private void skip(){
         index++;
     }
-    
+
+    private void reset() {
+        mode=BEGIN;
+        
+    }
+
+    private void skipToNextStatement(String token) {
+        if(token.contentEquals(";"))
+            reset();
+    }
+
+    private void skipParenthesis(String token) {
+        switch(token){
+            case "(":
+                parenthesisDepth++;
+                break;
+            case ")":
+                parenthesisDepth--;
+                if(parenthesisDepth<=0)
+                    reset();
+                break;
+                
+        }
+    }
+
+    private void skipColon(String token) {
+        if(token.contentEquals(":"))
+            reset();
+    }
+
+    private void skipToBracket(String token) {
+        switch(token){
+            case ";":
+            case "{":
+                reset();
+            //case ":":
+        }
+    }
+
+   
 
     
     
