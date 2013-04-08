@@ -15,19 +15,20 @@ import java.util.List;
  * and added to the count by using addLloc();
  * @author Tomi
  */
-public class LLOCCounter{
-    private static final boolean enableLogging=false;
-    private static final int BEGIN=0, SKIPTONEXT=1, SKIPPARENTHESIS=2, SKIPTOCOLON=3, SKIPTOBRACKET=4, FOR=5;
-    private int mode=BEGIN;
+public class LLOCCounter
+{
+    private static final boolean enableLogging = false;
+    private static final int BEGIN = 0, SKIPTONEXT = 1, SKIPPARENTHESIS = 2, SKIPTOCOLON = 3, SKIPTOBRACKET = 4, FOR = 5;
+    private int mode = BEGIN;
     private String currentForStatement;
     
-    private int parenthesisDepth=0;
+    private int parenthesisDepth = 0;
     
     //Special cases for counting lloc in function bodies
-    private static final String[] special={"case","catch","class","default","do", "else","for", "if","private","protected","public","struct", "switch" , "try","union", "while"}; 
-    private static final List<String> specialCases=new ArrayList<>(Arrays.asList(special)); 
+    private static final String[] special = {"case", "catch", "class", "default", "do", "else", "for", "if", "private", "protected", "public", "struct", "switch" , "try", "union", "while"}; 
+    private static final List<String> specialCases = new ArrayList<>(Arrays.asList(special)); 
     private String file;
-    private int lloc=0;
+    private int lloc = 0;
     private int index;
     
     /**
@@ -35,19 +36,20 @@ public class LLOCCounter{
      * tokens should not contain preprocessor directives
      * @param tokens 
      */
-    public void processSentence(String[] tokens){
+    public void processSentence(String[] tokens)
+    {
         String next;
-        for(index=0;index<tokens.length;index++){//TBD bracket skipping
-            next=null;
-            if(tokensFormFunction(tokens)){//If tokens form a start of a function then they can be skipped
+        for(index = 0; index < tokens.length; index++) {//TBD bracket skipping
+            next = null;
+            if(tokensFormFunction(tokens)) {//If tokens form a start of a function then they can be skipped
                 if(enableLogging)Log.d("LLOC FuncB");
                 addLloc();
                 return;
             }
-            if((index+1)<tokens.length){
-                next=tokens[index+1];
+            if((index+1) < tokens.length){
+                next = tokens[index+1];
             }
-            chooseAction(tokens[index],next);
+            chooseAction(tokens[index], next);
         }  
     }
     /**
@@ -57,25 +59,24 @@ public class LLOCCounter{
      */
     private boolean tokensFormFunction(String[] tokens) {
         try{
-            if(tokens[tokens.length-1].contentEquals("{")){
-                if(tokens[tokens.length-2].contentEquals(")")){
-                    for(int i=0;i<tokens.length;i++){
-                        if(tokens[i].contentEquals("(")){
+            if(tokens[tokens.length-1].contentEquals("{")) {
+                if(tokens[tokens.length-2].contentEquals(")")) {
+                    for(int i = 0; i < tokens.length; i++) {
+                        if(tokens[i].contentEquals("(")) {
                             if(Constants.isKeyword(tokens[i-1]))
                                 return false;
                             else return true;
                         }
                     }
                 }
-                
             }
-        }catch(ArrayIndexOutOfBoundsException e){
+        }catch(ArrayIndexOutOfBoundsException e) {
             return false;
         }
         return false;
     }
     
-    private void chooseAction(String token, String next){
+    private void chooseAction(String token, String next) {
         switch(mode){
             case BEGIN:
                 takeFirstTokens(token, next);
@@ -95,29 +96,29 @@ public class LLOCCounter{
             case SKIPTOBRACKET:
                 skipToBracket(token);
                 break;
-            
         }
     }
+    
     private void takeFirstTokens(String token, String next) {
         if(token.contentEquals("{"))
             return;
         else if(token.contentEquals("}"))
             return;
-        if(Collections.binarySearch(specialCases, token)>=0){
+        if(Collections.binarySearch(specialCases, token) >= 0) {
             handleSpecialCase(token, next);
         }else{
-            switch(token){
+            switch(token) {
                 case ";":
                     reset(); //empty statements are not counted
                     break;
                 case "case":
                 case "default":
-                    mode=SKIPTOCOLON;
+                    mode = SKIPTOCOLON;
                     break;
                 default:
                     if(enableLogging) Log.d("LLOC statement");
                     addLloc();
-                    mode=SKIPTONEXT;
+                    mode = SKIPTONEXT;
             }
            
         }
@@ -129,9 +130,9 @@ public class LLOCCounter{
             case "for":
                 if(enableLogging) Log.d("LLOC ForB");
                 addLloc();
-                mode=FOR;
-                currentForStatement="";
-                parenthesisDepth=0;
+                mode = FOR;
+                currentForStatement = "";
+                parenthesisDepth = 0;
                 break;
             case "try":
             case "do":
@@ -142,46 +143,44 @@ public class LLOCCounter{
             case "if":
                 if(enableLogging)Log.d("LLOC switch/if/catch/while");
                 addLloc();
-                mode=SKIPPARENTHESIS;
+                mode = SKIPPARENTHESIS;
                 break;
             case "default":
             case "case":
                 if(enableLogging)Log.d("LLOC case/default");
                 addLloc();
-                mode=SKIPTOCOLON;
+                mode = SKIPTOCOLON;
                 break;
             case "else":
-                if(next.equals("if")){
-                    if(enableLogging)Log.d("LLOC else-if");
+                if(next.equals("if")) {
+                    if(enableLogging) Log.d("LLOC else-if");
                     addLloc();
                     skip();
-                    mode=SKIPPARENTHESIS;
+                    mode = SKIPPARENTHESIS;
                 }
                 break;
             case "private":
             case "protected":
             case "public":
-                if(enableLogging)Log.d("LLOC private/protected/public");
+                if(enableLogging) Log.d("LLOC private/protected/public");
                 addLloc();
                 skip();
                 break;
             case "class":
             case "struct":
             case "union":
-                if(enableLogging)Log.d("LLOC class/struct/union");
+                if(enableLogging) Log.d("LLOC class/struct/union");
                 addLloc();
-                mode=SKIPTOBRACKET;
-                
-                
-                
+                mode = SKIPTOBRACKET;
         }
     }
-    private void handleFor(String token, String next){
-        switch(token){
+    
+    private void handleFor(String token, String next) {
+        switch(token) {
             case ";":
-                if(!currentForStatement.isEmpty()){
-                    currentForStatement="";
-                    if(enableLogging)Log.d("LLOC for parenthesis");
+                if(!currentForStatement.isEmpty()) {
+                    currentForStatement = "";
+                    if(enableLogging) Log.d("LLOC for parenthesis");
                     addLloc();
                 }
                 break;
@@ -190,16 +189,16 @@ public class LLOCCounter{
                 break;
             case ")":
                 parenthesisDepth--;
-                if(parenthesisDepth==0){
-                    if(!currentForStatement.isEmpty()){
-                        if(enableLogging)Log.d("LLOC for parenthesis end");
+                if(parenthesisDepth == 0) {
+                    if(!currentForStatement.isEmpty()) {
+                        if(enableLogging) Log.d("LLOC for parenthesis end");
                         addLloc();
                     }
                     reset();
                 }
                 break;
             default:
-                currentForStatement+=token;
+                currentForStatement += token;
         }
     }
 
@@ -211,7 +210,7 @@ public class LLOCCounter{
         this.file = file;
     }
     
-    public void addLloc(){
+    public void addLloc() {
         lloc++;
     }
 
@@ -223,7 +222,7 @@ public class LLOCCounter{
         this.lloc = lloc;
     }
 
-    private void skip(){
+    private void skip() {
         index++;
     }
 
@@ -257,19 +256,11 @@ public class LLOCCounter{
     }
 
     private void skipToBracket(String token) {
-        switch(token){
+        switch(token) {
             case ";":
             case "{":
                 reset();
             //case ":":
         }
     }
-
-    
-
-   
-
-    
-    
-
 }

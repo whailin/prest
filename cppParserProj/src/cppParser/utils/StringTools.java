@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class StringTools
 {
 	// List of "splitters" that are used to tokenize a single line of source code
-	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\""};
+	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>"};
 		
 	
 	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted
@@ -29,6 +29,9 @@ public class StringTools
 	
 	// List of Halstead operators
 	public static String[] operators = {";", ")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or"};
+	
+	// List of primitive types and values
+	public static String[] primitivetypes = {"int", "double", "float", "true", "false", "char", "short", "long", "unsigned"};
 	
 	
 	/**
@@ -55,30 +58,80 @@ public class StringTools
 		String s = "";
 		for(int i = 0; i < src.length(); ++i)
 		{
+			char tmp = src.charAt(i);
 			boolean shouldSplit = false;
 			String includedDelim = null;
 			
-			// Check for deliminator
-			for(int j = 0; j < delims.length; ++j)
+			// Check for string literal
+			if(src.charAt(i) == '"')
 			{
-				int matched = 0;
-				for(int k = 0; k < delims[j].length(); ++k)
+				/*
+				if(s.length() > 0)
 				{
-					if(i+k < src.length())
+					shouldSplit = true;
+					i--;
+				}
+				*/
+				
+				s += src.charAt(i);
+				i++;
+				while(true)
+				{
+					s += src.charAt(i);
+					if(src.charAt(i) == '"')
 					{
-						if(src.charAt(i+k) == delims[j].charAt(k))
+						if(src.charAt(i-1) != '\\' || (src.charAt(i-1) == '\\' && src.charAt(i-2) == '\\'))
 						{
-							matched++;
-							if(matched == delims[j].length())
+							break;
+						}
+					}
+					i++;
+				}
+				shouldSplit = true;
+			}
+			else if(src.charAt(i) == '\'')
+			{
+				s += src.charAt(i);
+				i++;
+				while(true)
+				{
+					s += src.charAt(i);
+					if(src.charAt(i) == '\'')
+					{
+						if(src.charAt(i-1) != '\\' || (src.charAt(i-1) == '\\' && src.charAt(i-2) == '\\'))
+						{
+							i++;
+							break;
+						}
+					}
+					i++;
+				}
+				shouldSplit = true;
+			}
+			else
+			{
+				// Check for deliminator
+				for(int j = 0; j < delims.length; ++j)
+				{
+					int matched = 0;
+					for(int k = 0; k < delims[j].length(); ++k)
+					{
+						if(i+k < src.length())
+						{
+							if(src.charAt(i+k) == delims[j].charAt(k))
 							{
-								shouldSplit = true;
-								includedDelim = delims[j];
-								break;
+								matched++;
+								if(matched == delims[j].length())
+								{
+									shouldSplit = true;
+									includedDelim = delims[j];
+									break;
+								}
 							}
 						}
 					}
+					if(shouldSplit) break;
 				}
-				if(shouldSplit) break;
 			}
 			
 			// If a delim was found, split the string
@@ -196,6 +249,15 @@ public class StringTools
 			if(operators[i].equals(s)) return true;
 		}
 		
+		return false;
+	}
+
+	public static boolean isPrimitiveType(String s)
+	{
+		for(int i = 0; i < primitivetypes.length; ++i)
+		{
+			if(primitivetypes[i].equals(s)) return true;
+		}
 		return false;
 	}
 }

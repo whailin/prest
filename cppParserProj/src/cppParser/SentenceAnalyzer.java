@@ -180,8 +180,8 @@ public class SentenceAnalyzer {
 	}
 
     public void fileChanged(String file) {
-        if(llocCounter!=null)
-            Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
+        //if(llocCounter!=null)
+        //    Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
         llocCounter = new LLOCCounter();
         llocCounter.setFile(file);
     }

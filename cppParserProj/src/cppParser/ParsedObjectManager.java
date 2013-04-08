@@ -14,6 +14,9 @@ import cppStructures.*;
  */
 public class ParsedObjectManager {
 
+	// If 'true', the same class can be implemented in multiple ways (via PP directives)
+	private boolean allowMultipleVariantsOfClass = true;
+	
 	private static ParsedObjectManager instance = new ParsedObjectManager();
 	
 	// Reference to the function currently under processing
