@@ -25,6 +25,23 @@ import cppStructures.MemberVariable;
  */
 public class Extractor
 {
+	enum Pass
+	{
+		PREPASS,
+		MAINPASS,
+		POSTPASS
+	}
+	
+	enum Mode
+	{
+		PREPASS_ONLY,
+		MAINPASS_ONLY,
+		ALL_PASSES
+	}
+	
+	private Pass currentPass = Pass.PREPASS;
+	private Mode currentMode = Mode.PREPASS_ONLY;
+	
 	// Filename or folder to process
 	private String file = "";
 	
@@ -36,12 +53,6 @@ public class Extractor
 	
 	// If 'true', all "std"-starting stuff is ignored
 	// private boolean ignoreStd = true;
-
-	// Braces count when the current function was found
-	// private int funcBraceCount = 0;
-	
-	// Currently open braces count
-	// private int braceCount = 0;
 	
 	// Current line in the source file (may not reflect the actual processing)
 	public static int lineno = 0; 
@@ -58,6 +69,8 @@ public class Extractor
 	
 	// The sentence analyzer used to analyze each "raw" sentence
 	private SentenceAnalyzer sentenceAnalyzer;
+	
+	private PreprocessorPass prepassAnalyzer;
     
 	
 	/**
@@ -80,28 +93,44 @@ public class Extractor
 		
 		long startTime = System.currentTimeMillis();
 		sentenceAnalyzer = new SentenceAnalyzer();
+		prepassAnalyzer = new PreprocessorPass(this);
 		
 		FileLoader fileLoader = new FileLoader(this.file);
 		
 		Log.d("Files sorted in " + (double)(System.currentTimeMillis() - startTime) / 1000.0 + " s.");
 		Log.d("Found " + fileLoader.getFiles().size() + " files.");
 		
-		// Loop through the found files
-		for(String s : fileLoader.getFiles())
+		// Execute the pre-pass if needed
+		if(currentMode != Mode.MAINPASS_ONLY)
 		{
-			Log.d("Processing " + s + " ...");
-			process(s);
-            
-			Log.d();
+			currentPass = Pass.PREPASS;
+			
+			// Preprocessor pass
+			for(String s : fileLoader.getFiles())
+			{
+				process(s);
+			}
+			
+			Log.d("Prepass done.");
 		}
+		
+		// Execute the main pass if needed
+		if(currentMode != Mode.PREPASS_ONLY)
+		{
+			currentPass = Pass.MAINPASS;
+			
+			// Loop through the found files
+			for(String s : fileLoader.getFiles())
+			{
+				process(s);
+			}
+			
+			Log.d("Main pass done.");
+		}
+		
         sentenceAnalyzer.lastFileProcessed();
 
-		Log.d("First analysis pass done. Starting second pass...");	
-
 		// TODO Second pass: fix unknown references / types / ambiguities
-		
-		Log.d("Second analysis pass done. Dumping...");
-		
 		
 		// Dump tree results to a file
 		dumpTreeResults();
@@ -138,13 +167,6 @@ public class Extractor
 		// this.lineDone = false;
 		lineno = 0;
 		
-		Log.d("Analyzing file: " + file);
-		
-		if(file.endsWith("OgreMaterialSerializer.cpp"))
-		{
-			Log.d("dbg start");
-		}
-		
 		try
 		{
 			lineno = 1;
@@ -179,7 +201,16 @@ public class Extractor
 						if(!stringOpen && !charOpen && line.charAt(line.length() - 1) != '\\')
 						{
 							lloc++;
-							sentenceAnalyzer.lexLine(line);
+							switch(currentPass)
+							{
+							case PREPASS:
+								prepassAnalyzer.process(line);
+								break;
+							case MAINPASS:
+								sentenceAnalyzer.lexLine(line);
+								break;
+							}
+							
 							line = "";
 							commentLine = "";	
 						}
@@ -287,7 +318,14 @@ public class Extractor
 					}
 					else
 					{
-						line += c;
+						if(line.length() == 0 && c == ' ')
+						{
+							
+						}
+						else
+						{
+							line += c;
+						}
 					}				
 					
 				}
@@ -302,7 +340,18 @@ public class Extractor
 				{
 					lloc++;
 					// lexLine(line);
-					sentenceAnalyzer.lexLine(line);
+					line.trim();
+					
+					switch(currentPass)
+					{
+					case PREPASS:
+						prepassAnalyzer.process(line);
+						break;
+					case MAINPASS:
+						sentenceAnalyzer.lexLine(line);
+						break;
+					}
+					
 					// sentenceAnalyzer.lexLineHM(line);
 					line = "";
 					commentLine = "";
@@ -409,6 +458,8 @@ public class Extractor
 					}					
 
 					writer.write(")\n");
+					
+					writer.write("      File: " + mf.fileOfFunc + "\n");
 					
 					writer.write("      Operator count = " + mf.getOperatorCount() + "\n");
 					for(String s : mf.getOperators())

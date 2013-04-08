@@ -39,9 +39,16 @@ public class OperatorAnalyzer extends Analyzer
 			
 			if(this.tokens[i].equals("\"")) openString = !openString;
 			
-			if(!openString && StringTools.isOperator(this.tokens[i]))
+			if(!openString)
 			{
-				handleOperator();
+				if(StringTools.isOperator(this.tokens[i]))
+				{
+					handleOperator();
+				}
+				else if(StringTools.isKeyword(this.tokens[i]) && !StringTools.isPrimitiveType(this.tokens[i]))
+				{
+					objManager.currentFunc.addOperator(this.tokens[i]);
+				}
 			}
 		}
 		
@@ -105,8 +112,14 @@ public class OperatorAnalyzer extends Analyzer
 			}
 			else
 			{
-				// if(StringTools.isOperator(tokens[i-1]))
-				// {
+				if(StringTools.isKeyword(tokens[i]))
+				{
+					objManager.currentFunc.addOperator(tokens[i]);
+					functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
+				}
+				else
+				{
+				
 					// TODO Construct a whole operand, if it consists of multiple tokens
 					String operand = tokens[i];
 					if(operand.equals("\"")) operand = constructStringLiteral(i, false);
@@ -115,7 +128,7 @@ public class OperatorAnalyzer extends Analyzer
 						objManager.currentFunc.addOperand(operand);
 						functionAnalyzer.getHandledIndices().add(new Integer(i));
 					}
-				// }
+				}
 			}
 		}
 	}
