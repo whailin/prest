@@ -76,7 +76,7 @@ public class PreprocessorPass {
 			Log.d("Define: name = " + tokens[2] + "    value = " + tokens[3]);
 			
 		}
-		else
+		else if(tokens.length > 4)
 		{
 			if(tokens[3].equals("("))
 			{

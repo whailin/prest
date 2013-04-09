@@ -40,7 +40,7 @@ public class Extractor
 	}
 	
 	private Pass currentPass = Pass.PREPASS;
-	private Mode currentMode = Mode.PREPASS_ONLY;
+	private Mode currentMode = Mode.ALL_PASSES;
 	
 	// Filename or folder to process
 	private String file = "";
