@@ -3,6 +3,7 @@
 package cppParser.utils;
 
 import cppParser.Extractor;
+import cppParser.ParsedObjectManager;
 import cppParser.utils.parameter.FunctionCallToken;
 import cppParser.utils.parameter.ParameterToken;
 import cppParser.utils.parameter.StringToken;
@@ -120,100 +121,7 @@ public class FunctionFinder {
         }
     }
 
-    /**
-     * Analyzes a function call.
-     * This method is recursive, meaning that if it finds another function call
-     * in the parameters, it will call itself to parse the inner function call.
-     * @param index The index in tokens if the opening parenthesis
-     * @return The index of the closing parenthesis
-     */
-    private FunctionCall handleFunctionCall(boolean recursive)
-    {
-        // Store the function name
-            //Log.d("hfc");
-        String funcName = tokens[index-1]; //Array out of bounds if first token is "(" ?
-        
-        //ParsedObjectManager.getInstance().currentFunc.addOperand(funcName);
-        //ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[index]);
-        
-        
-        // Owners List should contain the owners of the function call eg myObj in "myObj->hello();"
-        //List<String> owners = getOwners(index);
-        List<List<ParameterToken>> params = new ArrayList<>();
-        List<ParameterToken> currentParam = new ArrayList<>();
-                // Check if the function call is parameterless
-        if(index < tokens.length - 1 && tokens[index+1].equals(")"))
-        {
-            if(varFinder.isDefined(funcName)){
-                Log.d(funcName+" is known variable, not function call...");
-            }else{
-                Log.d("      (line: " + Extractor.lineno + ") Function call np > " + funcName);
-                // func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
-            }
-            skip();
-            return new FunctionCall(funcName);
-        }
-        
-        // Loop through the parameters
-        int skip=0;
-        FunctionCall fc;
-        for(int j = index + 1; j < tokens.length; ++j)
-        {
-            skip();
-            switch(tokens[j])
-            {
-            case ")":
-                // Close the function call
-                if(!currentParam.isEmpty())
-                {
-                    params.add(currentParam);
-                    //handleParameter(currentParam);
-                }
-                                
-                if(varFinder.isDefined(funcName))
-                {
-                    Log.d(funcName+" is known variable, not function call...");
-                    fc = null;
-                }
-                else
-                {
-                    fc=new FunctionCall(owners,funcName);
-                    Log.d("      (line: " + Extractor.lineno + ") Function call > " + fc.toString());
-                    // func.recognizedLines.add("      (line: " + Extractor.lineno + ") Function call > " + funcName);
-                }
-                //skip(skip);
-                return fc;
-            case "(":
-                // Recurse through inner function calls
-                // j = handleFunctionCall(j);
-                if(isFuncCall(j)){
-                    fc = handleFunctionCall(true); 
-                    if(fc != null)
-                        currentParam.add(new FunctionCallToken(fc));
-                }
-                break;
-            case ",":
-                params.add(currentParam);
-                //handleParameter(currentParam);
-                currentParam = new ArrayList<>();
-                break;
-            default:
-                currentParam.add(new StringToken(tokens[j]));
-                break;
-            }
-            
-        }
-
-        return null;
-    }
-   
-     
-    /*private void skip(){
-            if(parent==null)
-                index++;
-            else
-                parent.skip();
-    }*/
+    
     private void skip(){
         skip++;
     }
@@ -292,82 +200,7 @@ public class FunctionFinder {
             return null; 
         }
     }
-/**
- * This method looks at given tokens and combines string literals to one token
- * @param tokens
- * @return returns same array that was given as parameter if no literals were found else
- * it returns new array where Strings are combined
- */
-    private String[] tokenizeLiterals(String[] tokens) {
-        //Log.d("Tokenizing");
-        List<String> list=new ArrayList<>(tokens.length);
-        boolean containsLiterals=false;
-        boolean found=false;
-        String prev, current=null, combined="";
-        for(int x=0;x<tokens.length;x++){
-            prev=current;
-            current=tokens[x];
-            if(found){
-                if(current.contentEquals("\"")){
-                    if(prev!=null){
-                        if((prev.charAt(prev.length()-1)=='\\'))
-                            ;//Log.d("Found \\");//found=false; //end of string literal
-                        else
-                            found=false;
-                    }else found=false;//end of string literal
-                }
-                if(found){
-                    combined+=" "+current;
-                    //Log.d("comb:"+combined);
-                }
-                else {
-                    combined+=current;
-                    //Log.d("C:"+combined);
-                }
-            }else{
-                if(current.charAt(0)=='\''){//handle char literals
-                    //Log.d("p: "+prev+" c: "+current);
-                    switch(current.length()){
-                        case 1:
-                            
-                            //If the char between '' is splitter token then there's two separate tokens to combine with first ' token
-                            combined=current+tokens[x+1]+tokens[x+2];
-                            x+=2;
-                            containsLiterals=true;
-                            list.add(combined);
-                            continue;
-                        case 2:
-                            if(current.charAt(1) =='\\'){
-                                combined=current+tokens[x+1]+tokens[x+2];
-                                x+=2;
-                                containsLiterals=true;
-                                list.add(combined);
-                                continue;
-                            }else Log.d("Unexpected token:"+current+" Expected char literal"); //This should not happen
-                                    
-                        case 3:
-                        case 4:
-                            list.add(current);
-                            continue;
-                        default: 
-                            Log.d("Unexpected token:"+current+" Expected char literal"); //This should not happen
-                    }
-                }
-                if(current.contentEquals("\"")){
-                    //Log.d("Found \"");
-                    combined="\"";
-                    found=true;
-                }
-            }
-            
-            
-        }
-        if(!containsLiterals)return tokens;
-        return null;
-        
-    }
 
-    
     
     private void reset(){
         mode=BEGIN;
@@ -384,7 +217,8 @@ public class FunctionFinder {
             case ")":
                 if(parenthesisDepth==0){
                     currentFc.parameters.add(parseParameter(parameterTokens));
-                    // Log.d("Found FC: "+ currentFc.toString());
+                    checkDependencies(currentFc.owners);
+                    Log.d("Found FC: "+ currentFc.toString());
                     if(next==null)
                         addToken(new FunctionCallToken(currentFc));
                     mode=ANOTHER;
@@ -444,6 +278,31 @@ public class FunctionFinder {
                 addToken(token);
                 reset();
        }
+    }
+
+    private void checkDependencies(List<ParameterToken> owners) {
+        if(owners==null)
+            return;
+        if(owners.isEmpty())
+            return;
+        for(int i=0;owners.size()>i;i++){
+            ParameterToken current=owners.get(i);
+            ParameterToken nextToken=null;
+            if(i<owners.size()+1){
+                nextToken=owners.get(i+1);
+            }
+            if(current instanceof StringToken){
+                if(nextToken!=null){
+                    if(nextToken instanceof StringToken){
+                        if(((StringToken)nextToken).token.contentEquals("::"))
+                            ParsedObjectManager.getInstance().currentFunc.addDependency(current.toString());
+                    }
+                }
+            }
+            i++;
+            
+            
+        }
     }
     
 

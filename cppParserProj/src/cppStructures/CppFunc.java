@@ -1,6 +1,9 @@
 package cppStructures;
 
+import cppParser.utils.Constants;
+import cppParser.utils.Log;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * CppFunc.java
@@ -12,7 +15,7 @@ import java.util.ArrayList;
  * @author Harri Pellikka
  */
 public class CppFunc {
-
+    
 	private String type = "void";
 	private String name = "";
 	// private MetricsParam[] params;
@@ -32,6 +35,7 @@ public class CppFunc {
 	private ArrayList<String[]> nonCompleteLines = new ArrayList<String[]>();
 	
 	private ArrayList<MemberVariable> members = new ArrayList<MemberVariable>();
+    private HashMap<String,String> dependencies= new HashMap<>();
 	
 	// Halstead-related containers
 	private ArrayList<String> operators = new ArrayList<String>();
@@ -417,5 +421,20 @@ public class CppFunc {
 	public ArrayList<String> getStatements() {
 		return this.statements;
 	}
+    /**
+     * This method is used to add known dependencies in the function
+     * eg std::string myString; has dependencies to std and string. if given
+     * dependency is a keyword eg int it's ignored
+     * @param dependency 
+     */
+    public void addDependency(String dependency){
+        if(Constants.isKeyword(dependency))
+            return;
+        if(dependencies.get(dependency)==null){
+            Log.d("Found dependency:"+dependency);
+            dependencies.put(dependency, dependency);
+        }
+        
+    }
 
 }

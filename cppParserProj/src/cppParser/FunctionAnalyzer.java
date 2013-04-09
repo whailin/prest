@@ -211,6 +211,7 @@ public class FunctionAnalyzer extends Analyzer {
 		
 		return false;
 	}
+    
 	
 	/**
 	 * Processes sentences that belong to a currently open function
