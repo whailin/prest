@@ -2,6 +2,7 @@ package cppParser.utils;
 
 import cppParser.FunctionAnalyzer;
 import cppParser.ParsedObjectManager;
+import cppStructures.CppFunc;
 import cppStructures.MemberVariable;
 import java.util.ArrayList;
 import java.util.List;
@@ -292,6 +293,7 @@ public class VarFinder
             if(!silenced)
                 Log.d("Found variable " + currentType + currentTemplate + " " + currentPtr+currentName+currentArray);
             MemberVariable member = new MemberVariable(currentType, currentName);
+            checkDependencies(currentType);
             member.setTemplate(currentTemplate);
             member.setArray(currentArray);
             variables.add(member);
@@ -617,5 +619,15 @@ public class VarFinder
         if(variables.isEmpty())
             return null;
         return variables.get(variables.size()-1);
+    }
+
+    private void checkDependencies(String currentType) {
+        if(!currentType.isEmpty()){
+            String[] delim={"::"};
+            String[] tokens = StringTools.split(currentType, delim, false);
+            for(String str:tokens)
+                ParsedObjectManager.getInstance().currentFunc.addDependency(str);
+            
+        }
     }
 }
