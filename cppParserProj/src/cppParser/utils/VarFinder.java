@@ -16,7 +16,6 @@ public class VarFinder
 {
     private static final boolean silenced = true, showTokens=false;
     private static final String[] delims = {"<", ">"};
-    private List<MemberVariable> variables;
     
     private VarFinder recursive = null;
     private VarFinder parent=null;
@@ -60,12 +59,10 @@ public class VarFinder
     public VarFinder(FunctionAnalyzer fa)
     {
     	this.functionAnalyzer = fa;
-        variables = new ArrayList<>();
     }
     
-    private VarFinder(List<MemberVariable> variables, VarFinder parent)
+    private VarFinder(VarFinder parent)
     {
-        this.variables = variables;
         this.parent = parent;
         this.functionAnalyzer = parent.functionAnalyzer;
         // isRecursive = true;
@@ -163,7 +160,7 @@ public class VarFinder
         else if(token.contentEquals("(") || token.contentEquals("{"))
         {
             //Log.d("new Rec");
-            recursive = new VarFinder(variables, this);
+            recursive = new VarFinder(this);
         }
         else if(token.contentEquals(")") || token.contentEquals("}"))
         {
@@ -282,21 +279,20 @@ public class VarFinder
             if(!primitive){
                 if(!currentPtr.isEmpty())
                 {
-                    if(isDefined(currentType)){
+                    if(ParsedObjectManager.getInstance().currentFunc.isVariableDefined(currentName)){
                         //Log.d("Found false positive " + currentType+currentTemplate + " " + currentPtr+currentName+currentArray);
                         reset();
                         return;
                     }
                 }
             }
-            // TBD sometimes some variables pop that have no type or name... They should not make it here
+
             if(!silenced)
                 Log.d("Found variable " + currentType + currentTemplate + " " + currentPtr+currentName+currentArray);
             MemberVariable member = new MemberVariable(currentType, currentName);
             checkDependencies(currentType);
             member.setTemplate(currentTemplate);
             member.setArray(currentArray);
-            variables.add(member);
             ParsedObjectManager.getInstance().currentFunc.addMember(member);
             ParsedObjectManager.getInstance().currentFunc.addOperand(member.getName());
             ParsedObjectManager.getInstance().currentFunc.addOperand(member.getType());
@@ -371,6 +367,10 @@ public class VarFinder
                         }
                         else return;
 
+                }
+                if(next.contentEquals("->")){
+                    mode = RESET;
+                    return;
                 }
                 if(next.contentEquals("::"))
                 {
@@ -494,7 +494,7 @@ public class VarFinder
         switch(token)
         {
             case "(":
-                recursive=new VarFinder(variables, this);
+                recursive=new VarFinder(this);
                 break;
             case ";":
                 endOfDeclaration();
@@ -585,20 +585,7 @@ public class VarFinder
                 return false;
         }
     }
-/**
- * Method checks if given name is already defined in the function that is analyzed.
- * @param name
- * @return 
- */
-    public boolean isDefined(String name) 
-    {
-        //TBD check for member variables in known scopes
-        for(MemberVariable var:variables){
-            if(var.getName().contentEquals(name))
-                return true;
-        }
-        return false;
-    }
+
     /**
      * This method will skip the next token
      */
@@ -613,13 +600,6 @@ public class VarFinder
         handledIndices.clear();
     }
     
-    public MemberVariable getLastFoundVariable(){
-        if(variables==null)
-            return null;
-        if(variables.isEmpty())
-            return null;
-        return variables.get(variables.size()-1);
-    }
 
     private void checkDependencies(String currentType) {
         if(!currentType.isEmpty()){
