@@ -39,6 +39,8 @@ public class ParsedObjectManager {
 	ArrayList<String> defines = new ArrayList<String>();
 	ArrayList<String> includes = new ArrayList<String>();
 	ArrayList<String> classes = new ArrayList<String>();
+    
+    ArrayList<CppType> knownTypes=new ArrayList<>();
 	
 	/**
 	 * Retrieves the singleton instance
@@ -56,6 +58,19 @@ public class ParsedObjectManager {
 	{
 		
 	}
+    
+    public ArrayList<CppType> getKnownTypes(){
+        return knownTypes;
+    }
+    
+    public void addKnownType(CppType type){
+        for(CppType ct:knownTypes){
+            if(ct.typeName.contentEquals(type.typeName))
+                if(ct.parent.contentEquals(type.parent))
+                    return;
+        }
+        knownTypes.add(type);
+    }
 
 	public void setDefaultScope()
 	{
@@ -89,6 +104,7 @@ public class ParsedObjectManager {
 		{
 			newClass = new CppClass(name);
 			scopes.add(newClass);
+            addKnownType(new CppType(name,CppType.CLASS));
 		}
 		
 		return newClass;

@@ -80,6 +80,18 @@ public class CppFunc {
 	{
 		return type;
 	}
+    /**
+     * 
+     * @param varName is checked if there is MemberVariable with same name
+     * @return true if there is member variable with given name
+     */
+    public boolean isVariableDefined(String varName){
+        for(MemberVariable mv:members){
+            if(mv.getName().contentEquals(varName))
+                return true;
+        }
+        return false;
+    }
 
 	/**
 	 * Increases cyclomatic complexity by one
@@ -141,6 +153,7 @@ public class CppFunc {
 	 */
 	public void addMember(MemberVariable mv)
 	{
+        Log.d("Adding  member "+ mv.getType()+" "+mv.getName() +" to "+name);
 		members.add(mv);
 	}
 	

@@ -172,6 +172,7 @@ public class FunctionAnalyzer extends Analyzer {
 						{
 							CppFuncParam attrib = new CppFuncParam(paramType, paramName);
 							func.parameters.add(attrib);
+                            func.addMember(new MemberVariable(paramType, paramName));
 							paramType = "";
 							paramName = "";
 						}
@@ -192,6 +193,7 @@ public class FunctionAnalyzer extends Analyzer {
 					{
 						CppFuncParam attrib = new CppFuncParam(paramType, paramName);
 						func.parameters.add(attrib);
+                        func.addMember(new MemberVariable(paramType, paramName));
 					}
 				}
 				
