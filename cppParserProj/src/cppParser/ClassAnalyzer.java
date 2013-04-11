@@ -41,7 +41,7 @@ public class ClassAnalyzer extends Analyzer
 		
 		if(!processNewClass(tokens) && ParsedObjectManager.getInstance().currentScope != null)
 		{
-			if(objManager.currentScope instanceof CppClass)
+			if(objManager.currentScope.type!=CppScope.NAMESPACE)
 			{
 				return processCurrentClass(tokens);
 			}
@@ -72,7 +72,7 @@ public class ClassAnalyzer extends Analyzer
 				return handleOpeningParenthesis();
 			case "enum":
 				// TODO handle enums properly
-				if(tokens[i+1].equals("class") || tokens[i+1].equals("struct"))
+				if(tokens[i+1].equals("class") || tokens[i+1].equals("struct")|| tokens[i+1].equals("union"))
 				{
 					Log.d("\tFound a scope enum " + tokens[i+2] + "\n");					
 				}
@@ -87,10 +87,10 @@ public class ClassAnalyzer extends Analyzer
 				// TODO handle typedefs properly
 				Log.d("\tFound a typedef " + tokens[1] + "\n");				
 				return true;
-			case "struct":
+			/*case "struct":
 				// TODO handle structs
 				structOpen = true;
-				return true;
+				return true;*/
 			case "=":
 				assignIndex = i;
 				break;
@@ -311,9 +311,9 @@ public class ClassAnalyzer extends Analyzer
 	{
 		for(int i = 0; i < tokens.length; ++i)
 		{
-			if(tokens[i].equals("class"))
+			if(tokens[i].equals("class") || tokens[i].equals("struct")|| tokens[i].equals("union"))
 			{				
-				Log.d("Found class ");
+				Log.d("Found "+tokens[i]);
 				if(tokens[tokens.length - 1].equals(";"))
 				{
 					// Found a forward declaration
@@ -322,8 +322,21 @@ public class ClassAnalyzer extends Analyzer
 					//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[tokens.length-1]);
 					
 					// Create the class but don't set it as current class
-					CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2]);
+					CppScope cc=null;
+                    switch(tokens[i]){
+                        case "class":
+                            cc=ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2]);
+                            break;
+                        case "struct":
+                            cc=ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2]);
+                            break;
+                        case "union":
+                            cc=ParsedObjectManager.getInstance().addUnion(tokens[tokens.length - 2]);
+                            break;
+                    }
+                    
 					cc.nameOfFile = Extractor.currentFile;
+                    
 					
 					return true;
 				}
@@ -368,7 +381,18 @@ public class ClassAnalyzer extends Analyzer
 					{
 						Log.d("   ... called " + tokens[tokens.length - 2]);						
 						
-						CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2]);
+						CppScope cc = null;
+                        switch(tokens[i]){
+                            case "class":
+                                cc=ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2]);
+                                break;
+                            case "struct":
+                                cc=ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2]);
+                                break;
+                            case "union":
+                                cc=ParsedObjectManager.getInstance().addUnion(tokens[tokens.length - 2]);
+                                break;
+                        }   
 						cc.nameOfFile = Extractor.currentFile;
 						cc.braceCount = sentenceAnalyzer.braceCount;
 						cc.parentScope = ParsedObjectManager.getInstance().currentScope;
