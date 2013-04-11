@@ -14,6 +14,8 @@ import java.util.ArrayList;
  */
 public class CppScope
 {
+    public static final int NAMESPACE=0, CLASS=1, STRUCT=2, UNION=3;
+    public int type=NAMESPACE;
 	public String name = "_MAIN_";
 	public String getName() { return name; }
 	

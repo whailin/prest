@@ -8,6 +8,7 @@ public class CppClass extends CppScope {
 	public CppClass(String name)
 	{
 		super(name);
+        type=CLASS;
 	}
 	
 	public CppClass(CppScope scope)
@@ -17,6 +18,7 @@ public class CppClass extends CppScope {
 		this.functions = scope.functions;
 		this.members = scope.members;
 		this.nameOfFile = scope.nameOfFile;
+        type=CLASS;
 	}
 	
 	public int getDepthOfInheritance()

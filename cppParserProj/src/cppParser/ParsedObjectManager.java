@@ -64,11 +64,13 @@ public class ParsedObjectManager {
     }
     
     public void addKnownType(CppType type){
+        
         for(CppType ct:knownTypes){
             if(ct.typeName.contentEquals(type.typeName))
                 if(ct.parent.contentEquals(type.parent))
                     return;
         }
+        Log.d("New type found " +type.typeName+" "+type.type);
         knownTypes.add(type);
     }
 
@@ -109,6 +111,62 @@ public class ParsedObjectManager {
 		
 		return newClass;
 	}
+    
+    public CppScope addStruct(String name){
+        assert(name != null);
+		
+		CppScope newStruct = null;
+		for(CppScope cs : scopes)
+		{
+			if(cs.type==CppScope.STRUCT)
+			{
+				if(cs.getName().equals(name))
+				{
+					Log.d("Found an existing scope " + name);
+					newStruct = cs;
+					break;
+				}
+			}
+		}
+		
+		if(newStruct == null)
+		{
+			newStruct = new CppScope(name);
+            newStruct.type=CppScope.STRUCT;
+			scopes.add(newStruct);
+            addKnownType(new CppType(name,CppType.STRUCT));
+		}
+		
+		return newStruct;
+    }
+    
+    public CppScope addUnion(String name){
+        assert(name != null);
+		
+		CppScope newUnion = null;
+		for(CppScope cs : scopes)
+		{
+			if(cs.type==CppScope.UNION)
+			{
+				if(cs.getName().equals(name))
+				{
+					Log.d("Found an existing scope " + name);
+					newUnion = cs;
+					break;
+				}
+			}
+		}
+		
+		if(newUnion == null)
+		{
+			newUnion = new CppScope(name);
+            newUnion.type=CppScope.UNION;
+			scopes.add(newUnion);
+            addKnownType(new CppType(name,CppType.UNION));
+		}
+		
+		return newUnion;
+    }
 
 	public void addNamespace(CppNamespace ns, boolean addToStack) 
 	{
