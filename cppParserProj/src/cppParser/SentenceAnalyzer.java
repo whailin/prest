@@ -1,5 +1,6 @@
 package cppParser;
 
+import cppMetrics.LOCMetrics;
 import cppParser.utils.LLOCCounter;
 import java.util.ArrayList;
 
@@ -25,6 +26,7 @@ public class SentenceAnalyzer {
 	private ClassAnalyzer classAnalyzer;
 	private ScopeAnalyzer scopeAnalyzer;
     private LLOCCounter llocCounter=null;
+    private LOCMetrics loc=null;
 	
 	public SentenceAnalyzer()
 	{
@@ -130,6 +132,7 @@ public class SentenceAnalyzer {
 	 */
 	public void lexLine(String line)
 	{
+		// TODO Create a preprocessor analyzer and remove this
 		if(line.startsWith("#")){ 
             llocCounter.addLloc();
             return;
@@ -137,7 +140,7 @@ public class SentenceAnalyzer {
 		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, null, true);
-		String[] tmpTokens = tokens;
+        String[] tmpTokens = tokens;
 		
 		// Expand macros
 		tokens = StringTools.cleanEmptyEntries(MacroExpander.expand(tokens));
@@ -149,7 +152,7 @@ public class SentenceAnalyzer {
 				Log.d("dbg start");
 			}
 		}
-		
+
 		boolean stringOpen = false;
 		for(int i = 0; i < tokens.length; ++i)
 		{
@@ -190,14 +193,21 @@ public class SentenceAnalyzer {
 			if(a.processSentence(tokens)) break;
 		}
 	}
-
-    public void fileChanged(String file) {
-        //if(llocCounter!=null)
-        //    Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
+/**
+ * Used by LLOC counting
+ * @param file 
+ */
+    public void fileChanged(String file, LOCMetrics loc) {
+        if(llocCounter!=null){
+            //Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
+            this.loc.logicalLOC=llocCounter.getLloc();
+        }
+        this.loc=loc;
         llocCounter = new LLOCCounter();
         llocCounter.setFile(file);
     }
     public void lastFileProcessed(){
-        Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
+        //Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
+        this.loc.logicalLOC=llocCounter.getLloc();
     }
 }

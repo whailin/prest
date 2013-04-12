@@ -1,48 +1,29 @@
 package cppMetrics;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-
 public class LOCMetrics implements Metrics {
-	private long cmtLines = 0;			//comment lines
-	private int logicalLOC = 0;		//logical lines of codes
-	private int physicalLOC = 0;		//physical lines of codes
-	private int LOC = 0;				//lines of codes
+    public String file;
+	public int commentLines=0,  commentedCodeLines=0, codeOnlyLines=0, emptyLines=0, logicalLOC=0;
 	
 	@Override
 	public void calculateMetrics() {
 		// TODO Auto-generated method stub
 	}
 
-	public LOCMetrics(long cmtL, int lloc, int ploc, int loc){
-		this.cmtLines = cmtL;
-		this.logicalLOC = lloc;
-		this.physicalLOC = ploc;
-		this.LOC = loc;
-	}
+    public LOCMetrics() {
+    }
+
+    public LOCMetrics(String file, int commentLines, int commentedCodeLines, int codeOnlyLines, int emptyLines, int logicalLOC) {
+        this.file = file;
+        this.commentLines = commentLines;
+        this.commentedCodeLines = commentedCodeLines;
+        this.codeOnlyLines = codeOnlyLines;
+        this.emptyLines = emptyLines;
+        this.logicalLOC = logicalLOC;
+    }
+
 	
-	public LOCMetrics(String file) throws IOException{
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		while (br.readLine()!=null)
-			this.LOC ++;
-	}
 	
-	public long getCmtLines() {
-		return cmtLines;
-	}
-
-	public int getLloc() {
-		return logicalLOC;
-	}
-
-	public int getPloc() {
-		return physicalLOC;
-	}
-
-	public int getLoc() {
-		return LOC;
-	}
+	
 
 	@Override
 	public Result getResults() {
