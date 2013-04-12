@@ -27,6 +27,14 @@ public class ParsedObjectManager {
 	
 	public String currentNameSpace = "";
 	
+	private CppFile currentFile = null;
+	
+	// List of files found in the target folder
+	private ArrayList<CppFile> files = new ArrayList<CppFile>();
+	
+	// List of #defines found in the pre-pass
+	// private ArrayList<CppDefine> defines = new ArrayList<CppDefine>();
+	
 	// List of scopes found
 	private ArrayList<CppScope> scopes = new ArrayList<CppScope>();
 	private Stack<CppScope> cppScopeStack = new Stack<CppScope>();
@@ -36,7 +44,7 @@ public class ParsedObjectManager {
 	// Array lists for misc. stuff found from source code
 	ArrayList<String> oneLineComments = new ArrayList<String>();
 	ArrayList<String> multiLineComments = new ArrayList<String>();
-	ArrayList<String> defines = new ArrayList<String>();
+	// ArrayList<String> defines = new ArrayList<String>();
 	ArrayList<String> includes = new ArrayList<String>();
 	ArrayList<String> classes = new ArrayList<String>();
     
@@ -82,6 +90,50 @@ public class ParsedObjectManager {
 	public ArrayList<CppScope> getScopes()
 	{
 		return scopes;
+	}
+	
+	public void addFile(CppFile file)
+	{
+		this.files.add(file);
+	}
+	
+	public ArrayList<CppFile> getFiles()
+	{
+		return files;
+	}
+	
+	public CppFile getFileByFilename(String filename)
+	{
+		for(CppFile cf : files)
+		{
+			if(cf.getFilename().equals(filename))
+				return cf;
+		}
+		return null;
+	}
+	
+	public void setCurrentFile(CppFile cf)
+	{
+		this.currentFile = cf;
+	}
+	
+	public void setCurrentFile(String name)
+	{
+		for(CppFile cf : files)
+		{
+			if(cf.getFilename().equals(name))
+			{
+				currentFile = cf;
+				return;
+			}
+		}
+		
+		currentFile = null;
+	}
+	
+	public CppFile getCurrentFile()
+	{
+		return currentFile;
 	}
 	
 	public CppClass addClass(String name)
@@ -199,4 +251,59 @@ public class ParsedObjectManager {
 	public Stack<CppScope> getCppScopeStack() {
 		return this.cppScopeStack;
 	}
+	
+	/**
+	 * Stores the given define
+	 * @param cd The define to store
+	 */
+	/*
+	public void addDefine(CppDefine cd)
+	{
+		defines.add(cd);
+	}
+	*/
+	
+	/**
+	 * Retrieves all the defines
+	 * @return List of defines
+	 */
+	/*
+	public ArrayList<CppDefine> getDefines()
+	{
+		return defines;
+	}
+	*/
+	
+	/**
+	 * Retrieves a define 'name'
+	 * @param name Name of the define
+	 * @return Define named 'name', or null if not found
+	 */
+	/*
+	public CppDefine getDefine(String name)
+	{
+		for(CppDefine cd : defines)
+		{
+			if(cd.getName().equals(name)) return cd;
+		}
+		return null;
+	}
+	*/
+	
+	/**
+	 * Retrieves all defines found in file 'filename'
+	 * @param filename Absolute path to the file
+	 * @return List of defines found in the file, or an empty list if none was found
+	 */
+	/*
+	public ArrayList<CppDefine> getDefinesFromFile(String filename)
+	{
+		ArrayList<CppDefine> defs = new ArrayList<CppDefine>();
+		for(CppDefine cd : defines)
+		{
+			if(cd.getFile().equals(filename)) defs.add(cd);
+		}
+		return defs;
+	}
+	*/
 }

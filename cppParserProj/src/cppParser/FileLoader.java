@@ -14,7 +14,7 @@ import cppParser.utils.Log;
 public class FileLoader {
 
 	// List of allowed file extensions
-	private String[] allowedExtensions = new String[] {".cpp", ".h", ".cxx"};
+	private String[] allowedExtensions = new String[] {".cpp", ".h", ".hpp", ".cxx"};
 	// private String[] allowedExtensions = new String[] {".h"};
 	
 	// If 'true', files are sorted in "headers first, sources last" order

@@ -4,6 +4,7 @@ import cppParser.utils.LLOCCounter;
 import java.util.ArrayList;
 
 import cppParser.utils.Log;
+import cppParser.utils.MacroExpander;
 import cppParser.utils.StringTools;
 import cppStructures.CppClass;
 import cppStructures.CppNamespace;
@@ -129,7 +130,6 @@ public class SentenceAnalyzer {
 	 */
 	public void lexLine(String line)
 	{
-		// TODO Create a preprocessor analyzer and remove this
 		if(line.startsWith("#")){ 
             llocCounter.addLloc();
             return;
@@ -137,7 +137,19 @@ public class SentenceAnalyzer {
 		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, null, true);
-
+		String[] tmpTokens = tokens;
+		
+		// Expand macros
+		tokens = StringTools.cleanEmptyEntries(MacroExpander.expand(tokens));
+		
+		for(String s : tokens)
+		{
+			if(s.contains("MFAIL"))
+			{
+				Log.d("dbg start");
+			}
+		}
+		
 		boolean stringOpen = false;
 		for(int i = 0; i < tokens.length; ++i)
 		{
