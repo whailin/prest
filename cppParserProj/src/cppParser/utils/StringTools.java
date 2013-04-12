@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class StringTools
 {
 	// List of "splitters" that are used to tokenize a single line of source code
-	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>"};
+	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>", "!", "~"};
 		
 	
 	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted
@@ -48,7 +48,7 @@ public class StringTools
 		if(delims == null) delims = StringTools.delims;
 		
 		// Bail out on trivial input
-		if(src == null || src.length() == 0) return null;
+		if(src == null || src.length() == 0) return new String[]{src};
 		if(src.length() == 1 || delims == null || delims.length == 0) return new String[]{src};
 		
 		// Init the list of parts
@@ -195,7 +195,7 @@ public class StringTools
 	 * @param list An arraylist to convert
 	 * @return An array
 	 */
-	private static String[] listToArray(ArrayList<String> list)
+	public static String[] listToArray(ArrayList<String> list)
 	{
 		String[] retParts = new String[list.size()];
 		for(int i = 0; i < retParts.length; ++i)
@@ -259,5 +259,15 @@ public class StringTools
 			if(primitivetypes[i].equals(s)) return true;
 		}
 		return false;
+	}
+	
+	public static String[] cleanEmptyEntries(String[] s)
+	{
+		ArrayList<String> list = new ArrayList<String>();
+		for(String t : s)
+		{
+			if(t.length() > 0) list.add(t);
+		}
+		return listToArray(list);
 	}
 }

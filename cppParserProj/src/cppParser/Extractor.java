@@ -7,11 +7,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Stack;
 
 import cppParser.utils.Log;
+import cppParser.utils.MacroExpander;
 import cppParser.utils.StringTools;
 import cppStructures.CppClass;
+import cppStructures.CppDefine;
+import cppStructures.CppFile;
 import cppStructures.CppFunc;
 import cppStructures.CppNamespace;
 import cppStructures.CppScope;
@@ -105,13 +109,26 @@ public class Extractor
 		{
 			currentPass = Pass.PREPASS;
 			
-			// Preprocessor pass
+			// Parse preprocessor directives
 			for(String s : fileLoader.getFiles())
 			{
+				CppFile cf = new CppFile(s);
+				ParsedObjectManager.getInstance().addFile(cf);
+				ParsedObjectManager.getInstance().setCurrentFile(cf);
 				process(s);
 			}
 			
-			Log.d("Prepass done.");
+			// Expand #include paths
+			for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
+			{
+				cf.expandIncludes();
+			}
+			
+			ParsedObjectManager.getInstance().setCurrentFile("");
+			
+			// Calculate the pre-pass execution time
+			long prepassDuration = System.currentTimeMillis() - startTime;
+			Log.d("Prepass done. (" + (double)(prepassDuration / 1000.0) + " s.)");
 		}
 		
 		// Execute the main pass if needed
@@ -122,6 +139,7 @@ public class Extractor
 			// Loop through the found files
 			for(String s : fileLoader.getFiles())
 			{
+				ParsedObjectManager.getInstance().setCurrentFile(s);
 				process(s);
 			}
 			
@@ -132,6 +150,9 @@ public class Extractor
 
 		// TODO Second pass: fix unknown references / types / ambiguities
 		
+        // Verify that no macro calls are in the operands
+        verify();
+        
 		// Dump tree results to a file
 		dumpTreeResults();
 		
@@ -143,6 +164,32 @@ public class Extractor
 		long duration = System.currentTimeMillis() - startTime;
 		
 		Log.d("Processing took " + duration / 1000.0 + " s.");
+	}
+	
+	private void verify()
+	{
+		ArrayList<CppDefine> defines = new ArrayList<CppDefine>();
+		for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
+		{
+			defines.addAll(cf.getDefines());
+		}
+		
+		for(CppScope cs : ParsedObjectManager.getInstance().getScopes())
+		{
+			for(CppFunc cf : cs.getFunctions())
+			{
+				for(String s : cf.getOperands())
+				{
+					for(CppDefine cd : defines)
+					{
+						if(s.equals(cd.getName()))
+						{
+							Log.d("**** FOUND MACRO CALL -> " + s + " FILE: " + cf.fileOfFunc);
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -166,6 +213,9 @@ public class Extractor
 		// funcBraceCount = 0;
 		// this.lineDone = false;
 		lineno = 0;
+		
+		// Initialize macro expander
+		if(currentPass == Pass.MAINPASS) MacroExpander.setup();
 		
 		try
 		{
@@ -273,7 +323,6 @@ public class Extractor
 							}
 							else
 							{
-								Log.d("Found a single-line comment inside a string.");
 								commentLine = "";
 							}
 						}
@@ -287,7 +336,6 @@ public class Extractor
 							}
 							else
 							{
-								Log.d("Found a multi-line comment inside a string.");
 								commentLine = "";
 							}
 						}

@@ -1,5 +1,7 @@
 package cppStructures;
 
+import java.util.ArrayList;
+
 import cppParser.Extractor;
 
 /**
@@ -9,17 +11,22 @@ import cppParser.Extractor;
  */
 public class CppDefine {
 	
-	// File of the #define statement
+	// Origin file of the #define statement
 	private String file = null;
+	
+	// List of users for this #define (the origin file plus all files that #include this)
+	private ArrayList<String> users = null;
 	
 	// Name of the define
 	private String name = null;
+	
+	private ArrayList<String> params = null;
 	
 	// The definition in #define statement
 	private String definition = null;
 	
 	/**
-	 * Constructs a new CppDefine objects
+	 * Constructs a new CppDefine object without parameters
 	 * @param name Name of the definition
 	 * @param definition The raw definition string
 	 */
@@ -28,6 +35,34 @@ public class CppDefine {
 		this.name = name;
 		this.definition = definition;
 		file = Extractor.currentFile;
+		users = new ArrayList<String>();
+		users.add(file);
+	}
+	
+	/**
+	 * Constructs a new CppDefine with parameters
+	 * @param name Name of the definition
+	 * @param params List of parameters
+	 * @param definition The raw definition string
+	 */
+	public CppDefine(String name, ArrayList<String> params, String definition)
+	{
+		this.name = name;
+		this.params = params;
+		this.definition = definition;
+		file = Extractor.currentFile;
+		users = new ArrayList<String>();
+		users.add(file);
+	}
+	
+	public void addUser(String file)
+	{
+		if(!users.contains(file)) users.add(file);
+	}
+	
+	public ArrayList<String> getUsers()
+	{
+		return users;
 	}
 	
 	/**
@@ -49,6 +84,15 @@ public class CppDefine {
 	}
 	
 	/**
+	 * Retrieves the parameters of the definition
+	 * @return List of parameters
+	 */
+	public ArrayList<String> getParameters()
+	{
+		return params;
+	}
+	
+	/**
 	 * Retrieves the raw definition in a string form
 	 * @return String representation of the definition
 	 */
@@ -56,4 +100,6 @@ public class CppDefine {
 	{
 		return definition;
 	}
+	
+	
 }
