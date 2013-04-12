@@ -1,6 +1,6 @@
 package cppParser;
 
-import cppParser.utils.LLOCCounter;
+import cppMetrics.LOCMetrics;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -20,6 +20,7 @@ import cppStructures.CppFunc;
 import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 import cppStructures.MemberVariable;
+import java.util.List;
 
 /**
  * Extractor.java
@@ -29,6 +30,9 @@ import cppStructures.MemberVariable;
  */
 public class Extractor
 {
+
+    
+
 	enum Pass
 	{
 		PREPASS,
@@ -66,7 +70,8 @@ public class Extractor
 	public int codeLines=0;
 	public int emptyLines = 0;
     public int commentedCodeLines = 0;
-	public int commentOnlyLines = 0;		//comment lines	
+	public int commentOnlyLines = 0;		//comment lines
+
 	
 	// Reference to the singleton parsed object manager
 	private ParsedObjectManager objManager;
@@ -75,7 +80,7 @@ public class Extractor
 	private SentenceAnalyzer sentenceAnalyzer;
 	
 	private PreprocessorPass prepassAnalyzer;
-    
+    private LOCMetrics locM;
 	
 	/**
 	 * Constructor
@@ -108,8 +113,8 @@ public class Extractor
 		if(currentMode != Mode.MAINPASS_ONLY)
 		{
 			currentPass = Pass.PREPASS;
-			
-			// Parse preprocessor directives
+		
+            // Parse preprocessor directives
 			for(String s : fileLoader.getFiles())
 			{
 				CppFile cf = new CppFile(s);
@@ -139,20 +144,22 @@ public class Extractor
 			// Loop through the found files
 			for(String s : fileLoader.getFiles())
 			{
-				ParsedObjectManager.getInstance().setCurrentFile(s);
+                ParsedObjectManager.getInstance().setCurrentFile(s);
+                locM=new LOCMetrics();
+                ParsedObjectManager.getInstance().addLocMetric(locM);
+                sentenceAnalyzer.fileChanged(s, locM);
 				process(s);
+                
 			}
-			
+			sentenceAnalyzer.lastFileProcessed();
 			Log.d("Main pass done.");
 		}
 		
-        sentenceAnalyzer.lastFileProcessed();
+        
 
 		// TODO Second pass: fix unknown references / types / ambiguities
-		
-        // Verify that no macro calls are in the operands
+		// Verify that no macro calls are in the operands
         verify();
-        
 		// Dump tree results to a file
 		dumpTreeResults();
 		
@@ -165,8 +172,7 @@ public class Extractor
 		
 		Log.d("Processing took " + duration / 1000.0 + " s.");
 	}
-	
-	private void verify()
+    private void verify()
 	{
 		ArrayList<CppDefine> defines = new ArrayList<CppDefine>();
 		for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
@@ -192,6 +198,7 @@ public class Extractor
 		}
 	}
 	
+	
 	/**
 	 * Processes the given file.
 	 * Processing includes tasks such as constructing internal format lines,
@@ -200,7 +207,7 @@ public class Extractor
     private String readLine="";
 	private void process(String file)
 	{
-        sentenceAnalyzer.fileChanged(file);
+            
 		currentFile = file;
 		// currentFunc = null;
 		// currentScope = null;
@@ -213,8 +220,8 @@ public class Extractor
 		// funcBraceCount = 0;
 		// this.lineDone = false;
 		lineno = 0;
-		
 		// Initialize macro expander
+        
 		if(currentPass == Pass.MAINPASS) MacroExpander.setup();
 		
 		try
@@ -407,6 +414,7 @@ public class Extractor
 				}
 			}
 			addLine(codeFound,commentFound);
+            resetLOCCounter();
 			loc++;
 			
 			// Finally, close the reader
@@ -428,19 +436,35 @@ public class Extractor
 	 * @param commentFound should be true if current line contains comments
 	 */
 	private void addLine(boolean codeFound, boolean commentFound){
-		if(codeFound){
-            if(commentFound)
-				commentedCodeLines++;
-			else
-				codeLines++;
-		}else{
-			if(commentFound)
-				commentOnlyLines++;
-			else
-				emptyLines++;
-		}
+        if(currentPass==Pass.MAINPASS){
+            if(codeFound){
+                if(commentFound)
+                    commentedCodeLines++;
+                else
+                    codeLines++;
+            }else{
+                if(commentFound)
+                    commentOnlyLines++;
+                else
+                    emptyLines++;
+            }
+        }
         
 	}
+    
+    private void resetLOCCounter() {
+        if(currentPass==Pass.MAINPASS){
+        locM.codeOnlyLines=codeLines;
+        locM.emptyLines=emptyLines;
+        locM.commentLines=commentOnlyLines;
+        locM.commentedCodeLines=commentedCodeLines;
+        
+        codeLines=0;
+        emptyLines=0;
+        commentOnlyLines=0;
+        commentedCodeLines=0;
+        }
+    }
 	
 	/**
 	 * Checks whether or not the line forms a 'visibility statement' found usually in headers
@@ -556,15 +580,8 @@ public class Extractor
 				
 				writer.write("\n");
 			}
-						
-			writer.write("\n");
-			writer.write("Total amount of lines: " + loc + "\n");
-			writer.write("Logical lines of code: " + lloc + "\n");
-			writer.write("Physical lines of code: " + (codeLines+commentedCodeLines) + "\n");
-			writer.write("Empty lines:"+ emptyLines+ "\n");
-            writer.write("Comment only lines: " +commentOnlyLines + "\n");
-            writer.write("Commented code lines: " +commentedCodeLines + "\n");
-			writer.write("Total comment lines: " + (+commentedCodeLines) + "\n");
+			writeLOCmetrics(writer);			
+			
 			
 			
 			writer.close();
@@ -575,6 +592,21 @@ public class Extractor
             
 		}
 	}
+    private void writeLOCmetrics(BufferedWriter writer) throws IOException{
+        List<LOCMetrics> list=ParsedObjectManager.getInstance().getLocMetrics();
+        for(LOCMetrics l:list){
+            writer.write("\n");
+            writer.write("LOC metrics for file: "+file);
+			writer.write("Physical lines of code: " + (l.codeOnlyLines+l.commentedCodeLines) + "\n");
+            writer.write("Logical lines of code: " + (l.logicalLOC) + "\n");
+			writer.write("Empty lines:"+ l.emptyLines+ "\n");
+            writer.write("Comment only lines: " +l.commentLines + "\n");
+            writer.write("Commented code lines: " + l.commentedCodeLines + "\n");
+			writer.write("Total comment lines: " + (l.commentLines+commentedCodeLines) + "\n");
+            
+            
+        }
+    }
 	
 	/**
 	 * Prints the results

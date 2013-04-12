@@ -1,5 +1,6 @@
 package cppParser;
 
+import cppMetrics.LOCMetrics;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -26,14 +27,15 @@ public class ParsedObjectManager {
 	public CppScope currentScope = null;
 	
 	public String currentNameSpace = "";
-	
-	private CppFile currentFile = null;
+    
+    private CppFile currentFile = null;
 	
 	// List of files found in the target folder
 	private ArrayList<CppFile> files = new ArrayList<CppFile>();
 	
 	// List of #defines found in the pre-pass
 	// private ArrayList<CppDefine> defines = new ArrayList<CppDefine>();
+	
 	
 	// List of scopes found
 	private ArrayList<CppScope> scopes = new ArrayList<CppScope>();
@@ -49,6 +51,7 @@ public class ParsedObjectManager {
 	ArrayList<String> classes = new ArrayList<String>();
     
     ArrayList<CppType> knownTypes=new ArrayList<>();
+    ArrayList<LOCMetrics> locMetrics=new ArrayList<>();
 	
 	/**
 	 * Retrieves the singleton instance
@@ -66,6 +69,12 @@ public class ParsedObjectManager {
 	{
 		
 	}
+    public void addLocMetric(LOCMetrics loc){
+        locMetrics.add(loc);
+    }
+    public ArrayList<LOCMetrics> getLocMetrics(){
+        return locMetrics;
+    }
     
     public ArrayList<CppType> getKnownTypes(){
         return knownTypes;
@@ -91,8 +100,8 @@ public class ParsedObjectManager {
 	{
 		return scopes;
 	}
-	
-	public void addFile(CppFile file)
+    
+    public void addFile(CppFile file)
 	{
 		this.files.add(file);
 	}
@@ -135,6 +144,7 @@ public class ParsedObjectManager {
 	{
 		return currentFile;
 	}
+	
 	
 	public CppClass addClass(String name)
 	{
@@ -251,7 +261,7 @@ public class ParsedObjectManager {
 	public Stack<CppScope> getCppScopeStack() {
 		return this.cppScopeStack;
 	}
-	
+    
 	/**
 	 * Stores the given define
 	 * @param cd The define to store
