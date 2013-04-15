@@ -52,6 +52,8 @@ public class Extractor
 	
 	// Filename or folder to process
 	private String file = "";
+    //Directory for the output files;
+    private String outputDir="";
 	
 	// File that is currently being processed
 	public static String currentFile = "";
@@ -87,6 +89,17 @@ public class Extractor
 	 * @param file Single file or a folder to process
 	 */
 	public Extractor(String file)
+	{
+		this.file = file;
+		objManager = ParsedObjectManager.getInstance();
+	}
+    
+    /**
+	 * Constructor
+	 * @param file Single file or a folder to process
+     * @param outputDir Directory where metrics are stored
+	 */
+	public Extractor(String file, String outputDir)
 	{
 		this.file = file;
 		objManager = ParsedObjectManager.getInstance();
@@ -490,6 +503,7 @@ public class Extractor
 		BufferedWriter writer;
 		try
 		{
+            
 			writer = new BufferedWriter(new FileWriter("treedump.txt"));
 			for(CppScope cc : objManager.getScopes())
 			{
