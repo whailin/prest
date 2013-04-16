@@ -14,11 +14,11 @@ import java.util.List;
  */
 public class VarFinder
 {
-    private static final boolean silenced = true, showTokens=false;
+    private static final boolean silenced = true, showTokens = false;
     private static final String[] delims = {"<", ">"};
     
     private VarFinder recursive = null;
-    private VarFinder parent=null;
+    private VarFinder parent = null;
     //private boolean isRecursive=false;
             
     private static final int TYPE = 0, NAME = 1, ARRAY = 2, EQUALS = 3, RESET = 4, TEMPLATE = 5;
@@ -41,7 +41,7 @@ public class VarFinder
     private boolean primitive = false;
     
     private String currentType = "", currentName = "", currentArray = "", currentTemplate = "", literal = "",
-            currentPtr="";
+            currentPtr = "";
     private int templateDepth = 0;
     private boolean checkForOperator;
     

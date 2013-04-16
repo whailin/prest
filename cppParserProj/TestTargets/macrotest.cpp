@@ -14,6 +14,12 @@ void Foo::Bar()
 
 #define SIZE_X ((SIZE_W) + (SIZE_H))
 
+#define DEFAULT SIZE
+
+#define MULTILINEMACRO(x) \
+	(x + 1 \
+	* 2)
+
 void Foo::Bar2()
 {
 	int s = SIZE;
@@ -21,4 +27,8 @@ void Foo::Bar2()
 	int result = MULTIPLY(SIZE_W, SIZE_H);
 	
 	int x = SIZE_X;
+	
+	int d = DEFAULT;
+	
+	int mld = MULTILINEMACRO(d);
 }

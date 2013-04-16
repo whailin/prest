@@ -18,7 +18,7 @@ public class CppDefine {
 	private ArrayList<String> users = null;
 	
 	// Name of the define
-	private String name = null;
+	// private String name = null;
 	
 	private ArrayList<String> params = null;
 	
@@ -30,9 +30,10 @@ public class CppDefine {
 	 * @param name Name of the definition
 	 * @param definition The raw definition string
 	 */
-	public CppDefine(String name, String definition)
+	// public CppDefine(String name, String definition)
+	public CppDefine(String definition)
 	{
-		this.name = name;
+		// this.name = name;
 		this.definition = definition;
 		file = Extractor.currentFile;
 		users = new ArrayList<String>();
@@ -45,9 +46,10 @@ public class CppDefine {
 	 * @param params List of parameters
 	 * @param definition The raw definition string
 	 */
-	public CppDefine(String name, ArrayList<String> params, String definition)
+	// public CppDefine(String name, ArrayList<String> params, String definition)
+	public CppDefine(ArrayList<String> params, String definition)
 	{
-		this.name = name;
+		// this.name = name;
 		this.params = params;
 		this.definition = definition;
 		file = Extractor.currentFile;
@@ -78,10 +80,12 @@ public class CppDefine {
 	 * Retrieves the name of the #define statement
 	 * @return
 	 */
+	/*
 	public String getName()
 	{
 		return name;
 	}
+	*/
 	
 	/**
 	 * Retrieves the parameters of the definition
@@ -100,6 +104,4 @@ public class CppDefine {
 	{
 		return definition;
 	}
-	
-	
 }

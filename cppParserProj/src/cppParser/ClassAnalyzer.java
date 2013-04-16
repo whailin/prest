@@ -74,18 +74,18 @@ public class ClassAnalyzer extends Analyzer
 				// TODO handle enums properly
 				if(tokens[i+1].equals("class") || tokens[i+1].equals("struct")|| tokens[i+1].equals("union"))
 				{
-					Log.d("\tFound a scope enum " + tokens[i+2] + "\n");					
+					// Log.d("\tFound a scope enum " + tokens[i+2] + "\n");					
 				}
 				else
 				{
-					Log.d("\tFound an enum " + tokens[i + 1] + "\n");					
+					// Log.d("\tFound an enum " + tokens[i + 1] + "\n");					
 				}
 				enumOpen = true;
 				
 				return true;
 			case "typedef":
 				// TODO handle typedefs properly
-				Log.d("\tFound a typedef " + tokens[1] + "\n");				
+				// Log.d("\tFound a typedef " + tokens[1] + "\n");				
 				return true;
 			/*case "struct":
 				// TODO handle structs
@@ -97,7 +97,7 @@ public class ClassAnalyzer extends Analyzer
 			case "}":
 				if(enumOpen)
 				{
-					Log.d("Enum closed on line: " + Extractor.lineno);
+					// Log.d("Enum closed on line: " + Extractor.lineno);
 					enumOpen = false;
 				}
 				else if(structOpen)
@@ -154,13 +154,12 @@ public class ClassAnalyzer extends Analyzer
 			
 			
 			
-			Log.d("\tVar: " + mvType + " | " + mvName);
+			// Log.d("\tVar: " + mvType + " | " + mvName);
 			MemberVariable mv = new MemberVariable(mvType, mvName);
 			objManager.currentScope.addMember(mv);
 			return true;
 		}
 		
-		Log.d("Could not process line " + Extractor.lineno);
 		return false;
 	}
 	
@@ -181,7 +180,7 @@ public class ClassAnalyzer extends Analyzer
 		// Check if there's a body and bail out
 		if(tokens[tokens.length - 1].equals("{"))
 		{
-			Log.d("\t... with a body, don't handle it here.");
+			// Log.d("\t... with a body, don't handle it here.");
 			return false;
 		}
 		
@@ -189,7 +188,7 @@ public class ClassAnalyzer extends Analyzer
 		String type = "";
 		for(int j = i - 2; j >= 0; --j)
 		{
-			if(!tokens[j].equals("virtual") || !tokens[j].equals("_OgreExport")) // TODO Fix _OgreExport
+			if(!tokens[j].equals("virtual"))
 			{
 				if(!StringTools.isKeyword(tokens[j]))
 				{
@@ -217,7 +216,7 @@ public class ClassAnalyzer extends Analyzer
 			}
 		}
 		
-		Log.d("\tFunction: " + type + " | " + name);
+		// Log.d("\tFunction: " + type + " | " + name);
 
 		// Create the CppFunc object
 		CppFunc cf = new CppFunc(type, name);
@@ -273,16 +272,6 @@ public class ClassAnalyzer extends Analyzer
 			}
 		}
 		
-		// Print the parameters for debugging purposes
-		if(cf.parameters.size() > 0)
-		{
-			Log.d("\t\tParameters:");
-			for(CppFuncParam cfa : cf.parameters)
-			{
-				Log.d("\t\t   " + cfa.type + " | " + cfa.name);
-			}
-		}
-		
 		// Finally, store the CppFunc object
 		cf.fileOfFunc = Extractor.currentFile;
 		
@@ -313,11 +302,11 @@ public class ClassAnalyzer extends Analyzer
 		{
 			if(tokens[i].equals("class") || tokens[i].equals("struct")|| tokens[i].equals("union"))
 			{				
-				Log.d("Found "+tokens[i]);
+				// Log.d("Found "+tokens[i]);
 				if(tokens[tokens.length - 1].equals(";"))
 				{
 					// Found a forward declaration
-					Log.d("    ... forward declaration: " + tokens[tokens.length - 2]);
+					// Log.d("    ... forward declaration: " + tokens[tokens.length - 2]);
 					
 					//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[tokens.length-1]);
 					
@@ -350,7 +339,7 @@ public class ClassAnalyzer extends Analyzer
 						if(tokens[j].equals(":"))
 						{
 							isInheriting = true;
-							Log.d("   ... called " + tokens[j-1]);							
+							// Log.d("   ... called " + tokens[j-1]);							
 							
 							CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[j-1]);
 							cc.nameOfFile = Extractor.currentFile;
@@ -362,7 +351,7 @@ public class ClassAnalyzer extends Analyzer
 							{
 								if(tokens[k].equals(",") || tokens[k].equals("{"))
 								{
-									Log.d("    ... inherited from " + tokens[k-1]);
+									// Log.d("    ... inherited from " + tokens[k-1]);
 									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1]);									
 									pcc.addChild(cc);
 									pcc.nameOfFile = Extractor.currentFile;
@@ -379,7 +368,7 @@ public class ClassAnalyzer extends Analyzer
 					// If no ancestors were found, create a class with no parents
 					if(!isInheriting)
 					{
-						Log.d("   ... called " + tokens[tokens.length - 2]);						
+						// Log.d("   ... called " + tokens[tokens.length - 2]);						
 						
 						CppScope cc = null;
                         switch(tokens[i]){

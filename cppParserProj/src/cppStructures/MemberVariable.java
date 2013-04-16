@@ -1,12 +1,13 @@
 package cppStructures;
 
-public class MemberVariable {
+public class MemberVariable
+{
 
 	private String type = "";
-        private String template ="";
-        private String pointer = ""; //This is for storing pointer and reference operators
+    private String template = "";
+    private String pointer = ""; //This is for storing pointer and reference operators
 	private String name = "";
-        private String array ="";
+    private String array = "";
 	private String value = "";
 	private boolean valueSet = false;
 	

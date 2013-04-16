@@ -31,4 +31,19 @@ public class Log {
 		}
 	}
 	
+	/**
+	 * Prints out an array of strings
+	 * @param a Array of strings
+	 */
+	public static void d(String[] a)
+	{
+		String s = "[";
+		for(int i = 0; i < a.length; ++i)
+		{
+			s += a[i];
+			if(i < a.length - 1) s += " ";
+		}
+		s += "]";
+		d(s);
+	}
 }

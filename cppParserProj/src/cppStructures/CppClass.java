@@ -1,5 +1,7 @@
 package cppStructures;
 
+import cppParser.utils.Log;
+
 
 public class CppClass extends CppScope {
 
@@ -37,8 +39,15 @@ public class CppClass extends CppScope {
 	 */
 	public void calculateDepthOfInheritance()
 	{
+		// Log.d("DOI: " + this.name + " : " + this.nameOfFile);
 		for(CppScope cs : this.parents)
 		{
+			if(this == cs)
+			{
+				// Log.d("CHILD SAME AS PARENT?");
+				break;
+			}
+			
 			if(cs instanceof CppClass)
 			{
 				if(((CppClass) cs).getDepthOfInheritance() + 1 > depthOfInheritance)

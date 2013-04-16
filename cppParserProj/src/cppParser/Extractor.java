@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Stack;
 
 import cppParser.utils.Log;
@@ -72,8 +73,8 @@ public class Extractor
 	public int codeLines=0;
 	public int emptyLines = 0;
     public int commentedCodeLines = 0;
-	public int commentOnlyLines = 0;		//comment lines
-
+	public int commentOnlyLines = 0;		//comment lines	
+	
 	
 	// Reference to the singleton parsed object manager
 	private ParsedObjectManager objManager;
@@ -83,7 +84,7 @@ public class Extractor
 	
 	private PreprocessorPass prepassAnalyzer;
     private LOCMetrics locM;
-	
+    
 	/**
 	 * Constructor
 	 * @param file Single file or a folder to process
@@ -126,8 +127,8 @@ public class Extractor
 		if(currentMode != Mode.MAINPASS_ONLY)
 		{
 			currentPass = Pass.PREPASS;
-		
-            // Parse preprocessor directives
+			
+			// Parse preprocessor directives
 			for(String s : fileLoader.getFiles())
 			{
 				CppFile cf = new CppFile(s);
@@ -144,8 +145,12 @@ public class Extractor
 			
 			ParsedObjectManager.getInstance().setCurrentFile("");
 			
+			// Dump the #include tree for debuggin purposes
+			dumpIncludeTree();
+			
 			// Calculate the pre-pass execution time
 			long prepassDuration = System.currentTimeMillis() - startTime;
+			Log.d("Found " + PreprocessorPass.defineCount + " #defines.");
 			Log.d("Prepass done. (" + (double)(prepassDuration / 1000.0) + " s.)");
 		}
 		
@@ -157,10 +162,11 @@ public class Extractor
 			// Loop through the found files
 			for(String s : fileLoader.getFiles())
 			{
-                ParsedObjectManager.getInstance().setCurrentFile(s);
+				ParsedObjectManager.getInstance().setCurrentFile(s);
                 locM=new LOCMetrics();
                 ParsedObjectManager.getInstance().addLocMetric(locM);
                 sentenceAnalyzer.fileChanged(s, locM);
+                
 				process(s);
                 
 			}
@@ -168,11 +174,11 @@ public class Extractor
 			Log.d("Main pass done.");
 		}
 		
-        
+
 
 		// TODO Second pass: fix unknown references / types / ambiguities
-		// Verify that no macro calls are in the operands
-        verify();
+        // Verify that no macro calls are in the operands
+        // verifyToFile();
 		// Dump tree results to a file
 		dumpTreeResults();
 		
@@ -185,7 +191,9 @@ public class Extractor
 		
 		Log.d("Processing took " + duration / 1000.0 + " s.");
 	}
-    private void verify()
+	
+	/*
+	private void verify()
 	{
 		ArrayList<CppDefine> defines = new ArrayList<CppDefine>();
 		for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
@@ -211,6 +219,43 @@ public class Extractor
 		}
 	}
 	
+	private void verifyToFile()
+	{
+		BufferedWriter writer;
+		try {
+			writer = new BufferedWriter(new FileWriter("verifydump.txt"));
+			
+			ArrayList<CppDefine> defines = new ArrayList<CppDefine>();
+			for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
+			{
+				defines.addAll(cf.getDefines());
+			}
+			
+			for(CppScope cs : ParsedObjectManager.getInstance().getScopes())
+			{
+				for(CppFunc cf : cs.getFunctions())
+				{
+					for(String s : cf.getOperands())
+					{
+						for(CppDefine cd : defines)
+						{
+							if(s.equals(cd.getName()))
+							{
+								// Log.d("**** FOUND MACRO CALL -> " + s + " FILE: " + cf.fileOfFunc);
+								writer.write("File: " + cf.fileOfFunc + " Function: " + cf.getName() + ": Macro call -> " + s + " Macro source: " + cd.getFile() + "\n");
+							}
+						}
+					}
+				}
+			}
+			
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	*/
 	
 	/**
 	 * Processes the given file.
@@ -234,8 +279,6 @@ public class Extractor
 		// this.lineDone = false;
 		lineno = 0;
 		// Initialize macro expander
-        
-		if(currentPass == Pass.MAINPASS) MacroExpander.setup();
 		
 		try
 		{
@@ -250,6 +293,8 @@ public class Extractor
 			char c;
 			boolean stringOpen = false;
 			boolean charOpen = false;
+			
+			long extractStart = System.currentTimeMillis();
 			
 			while((c = (char)reader.read()) != (char)-1)
 			{
@@ -276,13 +321,16 @@ public class Extractor
 							case PREPASS:
 								prepassAnalyzer.process(line);
 								break;
-							case MAINPASS:
-								sentenceAnalyzer.lexLine(line);
-								break;
 							}
 							
 							line = "";
 							commentLine = "";	
+						}
+						else
+						{
+							lloc++;
+							line = line.substring(0, line.length() - 1);
+							continue;
 						}
 					}
                     readLine="";
@@ -369,7 +417,7 @@ public class Extractor
                         commentLine="";
                         line += "/";
                     }
-                		}
+                }
 				
 				// Add a character to the "line"
 				if(c != '\r' && c != '\n' && c != '\t')
@@ -416,6 +464,11 @@ public class Extractor
 						prepassAnalyzer.process(line);
 						break;
 					case MAINPASS:
+						long extractDuration = System.currentTimeMillis() - extractStart;
+						if(extractDuration > 10)
+						{
+							Log.d(extractDuration + " Extraction: " + currentFile + ":" + lineno);
+						}
 						sentenceAnalyzer.lexLine(line);
 						break;
 					}
@@ -424,6 +477,7 @@ public class Extractor
 					line = "";
 					commentLine = "";
                     codeFound=true;
+                    extractStart = System.currentTimeMillis();
 				}
 			}
 			addLine(codeFound,commentFound);
@@ -450,21 +504,21 @@ public class Extractor
 	 */
 	private void addLine(boolean codeFound, boolean commentFound){
         if(currentPass==Pass.MAINPASS){
-            if(codeFound){
-                if(commentFound)
-                    commentedCodeLines++;
-                else
-                    codeLines++;
-            }else{
-                if(commentFound)
-                    commentOnlyLines++;
-                else
-                    emptyLines++;
-            }
+		if(codeFound){
+            if(commentFound)
+				commentedCodeLines++;
+			else
+				codeLines++;
+		}else{
+			if(commentFound)
+				commentOnlyLines++;
+			else
+				emptyLines++;
+		}
         }
         
 	}
-    
+	
     private void resetLOCCounter() {
         if(currentPass==Pass.MAINPASS){
         locM.codeOnlyLines=codeLines;
@@ -493,6 +547,40 @@ public class Extractor
 			if(line.endsWith("public:") || line.endsWith("protected:") || line.endsWith("private:")) return true;
 		}
 		return false;
+	}
+	
+	private void dumpIncludeTree()
+	{
+		BufferedWriter writer;
+		try
+		{
+			writer = new BufferedWriter(new FileWriter("includetree.txt"));
+			
+			/*
+			for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
+			{
+				writer.write(cf.getFilename() + "\n");
+				for(String s : cf.getIncludes())
+				{
+					writer.write("  " + s + "\n");
+				}
+			}
+			*/
+			
+			Log.d("Dumping include tree...");
+			for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
+			{
+				cf.dump(writer, new HashSet<CppFile>(), 0);
+				writer.write("\n");
+			}
+			
+			
+			writer.close();
+		}
+		catch(Exception e)
+		{
+			
+		}
 	}
 	
 	/**
@@ -595,7 +683,7 @@ public class Extractor
 				writer.write("\n");
 			}
 			writeLOCmetrics(writer);			
-			
+						
 			
 			
 			writer.close();
@@ -617,7 +705,7 @@ public class Extractor
             writer.write("Comment only lines: " +l.commentLines + "\n");
             writer.write("Commented code lines: " + l.commentedCodeLines + "\n");
 			writer.write("Total comment lines: " + (l.commentLines+commentedCodeLines) + "\n");
-            
+	
             
         }
     }

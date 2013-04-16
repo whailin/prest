@@ -75,11 +75,11 @@ public class SentenceAnalyzer {
 			if(addToStack)
 			{
 				ParsedObjectManager.getInstance().getCppScopeStack().push(cc);
-				Log.d("SCOPE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " START (line: " + Extractor.lineno + ")");
+				// Log.d("SCOPE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " START (line: " + Extractor.lineno + ")");
 			}
 			else
 			{
-				if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty()) Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " PART (line: " + Extractor.lineno + ")");
+				// if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty()) Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " PART (line: " + Extractor.lineno + ")");
 			}
 			
 		}
@@ -98,16 +98,18 @@ public class SentenceAnalyzer {
 		// If function body is ended
 		if(ParsedObjectManager.getInstance().currentFunc != null && ParsedObjectManager.getInstance().currentFunc.funcBraceCount == braceCount)
 		{
-			Log.d("   FUNCTION " + ParsedObjectManager.getInstance().currentFunc.getName() + " END (line: " + Extractor.lineno + ")");
+			// Log.d("   FUNCTION " + ParsedObjectManager.getInstance().currentFunc.getName() + " END (line: " + Extractor.lineno + ")");
 			ParsedObjectManager.getInstance().currentFunc = null;
 		}
 		
 		// If scope body is ended
 		if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty() && ParsedObjectManager.getInstance().getCppScopeStack().peek().braceCount == braceCount)
 		{
+			/*
 			if(ParsedObjectManager.getInstance().getCppScopeStack().peek() instanceof CppClass) Log.d("CLASS " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")");
 			else if(ParsedObjectManager.getInstance().getCppScopeStack().peek() instanceof CppNamespace)Log.d("NAMESPACE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")"); 
 			else Log.d("SCOPE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")");
+			*/
 			
 			ParsedObjectManager.getInstance().getCppScopeStack().pop();
 			if(ParsedObjectManager.getInstance().getCppScopeStack().size() > 0) ParsedObjectManager.getInstance().currentScope = ParsedObjectManager.getInstance().getCppScopeStack().peek();
@@ -133,26 +135,23 @@ public class SentenceAnalyzer {
 	public void lexLine(String line)
 	{
 		// TODO Create a preprocessor analyzer and remove this
-		if(line.startsWith("#")){ 
+		if(line.startsWith("#"))
+		{ 
             llocCounter.addLloc();
             return;
         }
 		
+		
+		long tokenizationStart = System.currentTimeMillis();
+		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, null, true);
-        String[] tmpTokens = tokens;
+		// Log.d(tokens);
 		
 		// Expand macros
-		tokens = StringTools.cleanEmptyEntries(MacroExpander.expand(tokens));
+		tokens = StringTools.cleanEmptyEntries((new MacroExpander()).expand(tokens));
+		// Log.d(tokens);
 		
-		for(String s : tokens)
-		{
-			if(s.contains("MFAIL"))
-			{
-				Log.d("dbg start");
-			}
-		}
-
 		boolean stringOpen = false;
 		for(int i = 0; i < tokens.length; ++i)
 		{
@@ -176,7 +175,9 @@ public class SentenceAnalyzer {
 				}
 			}
 		}
+		
 		llocCounter.processSentence(tokens);
+
 		if(ParsedObjectManager.getInstance().currentFunc != null)
 		{
 			functionAnalyzer.processSentence(tokens);
@@ -187,10 +188,17 @@ public class SentenceAnalyzer {
 			
 		}
 		
+		boolean handled = false;
+		
 		// Loop through analyzers
 		for(Analyzer a: analyzers)
 		{
-			if(a.processSentence(tokens)) break;
+			if(handled = a.processSentence(tokens)) break;
+		}
+		
+		if(!handled)
+		{
+			// Log.d("Couldn't handle: " + Extractor.currentFile + ": " + Extractor.lineno);
 		}
 	}
 /**

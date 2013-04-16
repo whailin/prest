@@ -1,6 +1,7 @@
 package cppStructures;
 
-public enum FundamentalType {
+public enum FundamentalType
+{
 	NOT_FTYPE,
 	CHAR,
 	SHORT_INT,
