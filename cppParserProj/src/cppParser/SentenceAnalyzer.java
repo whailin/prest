@@ -212,6 +212,8 @@ public class SentenceAnalyzer {
         }
         this.loc=loc;
         llocCounter = new LLOCCounter();
+        Log.d("Setting file:"+file);
+        loc.file=file;
         llocCounter.setFile(file);
     }
     public void lastFileProcessed(){
