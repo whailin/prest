@@ -153,7 +153,7 @@ public class CppFunc {
 	 */
 	public void addMember(MemberVariable mv)
 	{
-        Log.d("Adding  member "+ mv.getType()+" "+mv.getName() +" to "+name);
+        // Log.d("Adding  member "+ mv.getType()+" "+mv.getName() +" to "+name);
 		members.add(mv);
 	}
 	
@@ -444,7 +444,7 @@ public class CppFunc {
         if(Constants.isKeyword(dependency))
             return;
         if(dependencies.get(dependency)==null){
-            Log.d("Found dependency:"+dependency);
+            // Log.d("Found dependency:"+dependency);
             dependencies.put(dependency, dependency);
         }
         

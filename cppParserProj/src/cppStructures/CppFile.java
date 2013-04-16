@@ -1,6 +1,9 @@
 package cppStructures;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import cppParser.ParsedObjectManager;
 
@@ -101,5 +104,23 @@ public class CppFile {
 		
 		
 		return defs;
+	}
+	
+	public void dump(BufferedWriter writer, HashSet<CppFile> visited, int depth) throws IOException
+	{
+		visited.add(this);
+		for(int i = 0; i < depth; ++i)
+		{
+			writer.write("   ");
+		}
+		writer.write(this.getFilename() + "\n");
+		for(String s : includes)
+		{
+			CppFile next = ParsedObjectManager.getInstance().getFileByFilename(s);
+			if(!visited.contains(next))
+			{
+				next.dump(writer, visited, depth + 1);
+			}
+		}
 	}
 }

@@ -13,7 +13,8 @@ import cppStructures.*;
  * 
  * @author Harri Pellikka
  */
-public class ParsedObjectManager {
+public class ParsedObjectManager
+{
 
 	// If 'true', the same class can be implemented in multiple ways (via PP directives)
 	private boolean allowMultipleVariantsOfClass = true;
@@ -27,8 +28,8 @@ public class ParsedObjectManager {
 	public CppScope currentScope = null;
 	
 	public String currentNameSpace = "";
-    
-    private CppFile currentFile = null;
+	
+	private CppFile currentFile = null;
 	
 	// List of files found in the target folder
 	private ArrayList<CppFile> files = new ArrayList<CppFile>();
@@ -87,7 +88,7 @@ public class ParsedObjectManager {
                 if(ct.parent.contentEquals(type.parent))
                     return;
         }
-        Log.d("New type found " +type.typeName+" "+type.type);
+        // Log.d("New type found " +type.typeName+" "+type.type);
         knownTypes.add(type);
     }
 
@@ -100,8 +101,8 @@ public class ParsedObjectManager {
 	{
 		return scopes;
 	}
-    
-    public void addFile(CppFile file)
+	
+	public void addFile(CppFile file)
 	{
 		this.files.add(file);
 	}
@@ -157,7 +158,7 @@ public class ParsedObjectManager {
 			{
 				if(cs.getName().equals(name))
 				{
-					Log.d("Found an existing scope " + name);
+					// Log.d("Found an existing scope " + name);
 					newClass = (CppClass)cs;
 					break;
 				}
@@ -184,7 +185,7 @@ public class ParsedObjectManager {
 			{
 				if(cs.getName().equals(name))
 				{
-					Log.d("Found an existing scope " + name);
+					// Log.d("Found an existing scope " + name);
 					newStruct = cs;
 					break;
 				}
@@ -212,7 +213,7 @@ public class ParsedObjectManager {
 			{
 				if(cs.getName().equals(name))
 				{
-					Log.d("Found an existing scope " + name);
+					// Log.d("Found an existing scope " + name);
 					newUnion = cs;
 					break;
 				}
@@ -261,59 +262,4 @@ public class ParsedObjectManager {
 	public Stack<CppScope> getCppScopeStack() {
 		return this.cppScopeStack;
 	}
-    
-	/**
-	 * Stores the given define
-	 * @param cd The define to store
-	 */
-	/*
-	public void addDefine(CppDefine cd)
-	{
-		defines.add(cd);
-	}
-	*/
-	
-	/**
-	 * Retrieves all the defines
-	 * @return List of defines
-	 */
-	/*
-	public ArrayList<CppDefine> getDefines()
-	{
-		return defines;
-	}
-	*/
-	
-	/**
-	 * Retrieves a define 'name'
-	 * @param name Name of the define
-	 * @return Define named 'name', or null if not found
-	 */
-	/*
-	public CppDefine getDefine(String name)
-	{
-		for(CppDefine cd : defines)
-		{
-			if(cd.getName().equals(name)) return cd;
-		}
-		return null;
-	}
-	*/
-	
-	/**
-	 * Retrieves all defines found in file 'filename'
-	 * @param filename Absolute path to the file
-	 * @return List of defines found in the file, or an empty list if none was found
-	 */
-	/*
-	public ArrayList<CppDefine> getDefinesFromFile(String filename)
-	{
-		ArrayList<CppDefine> defs = new ArrayList<CppDefine>();
-		for(CppDefine cd : defines)
-		{
-			if(cd.getFile().equals(filename)) defs.add(cd);
-		}
-		return defs;
-	}
-	*/
 }

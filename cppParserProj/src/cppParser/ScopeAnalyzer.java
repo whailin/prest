@@ -28,7 +28,7 @@ public class ScopeAnalyzer extends Analyzer {
 					CppNamespace ns = new CppNamespace(tokens[i+1]);
 					ns.braceCount = sentenceAnalyzer.braceCount;
 					ns.nameOfFile = Extractor.currentFile;
-					Log.d("NAMESPACE " + ns.name + " START (line: " + Extractor.lineno + ")");
+					// Log.d("NAMESPACE " + ns.name + " START (line: " + Extractor.lineno + ")");
 					
 					/*
 					ParsedObjectManager.getInstance().getScopes().add(ns);

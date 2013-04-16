@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class StringTools
 {
 	// List of "splitters" that are used to tokenize a single line of source code
-	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>", "!", "~"};
+	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "[", "]", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>", "!", "~"};
 		
 	
 	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted
@@ -164,7 +164,7 @@ public class StringTools
 	}
 
 	/**
-	 * A simple non-regex-splitter that splits the given string array into tokens with the given deliminators.
+	 * A simple non-regex-splitter that splits the given string array into tokens with the given delimiters.
 	 * 
 	 * @param src Array of strings to split
 	 * @param delims List of delimiters
@@ -252,6 +252,12 @@ public class StringTools
 		return false;
 	}
 
+	/**
+	 * Checks whether or not the given string is a "primitive type",
+	 * such as int, long, bool etc.
+	 * @param s String to check
+	 * @return True if the string is a primitive type identifier, false otherwise
+	 */
 	public static boolean isPrimitiveType(String s)
 	{
 		for(int i = 0; i < primitivetypes.length; ++i)
@@ -261,6 +267,12 @@ public class StringTools
 		return false;
 	}
 	
+	/**
+	 * Cleans up a given string array so that the resulting array will not
+	 * contain empty strings
+	 * @param s Array of strings to clean
+	 * @return String array without empty strings
+	 */
 	public static String[] cleanEmptyEntries(String[] s)
 	{
 		ArrayList<String> list = new ArrayList<String>();

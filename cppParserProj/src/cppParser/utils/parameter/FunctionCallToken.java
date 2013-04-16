@@ -8,19 +8,24 @@ import cppParser.utils.FunctionCall;
  *
  * @author Tomi
  */
-public class FunctionCallToken implements ParameterToken{
+public class FunctionCallToken implements ParameterToken
+{
     public FunctionCall functionCall;
-    public FunctionCallToken(FunctionCall fc){
-        this.functionCall=fc;
+    
+    public FunctionCallToken(FunctionCall fc)
+    {
+        this.functionCall = fc;
     }
     
     @Override
-    public String toString(){
+    public String toString()
+    {
         return functionCall.toString();
     }
 
     @Override
-    public boolean isFunctionCall() {
+    public boolean isFunctionCall()
+    {
         return true;
     }
 }

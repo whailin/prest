@@ -3,6 +3,7 @@ package cppParser;
 import java.util.ArrayList;
 
 import cppParser.utils.Log;
+import cppParser.utils.MacroExpander;
 import cppParser.utils.StringTools;
 import cppStructures.CppDefine;
 
@@ -15,8 +16,10 @@ import cppStructures.CppDefine;
  */
 public class PreprocessorPass {
 
+	public static int defineCount = 0;
+	
 	// List of deliminators used for tokenization
-	private String[] delims = {" ", "#", "(", ")", ",", "*", "/", "+", "-", "<"};
+	private String[] delims = {" ", "#", "(", ")", ",", "*", "/", "+", "-", "<", ">"};
 	
 	private Extractor extractor;
 	
@@ -56,7 +59,7 @@ public class PreprocessorPass {
 	 */
 	public void process(String line)
 	{
-		if(line.startsWith("#define"))
+		if(line.startsWith("#def") || line.startsWith("#inc"))
 		{
 			functionLike = isFunctionLike(line);
 			
@@ -78,10 +81,11 @@ public class PreprocessorPass {
 			switch(tokens[i])
 			{
 			case "include":
-				handleInclude();
+				// handleInclude();
 				break;
 			case "define":
 				handleDefine();
+				defineCount++;
 				break;
 			}
 		}
@@ -100,9 +104,10 @@ public class PreprocessorPass {
 				String filename = tokens[2].substring(1, tokens[2].length() - 1);
 				ParsedObjectManager.getInstance().getCurrentFile().addInclude(filename);
 			}
-			else
+			else if(tokens[2].equals("<"))
 			{
-				Log.d("Angle bracket include? " + tokens[2]);
+				String filename = tokens[3];
+				ParsedObjectManager.getInstance().getCurrentFile().addInclude(filename);
 			}
 		}
 	}
@@ -121,7 +126,9 @@ public class PreprocessorPass {
 			{
 				def += (def.length() > 0 ? " " : "") + tokens[i];
 			}
-			ParsedObjectManager.getInstance().getCurrentFile().addDefine(new CppDefine(tokens[2], def));
+			// ParsedObjectManager.getInstance().getCurrentFile().addDefine(new CppDefine(tokens[2], def));
+			MacroExpander.addDefine(tokens[2], new CppDefine(def));
+			// Log.d("#define: " + tokens[2] + " " + def);
 		}
 		else
 		{
@@ -157,8 +164,10 @@ public class PreprocessorPass {
 			
 			if(def.length() > 0)
 			{
-				CppDefine cd = new CppDefine(tokens[2], params, def);
-				ParsedObjectManager.getInstance().getCurrentFile().addDefine(cd);
+				// CppDefine cd = new CppDefine(tokens[2], params, def);
+				// ParsedObjectManager.getInstance().getCurrentFile().addDefine(cd);
+				MacroExpander.addDefine(tokens[2], new CppDefine(params, def));
+				// Log.d("#define: " + tokens[2] + " " + params + " " + def);
 			}
 			else
 			{
@@ -169,8 +178,10 @@ public class PreprocessorPass {
 					par += (par.length() > 0 ? " " : "") + params.get(k);
 				}
 				
-				CppDefine cd = new CppDefine(tokens[2], par);
-				ParsedObjectManager.getInstance().getCurrentFile().addDefine(cd);
+				// CppDefine cd = new CppDefine(tokens[2], par);
+				// ParsedObjectManager.getInstance().getCurrentFile().addDefine(cd);
+				MacroExpander.addDefine(tokens[2], new CppDefine(par));
+				// Log.d("#define: " + tokens[2] + " " + par);
 			}
 		}
 	}

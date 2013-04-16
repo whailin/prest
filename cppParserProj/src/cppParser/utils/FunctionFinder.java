@@ -218,7 +218,7 @@ public class FunctionFinder {
                 if(parenthesisDepth==0){
                     currentFc.parameters.add(parseParameter(parameterTokens));
                     checkDependencies(currentFc.owners);
-                    Log.d("Found FC: "+ currentFc.toString());
+                    // Log.d("Found FC: "+ currentFc.toString());
                     if(next==null)
                         addToken(new FunctionCallToken(currentFc));
                     mode=ANOTHER;

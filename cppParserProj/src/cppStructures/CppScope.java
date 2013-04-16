@@ -2,6 +2,8 @@ package cppStructures;
 
 import java.util.ArrayList;
 
+import cppParser.utils.Log;
+
 /**
  * CPP Scope
  * 
@@ -14,7 +16,7 @@ import java.util.ArrayList;
  */
 public class CppScope
 {
-    public static final int NAMESPACE=0, CLASS=1, STRUCT=2, UNION=3;
+    public static final int NAMESPACE = 0, CLASS=1, STRUCT=2, UNION=3;
     public int type=NAMESPACE;
 	public String name = "_MAIN_";
 	public String getName() { return name; }
@@ -180,6 +182,11 @@ public class CppScope
 	 */
 	public void addChild(CppScope cc)
 	{
+		if(cc == this)
+		{
+			Log.d("Tried to add self as child: " + this.getName());
+		}
+		
 		boolean canAdd = true;
 		for(CppScope c : children)
 		{
@@ -203,6 +210,13 @@ public class CppScope
 	 */
 	public void addParent(CppScope cc)
 	{
-		parents.add(cc);
+		if(cc == this)
+		{
+			Log.d("Tried to add self as parent: " + this.getName());
+		}
+		else
+		{
+			parents.add(cc);
+		}
 	}
 }
