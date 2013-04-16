@@ -103,6 +103,7 @@ public class Extractor
 	public Extractor(String file, String outputDir)
 	{
 		this.file = file;
+        this.outputDir=outputDir;
 		objManager = ParsedObjectManager.getInstance();
 	}
 	
@@ -180,7 +181,8 @@ public class Extractor
         // Verify that no macro calls are in the operands
         // verifyToFile();
 		// Dump tree results to a file
-		dumpTreeResults();
+		ResultExporter exp=new ResultExporter(outputDir);
+        exp.exportAll();
 		
 		Log.d("Dump done.");
 		
@@ -586,129 +588,7 @@ public class Extractor
 	/**
 	 * Dumps the results into a text file
 	 */
-	private void dumpTreeResults()
-	{
-		BufferedWriter writer;
-		try
-		{
-            
-			writer = new BufferedWriter(new FileWriter("treedump.txt"));
-			for(CppScope cc : objManager.getScopes())
-			{
-				if(cc instanceof CppNamespace)
-				{
-					writer.write("Namespace: ");
-				}
-				else if(cc instanceof CppClass)
-				{
-					writer.write("Class: ");
-				}
-				writer.write(cc.getName() + " (file: " + cc.nameOfFile + ")\n");
-				for(CppScope cs : cc.children)
-				{
-					writer.write("  Parent of " + cs.getName() + "\n");
-				}
-				for(CppScope cs : cc.parents)
-				{
-					writer.write("  Child of " + cs.getName() + "\n");
-				}
-				
-				if(cc instanceof CppClass)
-				{
-					writer.write("  Child count: " + cc.children.size() + "\n");
-					writer.write("  Depth of inheritance: " + ((CppClass) cc).getDepthOfInheritance() + "\n");
-					writer.write("  Weighted methods per class: " + cc.getFunctions().size() + "\n");
-				}
-				
-				// Dump functions
-				writer.write("  FUNCTIONS\n");
-				for(CppFunc mf : cc.getFunctions())
-				{
-					writer.write("    " + mf.getType() + " | " + mf.getName() + " (");
-					for(int i = 0; i < mf.parameters.size(); ++i)
-					{
-						writer.write(mf.parameters.get(i).type + " | " + mf.parameters.get(i).name);
-						if(i < mf.parameters.size() - 1) writer.write(", ");
-					}					
-
-					writer.write(")\n");
-					
-					writer.write("      File: " + mf.fileOfFunc + "\n");
-					
-					writer.write("      Operator count = " + mf.getOperatorCount() + "\n");
-					for(String s : mf.getOperators())
-					{
-						writer.write("        " + s + "\n");
-					}
-					
-					writer.write("      Operand count = " + mf.getOperandCount() + "\n");
-					for(String s : mf.getOperands())
-					{
-						writer.write("        " + s + "\n");
-					}
-					
-					writer.write("      Unique Operator count = " + mf.getUniqueOperatorCount() + "\n");
-					for(String s : mf.getUniqueOperators())
-					{
-						writer.write("        " + s + "\n");
-					}
-					
-					writer.write("      Unique Operand count = " + mf.getUniqueOperandCount() + "\n");
-					for(String s : mf.getUniqueOperands())
-					{
-						writer.write("        " + s + "\n");
-					}
-					
-					writer.write("      Vocabulary = " + mf.getVocabulary() + "\n");
-					writer.write("      Length = " + mf.getLength() + "\n");
-					writer.write("      Volume = " + mf.getVolume() + "\n");
-					writer.write("      Difficulty = " + mf.getDifficulty() + "\n");
-					writer.write("      Effort = " + mf.getEffort() + "\n");
-					writer.write("      Programming time = " + mf.getTimeToProgram() + "\n");
-					writer.write("      Deliver bugs = " + mf.getDeliveredBugs() + "\n");
-					writer.write("      Level = " + mf.getLevel() + "\n");
-					writer.write("      Intelligent content = " + mf.getIntContent() + "\n");
-					writer.write("      Cyclomatic complexity = " + mf.getCyclomaticComplexity() + "\n");
-					writer.newLine();
-					
-				}
-				
-				// Dump variables
-				writer.write("  VARIABLES\n");
-				for(MemberVariable mv : cc.getMembers())
-				{
-					writer.write("    " + mv.getType() + " | " + mv.getName() + "\n");
-				}
-				
-				writer.write("\n");
-			}
-			writeLOCmetrics(writer);			
-						
-			
-			
-			writer.close();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-            
-		}
-	}
-    private void writeLOCmetrics(BufferedWriter writer) throws IOException{
-        List<LOCMetrics> list=ParsedObjectManager.getInstance().getLocMetrics();
-        for(LOCMetrics l:list){
-            writer.write("\n");
-            writer.write("LOC metrics for file: "+file);
-			writer.write("Physical lines of code: " + (l.codeOnlyLines+l.commentedCodeLines) + "\n");
-            writer.write("Logical lines of code: " + (l.logicalLOC) + "\n");
-			writer.write("Empty lines:"+ l.emptyLines+ "\n");
-            writer.write("Comment only lines: " +l.commentLines + "\n");
-            writer.write("Commented code lines: " + l.commentedCodeLines + "\n");
-			writer.write("Total comment lines: " + (l.commentLines+commentedCodeLines) + "\n");
 	
-            
-        }
-    }
 	
 	/**
 	 * Prints the results
