@@ -243,5 +243,15 @@ public class MacroExpander {
 	{
 		currentDefines.put(name, define);
 	}
+
+	public static boolean containsDefinition(String s)
+	{
+		return currentDefines.containsKey(s);
+	}
+
+	public static CppDefine getDefinition(String s)
+	{
+		return currentDefines.get(s);
+	}
 	
 }

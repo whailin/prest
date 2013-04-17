@@ -81,7 +81,7 @@ public class ResultExporter {
         List<LOCMetrics> list=ParsedObjectManager.getInstance().getLocMetrics();
         writer.write("filename,physicalLOC,executableLOC,emptyLines,commentOnlyLines,commentedCodeLines,commentLinesTotal");
         for(LOCMetrics l:list){
-            Log.d("Filename "+l.file);
+            // Log.d("Filename "+l.file);
             writer.write("\n"); 
 			writer.write("\""+l.file+"\""+separator + (l.codeOnlyLines+l.commentedCodeLines) + ","
                     +l.logicalLOC+separator
