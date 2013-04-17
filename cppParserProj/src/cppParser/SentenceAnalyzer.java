@@ -141,16 +141,11 @@ public class SentenceAnalyzer {
             return;
         }
 		
-		
-		long tokenizationStart = System.currentTimeMillis();
-		
 		// Split the line into tokens
 		String[] tokens = StringTools.split(line, null, true);
-		// Log.d(tokens);
 		
 		// Expand macros
 		tokens = StringTools.cleanEmptyEntries((new MacroExpander()).expand(tokens));
-		// Log.d(tokens);
 		
 		boolean stringOpen = false;
 		for(int i = 0; i < tokens.length; ++i)
@@ -212,7 +207,7 @@ public class SentenceAnalyzer {
         }
         this.loc=loc;
         llocCounter = new LLOCCounter();
-        Log.d("Setting file:"+file);
+        // Log.d("Setting file:"+file);
         loc.file=file;
         llocCounter.setFile(file);
     }

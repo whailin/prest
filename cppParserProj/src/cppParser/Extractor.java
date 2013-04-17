@@ -31,9 +31,6 @@ import java.util.List;
  */
 public class Extractor
 {
-
-    
-
 	enum Pass
 	{
 		PREPASS,
@@ -160,6 +157,8 @@ public class Extractor
 		{
 			currentPass = Pass.MAINPASS;
 			
+			int handledFileCount = 0;
+			
 			// Loop through the found files
 			for(String s : fileLoader.getFiles())
 			{
@@ -168,6 +167,7 @@ public class Extractor
                 ParsedObjectManager.getInstance().addLocMetric(locM);
                 sentenceAnalyzer.fileChanged(s, locM);
                 
+                // Log.d("Processing file " + (++handledFileCount) + "/" + fileLoader.getFiles().size());
 				process(s);
                 
 			}
@@ -180,8 +180,9 @@ public class Extractor
 		// TODO Second pass: fix unknown references / types / ambiguities
         // Verify that no macro calls are in the operands
         // verifyToFile();
+		
 		// Dump tree results to a file
-		ResultExporter exp=new ResultExporter(outputDir);
+		ResultExporter exp = new ResultExporter(outputDir);
         exp.exportAll();
 		
 		Log.d("Dump done.");
@@ -220,6 +221,7 @@ public class Extractor
 			}
 		}
 	}
+	*/
 	
 	private void verifyToFile()
 	{
@@ -239,6 +241,7 @@ public class Extractor
 				{
 					for(String s : cf.getOperands())
 					{
+						/*
 						for(CppDefine cd : defines)
 						{
 							if(s.equals(cd.getName()))
@@ -246,6 +249,13 @@ public class Extractor
 								// Log.d("**** FOUND MACRO CALL -> " + s + " FILE: " + cf.fileOfFunc);
 								writer.write("File: " + cf.fileOfFunc + " Function: " + cf.getName() + ": Macro call -> " + s + " Macro source: " + cd.getFile() + "\n");
 							}
+						}
+						*/
+						if(MacroExpander.containsDefinition(s))
+						{
+							CppDefine cd = MacroExpander.getDefinition(s);
+							Log.d("**** FOUND MACRO CALL -> " + s + " FILE: " + cf.fileOfFunc);
+							writer.write("File: " + cf.fileOfFunc + " Function: " + cf.getName() + ": Macro call -> " + s + " Macro source: " + cd.getFile() + "\n");
 						}
 					}
 				}
@@ -257,7 +267,7 @@ public class Extractor
 			e.printStackTrace();
 		}
 	}
-	*/
+	
 	
 	/**
 	 * Processes the given file.
@@ -296,11 +306,10 @@ public class Extractor
 			boolean stringOpen = false;
 			boolean charOpen = false;
 			
-			long extractStart = System.currentTimeMillis();
-			
 			while((c = (char)reader.read()) != (char)-1)
 			{
-                
+				long firstStart = System.currentTimeMillis();
+				
 				if(c == '\n')
 				{
 					loc++;
@@ -326,7 +335,8 @@ public class Extractor
 							}
 							
 							line = "";
-							commentLine = "";	
+							commentLine = "";
+							
 						}
 						else
 						{
@@ -338,6 +348,7 @@ public class Extractor
                     readLine="";
 					commentFound=false;
                     codeFound=false;
+                    continue;
 				}else{
                     if(c!='\r')
                         readLine+=c;
@@ -422,8 +433,10 @@ public class Extractor
                 }
 				
 				// Add a character to the "line"
+				
 				if(c != '\r' && c != '\n' && c != '\t')
 				{
+					
 					if(c == '"' && ((line.length() > 0 ? line.charAt(line.length() - 1) != '\\' : true) || (line.length() > 1 ? line.charAt(line.length() - 2) == '\\' : true)) && !charOpen)
 					{
 						line += "\"";
@@ -444,8 +457,8 @@ public class Extractor
 						{
 							line += c;
 						}
-					}				
-					
+					}
+								
 				}
 				else if(line.length() > 0 && line.charAt(line.length() - 1) != ' ')
 				{
@@ -453,35 +466,44 @@ public class Extractor
 					line += ' ';					
 				}
 				
-				// If the line ends, start lexing it
-				if(!stringOpen && !charOpen && (c == ';' || c == '{' || c == '}' || (isVisibilityStatement(c, line))))
+				
+				switch(currentPass)
 				{
-					lloc++;
-					// lexLine(line);
-					line.trim();
-					
-					switch(currentPass)
+				case MAINPASS:
+					// If the line ends, start lexing it
+					if(!stringOpen && !charOpen && (c == ';' || c == '{' || c == '}' || (isVisibilityStatement(c, line))))
 					{
-					case PREPASS:
-						prepassAnalyzer.process(line);
-						break;
-					case MAINPASS:
-						long extractDuration = System.currentTimeMillis() - extractStart;
-						if(extractDuration > 10)
-						{
-							Log.d(extractDuration + " Extraction: " + currentFile + ":" + lineno);
-						}
+						lloc++;
+						// lexLine(line);
+						line.trim();
+						
 						sentenceAnalyzer.lexLine(line);
-						break;
+
+						line = "";
+						commentLine = "";
+	                    codeFound=true;
 					}
-					
-					// sentenceAnalyzer.lexLineHM(line);
-					line = "";
-					commentLine = "";
-                    codeFound=true;
-                    extractStart = System.currentTimeMillis();
+					break;
+				case PREPASS:
+					if(!stringOpen && !charOpen && (c == ';' || c == '{' || c == '}'))
+					{
+						lloc++;
+						line = "";
+						commentLine = "";
+						codeFound = true;
+					}
+					break;
 				}
+				
 			}
+			
+			// if(fileDuration1 > 5) Log.d("D1: " + fileDuration1);
+			// if(fileDuration2 > 5) Log.d("D2: " + fileDuration2);
+			// if(fileDuration3 > 5) Log.d("D3: " + fileDuration3);
+			// if(fileDuration4 > 5) Log.d("D4: " + fileDuration4);
+			// if(fileDuration5 > 5) Log.d("D5: " + fileDuration5);
+			// Log.d("IF: " + ifDuration);
+			
 			addLine(codeFound,commentFound);
             resetLOCCounter();
 			loc++;

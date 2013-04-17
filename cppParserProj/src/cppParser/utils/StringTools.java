@@ -100,7 +100,6 @@ public class StringTools
 					{
 						if(src.charAt(i-1) != '\\' || (src.charAt(i-1) == '\\' && src.charAt(i-2) == '\\'))
 						{
-							i++;
 							break;
 						}
 					}
