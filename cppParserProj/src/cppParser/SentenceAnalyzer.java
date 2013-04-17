@@ -206,9 +206,7 @@ public class SentenceAnalyzer {
             this.loc.logicalLOC=llocCounter.getLloc();
         }
         this.loc=loc;
-        llocCounter = new LLOCCounter();
-        // Log.d("Setting file:"+file);
-        loc.file=file;
+        llocCounter = new LLOCCounter();        loc.file=file;
         llocCounter.setFile(file);
     }
     public void lastFileProcessed(){
