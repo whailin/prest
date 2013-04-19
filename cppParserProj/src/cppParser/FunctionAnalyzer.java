@@ -10,6 +10,7 @@ import java.util.HashSet;
 import cppStructures.*;
 import cppParser.utils.VarFinder;
 import java.util.List;
+import profiling.Stats;
 
 /**
  * This class is responsible of analyzing and constructing functions found in the source code.
@@ -17,7 +18,7 @@ import java.util.List;
  * @author Harri Pellikka
  */
 public class FunctionAnalyzer extends Analyzer {
-	
+	public static int pcf=0;
 	// Keywords that increment the cyclomatic complexity
 	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "#ifdef", "and", "or"};
 	// private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|"};
@@ -214,6 +215,7 @@ public class FunctionAnalyzer extends Analyzer {
 		return false;
 	}
     
+	
 	/**
 	 * Processes sentences that belong to a currently open function
 	 * @param tokens Tokens that form the sentence to process
@@ -222,10 +224,14 @@ public class FunctionAnalyzer extends Analyzer {
 	private boolean processCurrentFunction(String[] tokens)
 	{
 		handledIndices.clear();
-		
+		pcf++;
         // varFinder.clearHandledIndices();
         varFinder.findVariables(tokens);
-        // funcFinder.findFunctions(tokens);
+        long time=System.currentTimeMillis();
+        funcFinder.findFunctions(tokens);
+        
+        time=System.currentTimeMillis()-time;
+        Stats.addTime("funcFinder.findFunctions(String[])", time);
         
         operatorAnalyzer.processSentence(tokens);
         
