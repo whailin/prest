@@ -1,12 +1,18 @@
 package cppParser;
 
-import java.util.ArrayList;
-
+import cppParser.utils.Log;
 import cppParser.utils.StringTools;
 
+/**
+ * Analyses lists of tokens and tries to figure out operands and operators.
+ * Currently not working:
+ * - Template brackets are not identified correctly
+ * 
+ * @author Harri Pellikka
+ */
 public class OperatorAnalyzer extends Analyzer 
 {
-	private String[] operandSkipList = {"{", "(", ";", "="};
+	private String[] operandSkipList = {"{", "(", ";", "=", "]", "::"};
 	
 	private String[] splitters = {"!", "~"};
 	
@@ -28,9 +34,11 @@ public class OperatorAnalyzer extends Analyzer
 	 * Processes the tokens in order to find operators and operands
 	 */
 	public boolean processSentence(String[] tokens) {
-		i = 0;
+		
 		this.origTokens = tokens;
-		this.tokens = StringTools.split(tokens, splitters, true);
+		this.tokens = StringTools.reconstructOperators(StringTools.split(tokens, splitters, true));
+		
+		i = 0;
 		
 		for(i = 0; i < this.tokens.length; ++i)
 		{
@@ -61,18 +69,42 @@ public class OperatorAnalyzer extends Analyzer
 	 */
 	private void handleOperator()
 	{
-		if(i < 1) return;
+		// Handle bracket pairs
+		int bracketPairIndex = StringTools.getBracketPair(tokens, i);
+		if(bracketPairIndex > -1)
+		{
+			// Log.d("Found brace pair " + tokens[Math.min(i, bracketPairIndex)] + " " + tokens[Math.max(i, bracketPairIndex)]);
+			if(functionAnalyzer.getHandledIndices().contains(new Integer(bracketPairIndex)))
+			{
+				Log.d("  Already handled.");
+			}
+			else
+			{
+				functionAnalyzer.getHandledIndices().add(new Integer(bracketPairIndex));
+			}
+		
+		}
 		
 		int origIndex = i;
-		String op = constructOperator();
+		String op = tokens[i];
+		
+		// If the operator is inc. or dec., set the PRE or POST label accordingly
+		if(op.equals("++") || op.equals("--"))
+		{
+			if(i == 0)
+			{
+				op += " PRE";
+			}
+			else op += " POST";
+		}
 		
 		objManager.currentFunc.addOperator(op);
 		functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 		
-		if(!op.startsWith("++") && !op.startsWith("--"))
+		// If there's a "left side" for the operator, handle that
+		if(i > 0)
 		{
 			String leftSide = tokens[origIndex-1];
-			// Log.d("Leftside: " + leftSide);
 			
 			if(leftSide.equals("\""))
 			{
@@ -96,9 +128,14 @@ public class OperatorAnalyzer extends Analyzer
 			if(StringTools.isOperator(tokens[i]))
 			{
 				origIndex = i;
-				op = constructOperator();
+				// op = constructOperator();
+				op = tokens[i];
 				if(canAddOperator(i))
 				{
+					if(op.equals("++") || op.equals("--"))
+					{
+						op += " PRE";
+					}
 					objManager.currentFunc.addOperator(op);
 					functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 				}
@@ -127,6 +164,15 @@ public class OperatorAnalyzer extends Analyzer
 					{
 						objManager.currentFunc.addOperand(operand);
 						functionAnalyzer.getHandledIndices().add(new Integer(i));
+						if(i < tokens.length - 1)
+						{
+							if(tokens[i+1].equals("++") || tokens[i+1].equals("--"))
+							{
+								objManager.currentFunc.addOperator(tokens[i+1] + " POST");
+								functionAnalyzer.getHandledIndices().add(new Integer(i+1));
+								i++;
+							}
+						}
 					}
 				}
 			}

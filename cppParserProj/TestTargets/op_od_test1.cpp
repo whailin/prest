@@ -1,68 +1,131 @@
+/* **************************
+ * Tests for operator-operand
+ * recognition.
+ * Author: Harri Pellikka
+   **************************/
+   
+void Foo::FuncTest()
+{
+	doSomething();
+	asd(besd());
+}
+   
+// Array recognition tests (different uses of arrays)
+void Foo::ArrayTest()
+{
+	int billy[5];         // declaration of a new array
+	billy[2] = 75;        // access to an element of the array.
+	billy[0] = a;
+	billy[a] = 75;
+	b = billy [a+2];
+	billy[billy[a]] = billy[2] + 5;
+	
+	int jimmy [3][5];
+}
 
-/*
+// Parenthesis tests (randomly placed parentheses)
+void Foo::ParenthesisTest()
+{
+	int a = (1);
+	int b = (a * 5) + 2;
+	int c = ((4+1)/4) * (123 - (a));
+}
+
+// Splitter tests (lines with varying whitespaces and lines breaks)
+void Foo::SplitTest()
+{
+	int a;
+	int b ;
+	int
+	c
+	;
+	int d = 1;
+	int e=2;
+	int f =3;
+	int g= 4;
+	if(a == b)
+	{
+		a = 0;
+	}
+	if(c==d)
+	{
+		c = a;
+	}
+	if(e ==f);
+	if(f== g);
+	
+	if(true&&false)
+	{
+		
+	}
+}
+
+// Operator tests. This function includes most of the operators present
+// in C++11.
 void Foo::Operators()
 {
 	// Basic comparison operators
-	if(a1 < b1) {}				// OP OK, OD OK
-	if(a2 <= b2) {}				// OP OK, OD OK
-	if(a3 > b3) {}				// OP OK, OD OK
-	if(a4 >= b4) {}				// OP OK, OD OK
-	if(a5 == b5) {}				// OP OK, OD OK
+	if(a1 < b1) {}
+	if(a2 <= b2) {}
+	if(a3 > b3) {}
+	if(a4 >= b4) {}
+	if(a5 == b5) {}
+	if(c5 != d5) {}
 
 	// Bit shift operators
-	a6 << b6; // Single				// OP OK, OD OK
-	a7 << b7 << c7; // Multiple		// OP OK, OD OK
-	a8 >> b8; // Single				// OP OK, OD OK
-	a9 >> b9 >> c9; // Multiple		// OP OK, OD OK
+	a6 << b6; // Single Left
+	a7 << b7 << c7; // Multiple Left
+	a8 >> b8; // Single Right
+	a9 >> b9 >> c9; // Multiple Right
 	
 	// Arithmetic operators
-	a10 = b10 + c10;			// OP OK, OD OK
-	a11 = b11 - c11;			// OP OK, OD OK
-	a12 = b12 * c12;			// OP OK, OD OK
-	a13 = b13 / c13;			// OP OK, OD OK
-	a14 = b14 % c14;			// OP OK, OD OK
+	a10 = b10 + c10;
+	a11 = b11 - c11;
+	a12 = b12 * c12;
+	a13 = b13 / c13;
+	a14 = b14 % c14;
 	
 	// Unary plus and minus
-	a15 = +b15;	// OP OK, OD OK
-	a16 = -b16;// OP OK, OD OK
-	a17 = b17 - +c17; // OP OK, OD OK
-	a18 = b18 + -c18; // OP OK, OD OK
+	a15 = +b15;
+	a16 = -b16;
+	a17 = b17 - +c17;
+	a18 = b18 + -c18;
 	
 	// Pre- and post-increment / -decrement
-	a19 = b19++; // OP OK, OD OK
-	a20 = b20--; // OP OK, OD OK
-	a21 = ++b21; // OD OK
-	a22 = --b22; // OD OK
+	a19 = b19++;
+	a20 = b20--;
+	a21 = ++b21;
+	a22 = --b22;
 	
 	// Logical operators (default cases)
-	if(a23) {} // unary true-false					// OP OK, OD OK
-	if(!a24) {} // NOT								// OP OK, OD OK
-	if(a25 && b25) {} // AND						// OP OK, OD OK
-	if(a26 || b26) {} // OR							// OP OK, OD OK
-	if(!a27 && !b27) {} // NOT and AND				// OP OK, OD OK
+	if(a23) {} // unary true-false
+	if(!a24) {} // NOT
+	if(a25 && b25) {} // AND
+	if(a26 || b26) {} // OR
+	if(!a27 && !b27) {} // NOT and AND
 	
 	// Logical operators (non-symbol cases)
-	if(not a28) {} // NOT  							// OD OK
-	if(a29 and b29) {} // AND						
-	if(a30 or b30) {} // OR							
+	if(not a28) {} // NOT
+	if(a29 and b29) {} // AND
+	if(a30 or b30) {} // OR				
 	
 	// Bitwise logical operators
-	if(~a31) {} // Bitwise NOT						// OD OK
-	if(a32 & b32) {} // Bitwise AND					// OP OK
-	if(a33 | b33) {} // Bitwise OR					// OP OK, OD OK
-	if(a34 ^ b34) {} // Bitwise XOR					// OP OK, OD OK
+	if(~a31) {} // Bitwise NOT
+	if(a32 & b32) {} // Bitwise AND
+	if(a33 | b33) {} // Bitwise OR				
+	if(a34 ^ b34) {} // Bitwise XOR
 	
 	// Compound assignment operators
-	a35 += b35;		// OP OK, OD OK
-	a36 -= b36;		// OP OK, OD OK
-	a37 *= b37;		// OP OK
-	a38 /= b38;		// OP OK, OD OK
-	a39 %= b39;		// OP OK, OD OK
-	a40 &= b40;		// OP OK
-	a41 |= b41;		// OP OK, OD OK
-	a42 ^= b42;		// OP OK, OD OK
-	a43 <<= b43;	// OP OK, OD OK
-	a44 >>= b44;	// OP OK, OD OK
+	a35 += b35;
+	a36 -= b36;
+	a37 *= b37;
+	a38 /= b38;
+	a39 %= b39;
+	a40 &= b40;
+	a41 |= b41;
+	a42 ^= b42;
+	a43 <<= b43;
+	a44 >>= b44;
 	
 	// Array subscript
 	a45 = b45[0];
@@ -72,7 +135,7 @@ void Foo::Operators()
 	a49[b49] = c49[d49];
 	
 	// Function call and comma
-	doSomething(a50, b50); // OP OK
+	doSomething(a50, b50);
 	
 	// Scope resolution
 	SomeScope::doSomething();
@@ -82,10 +145,11 @@ void Foo::Operators()
 	
 	// Templates
 	vector<int> a52;
-	vector<vector<int>> a53; 
+	vector<vector<int>> a53;  // >> causes problems
 }
-*/
 
+// Operand recognition test. This function tries to include
+// varying operands that should all be recognized.
 void Foo::operands()
 {
 	int a1;
@@ -107,6 +171,19 @@ void Foo::cc1()
 	
 	}
 	
+	for(int a = 0; a < 15; a++)
+	{
+		
+	}
+	
+	do
+	{
+		a++;
+		--b;
+		++c;
+		d--;
+	}while(a <= 25 && b > -4);
+	
 	// If
 	if(true)
 	{
@@ -123,7 +200,7 @@ void Foo::cc1()
 		
 	}
 	
-	if(true && true)
+	if(true && true) // Second true not recognized (listed as operator)
 	{
 	
 	}

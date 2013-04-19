@@ -1,6 +1,7 @@
 package cppParser.utils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * A collection of parsing and lexing -related string tools
@@ -10,29 +11,52 @@ import java.util.ArrayList;
 public class StringTools
 {
 	// List of "splitters" that are used to tokenize a single line of source code
-	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "[", "]", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>", "!", "~"};
-		
+	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "[", "]", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>", "!", "~", "&", "|", "^"};
+	public static HashSet<String> delimSet = new HashSet<String>();
 	
 	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted
 	public static String[] keywords_notypes = {"alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", 
 		                                       "bitor", "break", "case", "catch", "class", "compl", "const",
 		                                       "constexpr", "const_cast", "continue", "decltype", "default", 
 		                                       "delete", "do", "dynamic_cast", "else", "enum", "explicit", 
-		                                       "export", "extern", "false", "for", "friend", "goto", "if", 
+		                                       "export", "extern", "for", "friend", "goto", "if", 
 		                                       "inline", "mutable", "namespace", "new", "noexcept", "not", 
 		                                       "not_eq", "nullptr", "operator", "or", "or_eq", "private", 
 		                                       "protected", "public", "register", "reinterpret_cast", "return", 
 		                                       "sizeof", "static", "static_assert", "static_cast", "struct", 
-		                                       "switch", "template", "this", "thread_local", "throw", "true", 
+		                                       "switch", "template", "this", "thread_local", "throw", 
 		                                       "try", "typedef", "typeid", "typename", "union", "using", 
 		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
 	
 	// List of Halstead operators
-	public static String[] operators = {";", ")", "}", "]", "+", "-", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or"};
+	public static String[] operators = {";", ")", "}", "[", "+", "-", "++", "--", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or"};
+	public static HashSet<String> opSet = new HashSet<String>();
 	
 	// List of primitive types and values
 	public static String[] primitivetypes = {"int", "double", "float", "true", "false", "char", "short", "long", "unsigned"};
+	public static HashSet<String> primitiveSet = new HashSet<String>();
 	
+	private static boolean isSetup = false;
+	
+	public static void setup()
+	{
+		if(!isSetup)
+		{
+			for(String s : operators)
+			{
+				opSet.add(s);
+			}
+			for(String s : primitivetypes)
+			{
+				primitiveSet.add(s);
+			}
+			for(String s : delims)
+			{
+				delimSet.add(s);
+			}
+			isSetup = true;
+		}
+	}
 	
 	/**
 	 * A simple non-regex-splitter that splits the given string into tokens with the given delimiters.
@@ -131,6 +155,7 @@ public class StringTools
 					}
 					if(shouldSplit) break;
 				}
+				
 			}
 			
 			// If a delim was found, split the string
@@ -243,12 +268,7 @@ public class StringTools
 	 */
 	public static boolean isOperator(String s)
 	{
-		for(int i = 0; i < operators.length; ++i)
-		{
-			if(operators[i].equals(s)) return true;
-		}
-		
-		return false;
+		return opSet.contains(s);
 	}
 
 	/**
@@ -259,11 +279,7 @@ public class StringTools
 	 */
 	public static boolean isPrimitiveType(String s)
 	{
-		for(int i = 0; i < primitivetypes.length; ++i)
-		{
-			if(primitivetypes[i].equals(s)) return true;
-		}
-		return false;
+		return primitiveSet.contains(s);
 	}
 	
 	/**
@@ -280,5 +296,150 @@ public class StringTools
 			if(t.length() > 0) list.add(t);
 		}
 		return listToArray(list);
+	}
+	
+	/**
+	 * Reconstructs "splitted" tokens.
+	 * For example, if operator "==" is split into two "="'s, this
+	 * method will reconstruct them.
+	 * @param tokens Original list of tokens
+	 * @return Array of tokens with reconstructed operators
+	 */
+	public static String[] reconstructOperators(String[] tokens)
+	{
+		ArrayList<String> newTokens = new ArrayList<String>();
+		
+		for(int i = 0; i < tokens.length; ++i)
+		{
+			switch(tokens[i])
+			{
+			case "=":
+				if(i < tokens.length - 1)
+				{
+					if(tokens[i+1].equals("="))
+					{
+						newTokens.add("==");
+						i++;
+					}
+					else
+					{
+						newTokens.add("=");
+					}
+				}
+				break;
+			case "<":
+			case ">":
+			case "<<":
+			case ">>":
+			case "!":
+			case "+":
+			case "-":
+			case "*":
+			case "/":
+			case "%":
+			case "&":
+			case "|":
+			case "^":
+				if(i < tokens.length - 1)
+				{
+					if(tokens[i+1].equals("="))
+					{
+						newTokens.add(tokens[i] + "=");
+						i++;
+					}
+					else if(tokens[i+1].equals(tokens[i]))
+					{
+						
+						if(i < tokens.length - 2)
+						{
+							if(tokens[i+2].equals("="))
+							{
+								newTokens.add(tokens[i] + tokens[i+1] + tokens[i+2]);
+								i+=2;
+							}
+							else
+							{
+								newTokens.add(tokens[i] + tokens[i+1]);
+								i++;
+							}
+						}
+						else
+						{
+							newTokens.add(tokens[i] + tokens[i+1]);
+							i++;
+						}
+						
+					}
+					else
+					{
+						newTokens.add(tokens[i]);
+					}
+				}
+				break;
+			default:
+				newTokens.add(tokens[i]);
+				break;
+			}
+		}
+		
+		return listToArray(newTokens);
+	}
+	
+	/**
+	 * Searches for the matching pair for the given bracket ("(", "[", "{", "<")
+	 * and retrieves the index to the found pair.
+	 * If the starting index contains an opening bracket, it will search
+	 * forward for the closing bracket. If the starting index contains a
+	 * closing bracket, the search will be done backwards.
+	 * @param tokens Array of tokens
+	 * @param startIndex Index of the start bracket
+	 * @return Index to the pairing bracket, or -1 if one is not found
+	 */
+	public static int getBracketPair(String[] tokens, int startIndex)
+	{
+		String b = tokens[startIndex];
+		if(!b.equals("(") && !b.equals("[") && !b.equals("{") && !b.equals("<") &&
+		   !b.equals(")") && !b.equals("]") && !b.equals("}") && !b.equals(">")) return -1;
+		
+		int pairCount = 1;
+
+		if(b.equals("(") || b.equals("[") || b.equals("{") || b.equals("<"))
+		{
+			for(int i = startIndex + 1; i < tokens.length; ++i)
+			{
+				if(tokens[i].equals(b))
+				{
+					pairCount++;
+				}
+				else if((b.equals("(") && tokens[i].equals(")")) || 
+						(b.equals("[") && tokens[i].equals("]")) || 
+						(b.equals("{") && tokens[i].equals("}")) || 
+						(b.equals("<") && tokens[i].equals(">")))
+				{
+					pairCount--;
+					if(pairCount == 0) return i;
+				}
+			}
+		}
+		else
+		{
+			for(int i = startIndex - 1; i >= 0; --i)
+			{
+				if(tokens[i].equals(b))
+				{
+					pairCount++;
+				}
+				else if((b.equals("(") && tokens[i].equals(")")) || 
+						(b.equals("[") && tokens[i].equals("]")) || 
+						(b.equals("{") && tokens[i].equals("}")) || 
+						(b.equals("<") && tokens[i].equals(">")))
+				{
+					pairCount--;
+					if(pairCount == 0) return i;
+				}
+			}
+		}
+		
+		return -1;
 	}
 }

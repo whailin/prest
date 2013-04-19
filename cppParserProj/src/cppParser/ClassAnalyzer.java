@@ -344,15 +344,23 @@ public class ClassAnalyzer extends Analyzer
 							CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[j-1]);
 							cc.nameOfFile = Extractor.currentFile;
 							cc.braceCount = sentenceAnalyzer.braceCount;
-							cc.parentScope = ParsedObjectManager.getInstance().currentScope;
+							// cc.parentScope = ParsedObjectManager.getInstance().currentScope;
 							
 							// Check for all parents
 							for(int k = j + 1; k < tokens.length; ++k)
 							{
 								if(tokens[k].equals(",") || tokens[k].equals("{"))
 								{
+									// Search for a possible namespace
+									String ns = null;
+									if(tokens[k-2].equals("::"))
+									{
+										ns = tokens[k-3];
+									}
+									
 									// Log.d("    ... inherited from " + tokens[k-1]);
-									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1]);									
+									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1]);
+									if(ns != null) pcc.setNamespace(ns);
 									pcc.addChild(cc);
 									pcc.nameOfFile = Extractor.currentFile;
 								}
@@ -384,7 +392,7 @@ public class ClassAnalyzer extends Analyzer
                         }   
 						cc.nameOfFile = Extractor.currentFile;
 						cc.braceCount = sentenceAnalyzer.braceCount;
-						cc.parentScope = ParsedObjectManager.getInstance().currentScope;
+						// cc.parentScope = ParsedObjectManager.getInstance().currentScope;
 						sentenceAnalyzer.setCurrentScope(cc.getName(), true);
 					}
 					
