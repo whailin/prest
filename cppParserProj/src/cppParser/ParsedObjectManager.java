@@ -70,25 +70,34 @@ public class ParsedObjectManager
 	{
 		
 	}
-    public void addLocMetric(LOCMetrics loc){
+    public void addLocMetric(LOCMetrics loc)
+    {
         locMetrics.add(loc);
     }
-    public ArrayList<LOCMetrics> getLocMetrics(){
+    
+    public ArrayList<LOCMetrics> getLocMetrics()
+    {
         return locMetrics;
     }
     
-    public ArrayList<CppType> getKnownTypes(){
+    public ArrayList<CppType> getKnownTypes()
+    {
         return knownTypes;
     }
     
-    public void addKnownType(CppType type){
-        
-        for(CppType ct:knownTypes){
+    public void addKnownType(CppType type)
+    {
+        for(CppType ct:knownTypes)
+        {
             if(ct.typeName.contentEquals(type.typeName))
+            {
                 if(ct.parent.contentEquals(type.parent))
+                {
                     return;
+                }
+            }
         }
-        // Log.d("New type found " +type.typeName+" "+type.type);
+
         knownTypes.add(type);
     }
 
@@ -156,11 +165,16 @@ public class ParsedObjectManager
 		{
 			if(cs instanceof CppClass)
 			{
-				if(cs.getName().equals(name))
+				CppClass cClass = (CppClass)cs;
+				if(cClass.getName().equals(name))
 				{
 					// Log.d("Found an existing scope " + name);
-					newClass = (CppClass)cs;
-					break;
+					if((cClass.namespace == null && currentNameSpace.equals("")) || cClass.namespace.equals(currentNameSpace))
+					{
+						newClass = cClass;
+						break;
+					}
+					
 				}
 			}
 		}
@@ -175,13 +189,14 @@ public class ParsedObjectManager
 		return newClass;
 	}
     
-    public CppScope addStruct(String name){
+    public CppScope addStruct(String name)
+    {
         assert(name != null);
 		
 		CppScope newStruct = null;
 		for(CppScope cs : scopes)
 		{
-			if(cs.type==CppScope.STRUCT)
+			if(cs.type == CppScope.STRUCT)
 			{
 				if(cs.getName().equals(name))
 				{
@@ -195,21 +210,22 @@ public class ParsedObjectManager
 		if(newStruct == null)
 		{
 			newStruct = new CppScope(name);
-            newStruct.type=CppScope.STRUCT;
+            newStruct.type = CppScope.STRUCT;
 			scopes.add(newStruct);
-            addKnownType(new CppType(name,CppType.STRUCT));
+            addKnownType(new CppType(name, CppType.STRUCT));
 		}
 		
 		return newStruct;
     }
     
-    public CppScope addUnion(String name){
+    public CppScope addUnion(String name)
+    {
         assert(name != null);
 		
 		CppScope newUnion = null;
 		for(CppScope cs : scopes)
 		{
-			if(cs.type==CppScope.UNION)
+			if(cs.type == CppScope.UNION)
 			{
 				if(cs.getName().equals(name))
 				{
@@ -223,9 +239,9 @@ public class ParsedObjectManager
 		if(newUnion == null)
 		{
 			newUnion = new CppScope(name);
-            newUnion.type=CppScope.UNION;
+            newUnion.type = CppScope.UNION;
 			scopes.add(newUnion);
-            addKnownType(new CppType(name,CppType.UNION));
+            addKnownType(new CppType(name, CppType.UNION));
 		}
 		
 		return newUnion;
@@ -233,8 +249,11 @@ public class ParsedObjectManager
 
 	public void addNamespace(CppNamespace ns, boolean addToStack) 
 	{
-		assert(ns != null);
-		assert(ns.name != null);
+		if(ns == null)
+		{
+			throw new NullPointerException("Tried to add namespace that is null.");
+		}
+		if(ns.getName() == null) throw new NullPointerException("Tried to add namespace which name is null.");
 		
 		for(CppScope cs : scopes)
 		{

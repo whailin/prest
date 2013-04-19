@@ -16,14 +16,15 @@ import cppParser.utils.Log;
  */
 public class CppScope
 {
-    public static final int NAMESPACE = 0, CLASS=1, STRUCT=2, UNION=3;
-    public int type=NAMESPACE;
+    public static final int NAMESPACE = 0, CLASS = 1, STRUCT = 2, UNION = 3;
+    public int type = NAMESPACE;
 	public String name = "_MAIN_";
 	public String getName() { return name; }
 	
 	public ArrayList<CppScope> parents = null;
 	public ArrayList<CppScope> children = null;
-	public CppScope parentScope = null;	// Namespace, outer class etc.
+	// public CppScope parentScope = null;	// Namespace, outer class etc.
+	public CppNamespace namespace = null;
 	
 	public int braceCount = 0;
 	public String nameOfFile = "";

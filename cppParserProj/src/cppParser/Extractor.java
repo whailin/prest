@@ -110,6 +110,7 @@ public class Extractor
 	public void process()
 	{
 		Log.d("Processing started.");
+		StringTools.setup();
 		Log.d("Finding files and sorting... ");
 		
 		long startTime = System.currentTimeMillis();
@@ -181,6 +182,10 @@ public class Extractor
         // Verify that no macro calls are in the operands
         // verifyToFile();
 		
+		// Debug dump
+		// TODO REMOVE WHEN DONE
+		dumpTree();
+		
 		// Dump tree results to a file
 		ResultExporter exp = new ResultExporter(outputDir);
         exp.exportAll();
@@ -194,34 +199,6 @@ public class Extractor
 		
 		Log.d("Processing took " + duration / 1000.0 + " s.");
 	}
-	
-	/*
-	private void verify()
-	{
-		ArrayList<CppDefine> defines = new ArrayList<CppDefine>();
-		for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
-		{
-			defines.addAll(cf.getDefines());
-		}
-		
-		for(CppScope cs : ParsedObjectManager.getInstance().getScopes())
-		{
-			for(CppFunc cf : cs.getFunctions())
-			{
-				for(String s : cf.getOperands())
-				{
-					for(CppDefine cd : defines)
-					{
-						if(s.equals(cd.getName()))
-						{
-							Log.d("**** FOUND MACRO CALL -> " + s + " FILE: " + cf.fileOfFunc);
-						}
-					}
-				}
-			}
-		}
-	}
-	*/
 	
 	private void verifyToFile()
 	{
@@ -290,7 +267,6 @@ public class Extractor
 		// funcBraceCount = 0;
 		// this.lineDone = false;
 		lineno = 0;
-		// Initialize macro expander
 		
 		try
 		{
@@ -308,8 +284,6 @@ public class Extractor
 			
 			while((c = (char)reader.read()) != (char)-1)
 			{
-				long firstStart = System.currentTimeMillis();
-				
 				if(c == '\n')
 				{
 					loc++;
@@ -608,79 +582,38 @@ public class Extractor
 	}
 	
 	/**
-	 * Dumps the results into a text file
+	 * Dumps debug-purposed results into a text file
 	 */
-	
-	
-	/**
-	 * Prints the results
-	 */
-	/*
-	private void printTreeResults()
+	private void dumpTree()
 	{
-		Log.d("Tree results");
-		for(CppScope cs : objManager.getScopes())
-		{
-			Log.d(" - " + cs.getName());
-			for(CppFunc cp : cs.getFunctions())
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter("treedump.txt"));
+			
+			for(CppScope scope : ParsedObjectManager.getInstance().getScopes())
 			{
-				Log.d("    - " + cp.getType() + " | " + cp.getName());
+				for(CppFunc func : scope.getFunctions())
+				{
+					writer.write(func.getType() + " " + func.getName() + "()" + " | " + func.fileOfFunc + "\n");
+					writer.write("------------------------\n");
+					writer.write("Operands:\n");
+					for(String s : func.getOperands())
+					{
+						writer.write("    " + s + "\n");
+					}
+					writer.write("Operators:\n");
+					for(String s : func.getOperators())
+					{
+						writer.write("    " + s + "\n");
+					}
+					writer.write("\n\n");
+				}
+				
 			}
+			
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
-	*/
-	
-	/**
-	 * Prints information out to console
-	 */
-	/*
-	private void printResults()
-	{
-		// Print #defines
-		if(objManager.defines.size() > 0)
-		{
-			Log.d("defines");
-			for(String s : objManager.defines) Log.d(" - " + s);
-			Log.d();
-		}
-		
-		// Print #includes
-		if(objManager.includes.size() > 0)
-		{
-			Log.d("includes");
-			for(String s : objManager.includes) Log.d(" - " + s);
-			Log.d();
-		}
-		
-		// Print class names
-		if(objManager.classes.size() > 0)
-		{
-			Log.d("classes");
-			for(String s : objManager.classes)	Log.d(" - " + s);
-			Log.d();
-		}
-		
-		// Print single-line comments
-		if(objManager.oneLineComments.size() > 0)
-		{
-			Log.d("oneline comments");
-			for(String s : objManager.oneLineComments)	Log.d(" - " + s);
-			Log.d();
-		}
-		
-		// Print multi-line comments
-		if(objManager.multiLineComments.size() > 0)
-		{
-			Log.d("multiline comments");
-			for(String s : objManager.multiLineComments) Log.d(" - " + s);
-			Log.d();
-		}
-		
-		// Print halstead counting
-		if (ParsedObjectManager.getInstance().currentFunc.getOperatorCount() > 0){
-			Log.d("Operators");
-			Log.d("" + ParsedObjectManager.getInstance().currentFunc.getLength());
-		}
-	}
-	*/
 }

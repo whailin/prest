@@ -142,7 +142,7 @@ public class SentenceAnalyzer {
         }
 		
 		// Split the line into tokens
-		String[] tokens = StringTools.split(line, null, true);
+		String[] tokens = StringTools.reconstructOperators(StringTools.split(line, null, true));
 		
 		// Expand macros
 		tokens = StringTools.cleanEmptyEntries((new MacroExpander()).expand(tokens));
@@ -166,6 +166,10 @@ public class SentenceAnalyzer {
 						// ParsedObjectManager.getInstance().currentFunc.addOperator("}");
 					}
 					lexEndBrace();
+					
+					// If there's only one token ("}"), don't continue to the analyzer stage
+					if(tokens.length == 1) return;
+					
 					continue;
 				}
 			}

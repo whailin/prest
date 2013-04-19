@@ -1,5 +1,6 @@
 package cppStructures;
 
+import cppParser.ParsedObjectManager;
 import cppParser.utils.Log;
 
 
@@ -58,5 +59,31 @@ public class CppClass extends CppScope {
 		}
 		
 		if(depthOfInheritance == -1) depthOfInheritance = 0;
+	}
+
+	/**
+	 * Sets the namespace of this class to 'ns'
+	 * @param ns Name of the namespace
+	 */
+	public void setNamespace(String ns)
+	{
+		// Search for existing namespace
+		for(CppScope cs : ParsedObjectManager.getInstance().getScopes())
+		{
+			if(cs instanceof CppNamespace)
+			{
+				CppNamespace cns = (CppNamespace)cs;
+				if(cns.getName().equals(ns))
+				{
+					this.namespace = cns;
+					return;
+				}
+			}
+		}
+		
+		// Existing namespace not found, create a new one
+		CppNamespace cns = new CppNamespace(ns);
+		this.namespace = cns;
+		ParsedObjectManager.getInstance().addNamespace(cns, false);
 	}
 }

@@ -251,6 +251,7 @@ public class CppFunc {
 		case "}":
 			op = "{}";
 			break;
+		case "[":
 		case "]":
 			op = "[]";
 			break;
