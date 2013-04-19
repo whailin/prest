@@ -27,7 +27,8 @@ public class ParsedObjectManager
 	// Reference to the class or namespace currently under processing
 	public CppScope currentScope = null;
 	
-	public String currentNameSpace = "";
+	// public String currentNameSpace = "";
+	public CppNamespace currentNamespace = null;
 	
 	private CppFile currentFile = null;
 	
@@ -156,7 +157,7 @@ public class ParsedObjectManager
 	}
 	
 	
-	public CppClass addClass(String name)
+	public CppClass addClass(String name, CppNamespace namespace)
 	{
 		assert(name != null);
 		
@@ -168,13 +169,19 @@ public class ParsedObjectManager
 				CppClass cClass = (CppClass)cs;
 				if(cClass.getName().equals(name))
 				{
-					// Log.d("Found an existing scope " + name);
-					if((cClass.namespace == null && currentNameSpace.equals("")) || cClass.namespace.equals(currentNameSpace))
+					if(namespace != null && cClass.namespace != null)
+					{
+						if(namespace.equals(cClass.namespace))
+						{
+							newClass = cClass;
+							break;
+						}
+					}
+					else
 					{
 						newClass = cClass;
 						break;
 					}
-					
 				}
 			}
 		}
@@ -182,9 +189,13 @@ public class ParsedObjectManager
 		if(newClass == null)
 		{
 			newClass = new CppClass(name);
+			newClass.namespace = namespace;
 			scopes.add(newClass);
             addKnownType(new CppType(name,CppType.CLASS));
 		}
+		
+		// if(newClass.namespace != null) Log.d("Added class: " + newClass.getName() + " | " + newClass.namespace.getName());
+		// else Log.d("Added class: " + newClass.getName());
 		
 		return newClass;
 	}
@@ -263,8 +274,19 @@ public class ParsedObjectManager
 			}
 		}
 		
+		// Set the parent namespace, if there is one
+		if(addToStack && currentNamespace != null)
+		{
+			// ns.addParent(currentNamespace);
+			currentNamespace.addChild(ns);
+		}
+		
 		scopes.add(ns);
-		if(addToStack) this.cppScopeStack.push(ns);
+		if(addToStack)
+		{
+			this.cppScopeStack.push(ns);
+			currentNamespace = ns;
+		}
 	}
 
 	/**
@@ -278,7 +300,20 @@ public class ParsedObjectManager
 		if(b) currentFunc = func;
 	}
 
-	public Stack<CppScope> getCppScopeStack() {
+	public Stack<CppScope> getCppScopeStack()
+	{
 		return this.cppScopeStack;
+	}
+
+	public CppNamespace getNamespace(String ns)
+	{
+		for(CppScope scope : scopes)
+		{
+			if(scope instanceof CppNamespace)
+			{
+				if(scope.getName().equals(ns)) return (CppNamespace)scope;
+			}
+		}
+		return null;
 	}
 }

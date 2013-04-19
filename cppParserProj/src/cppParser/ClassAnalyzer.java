@@ -305,28 +305,22 @@ public class ClassAnalyzer extends Analyzer
 				// Log.d("Found "+tokens[i]);
 				if(tokens[tokens.length - 1].equals(";"))
 				{
-					// Found a forward declaration
-					// Log.d("    ... forward declaration: " + tokens[tokens.length - 2]);
-					
-					//ParsedObjectManager.getInstance().currentFunc.addOperator(tokens[tokens.length-1]);
-					
-					// Create the class but don't set it as current class
-					CppScope cc=null;
-                    switch(tokens[i]){
+					CppScope cc = null;
+                    switch(tokens[i])
+                    {
                         case "class":
-                            cc=ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2]);
+                            cc = ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2], ParsedObjectManager.getInstance().currentNamespace);
                             break;
                         case "struct":
-                            cc=ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2]);
+                            cc = ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2]);
                             break;
                         case "union":
-                            cc=ParsedObjectManager.getInstance().addUnion(tokens[tokens.length - 2]);
+                            cc = ParsedObjectManager.getInstance().addUnion(tokens[tokens.length - 2]);
                             break;
                     }
                     
 					cc.nameOfFile = Extractor.currentFile;
                     
-					
 					return true;
 				}
 				else
@@ -341,9 +335,10 @@ public class ClassAnalyzer extends Analyzer
 							isInheriting = true;
 							// Log.d("   ... called " + tokens[j-1]);							
 							
-							CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[j-1]);
+							CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[j-1], ParsedObjectManager.getInstance().currentNamespace);
 							cc.nameOfFile = Extractor.currentFile;
 							cc.braceCount = sentenceAnalyzer.braceCount;
+							cc.namespace = ParsedObjectManager.getInstance().currentNamespace; 
 							// cc.parentScope = ParsedObjectManager.getInstance().currentScope;
 							
 							// Check for all parents
@@ -353,14 +348,23 @@ public class ClassAnalyzer extends Analyzer
 								{
 									// Search for a possible namespace
 									String ns = null;
+									CppNamespace cppNS = null;
 									if(tokens[k-2].equals("::"))
 									{
 										ns = tokens[k-3];
 									}
+									if(ns != null)
+									{
+										cppNS = ParsedObjectManager.getInstance().getNamespace(ns);
+										if(cppNS == null)
+										{
+											cppNS = new CppNamespace(ns);
+											ParsedObjectManager.getInstance().addNamespace(cppNS, false);
+										}
+									}
 									
 									// Log.d("    ... inherited from " + tokens[k-1]);
-									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1]);
-									if(ns != null) pcc.setNamespace(ns);
+									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1], cppNS);
 									pcc.addChild(cc);
 									pcc.nameOfFile = Extractor.currentFile;
 								}
@@ -381,7 +385,7 @@ public class ClassAnalyzer extends Analyzer
 						CppScope cc = null;
                         switch(tokens[i]){
                             case "class":
-                                cc=ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2]);
+                                cc=ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2], ParsedObjectManager.getInstance().currentNamespace);
                                 break;
                             case "struct":
                                 cc=ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2]);
