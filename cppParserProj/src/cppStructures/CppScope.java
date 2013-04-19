@@ -209,7 +209,7 @@ public class CppScope
 	 * Adds a new parent for this scope
 	 * @param cc The parent scope
 	 */
-	public void addParent(CppScope cc)
+	private void addParent(CppScope cc)
 	{
 		if(cc == this)
 		{

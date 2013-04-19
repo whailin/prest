@@ -184,7 +184,8 @@ public class Extractor
 		
 		// Debug dump
 		// TODO REMOVE WHEN DONE
-		dumpTree();
+		dumpFunctions();
+		dumpScopes();
 		
 		// Dump tree results to a file
 		ResultExporter exp = new ResultExporter(outputDir);
@@ -582,12 +583,12 @@ public class Extractor
 	}
 	
 	/**
-	 * Dumps debug-purposed results into a text file
+	 * Dumps functions into a text file
 	 */
-	private void dumpTree()
+	private void dumpFunctions()
 	{
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter("treedump.txt"));
+			BufferedWriter writer = new BufferedWriter(new FileWriter("dump_functions.txt"));
 			
 			for(CppScope scope : ParsedObjectManager.getInstance().getScopes())
 			{
@@ -609,6 +610,84 @@ public class Extractor
 				}
 				
 			}
+			
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Dumps namespaces into a text file
+	 */
+	private void dumpScopes()
+	{
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter("dump_namespaces.txt"));
+			
+			writer.write("NAMESPACES\n**************\n");
+			for(CppScope scope : ParsedObjectManager.getInstance().getScopes())
+			{
+				if(scope instanceof CppNamespace)
+				{
+					CppNamespace namespace = (CppNamespace)scope;
+					writer.write(namespace.getName() + "\n");
+					
+					if(namespace.parents.size() > 0)
+						{
+						writer.write("Parents:\n");
+						for(CppScope parent : namespace.parents)
+						{
+							writer.write("   " + parent.getName() + "\n");
+						}
+					}
+					
+					if(namespace.children.size() > 0)
+					{
+						writer.write("Children:\n");
+						for(CppScope child : namespace.children)
+						{
+							writer.write("   " + child.getName() + "\n");
+						}
+					}
+					writer.write("\n");
+				}
+				
+			}
+			writer.write("\n\n");
+			
+			writer.write("CLASSES\n**************\n");
+			for(CppScope scope : ParsedObjectManager.getInstance().getScopes())
+			{
+				if(scope instanceof CppClass)
+				{
+					CppClass cppClass = (CppClass)scope;
+					writer.write(cppClass.getName() + "(" + (cppClass.namespace != null ? cppClass.namespace.getName() : "__MAIN__") + ")" + "\n");
+					
+					
+					if(cppClass.parents.size() > 0)
+					{
+						writer.write("Parents:\n");
+						for(CppScope parent : cppClass.parents)
+						{
+							writer.write("   " + parent.getName() + "(" + (parent.namespace != null ? parent.namespace.getName() : "__MAIN__") + ")" + "\n");
+						}
+					}
+					
+					if(cppClass.children.size() > 0)
+					{
+						writer.write("Children:\n");
+						for(CppScope child : cppClass.children)
+						{
+							writer.write("   " + child.getName() + "(" + (child.namespace != null ? child.namespace.getName() : "__MAIN__") + ")" + "\n");
+						}
+					}
+					writer.write("\n");
+				}
+				
+			}
+			writer.write("\n\n");
 			
 			writer.close();
 		} catch (IOException e) {
