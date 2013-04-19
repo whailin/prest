@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class VarFinder
 {
-    private static final boolean silenced = true, showTokens = false;
+    private static final boolean silenced = false, showTokens = false;
     private static final String[] delims = {"<", ">"};
     
     private VarFinder recursive = null;
@@ -96,45 +96,8 @@ public class VarFinder
              if(i+1 < tokens.length)
                     next = tokens[i+1];
              
-             //String literals are ignored
-             if(foundStringLiteral)
-             {
-                 if(next != null)
-                 {
-                    if(token.charAt(token.length() - 1) != '\\')
-                    {  //Well make sure that there's no escape char before "
-                        if(next.contentEquals("\""))
-                        {
-                            i++;
-                            foundStringLiteral=false;
-                        }
-                    }
-                 }
-             }
-             else
-             {
-                 if(token.contains("\""))
-                 {
-                     if(next != null)
-                     {
-                        if(next.charAt(0) == '\'')
-                        {
-                            foundStringLiteral = false;
-                            return;
-                        }
-                     }
-                     foundStringLiteral = true;
-                     if(next.contains("\""))
-                     {
-                         i++;
-                         foundStringLiteral = false;
-                     }
-                 }
-                 else
-                 {
-                     pushTokens(token, next);
-                 }
-             }
+             pushTokens(token, next);
+                
         }
     }
     
@@ -326,7 +289,6 @@ public class VarFinder
 
     private void lookForType()
     {
-        
         if(next == null)
             return;
         if(token.contentEquals(";"))
@@ -349,6 +311,9 @@ public class VarFinder
             {
                 if(canSkip(token))
                     return;
+                if(canSkip(next)){
+                    next="";
+                }
                 //Log.d("lft:"+token);
                 if(Constants.isPrimitiveType(token))
                 {
@@ -361,18 +326,19 @@ public class VarFinder
                 
                 if(primitive){
                         //Log.d("found primitive type");
-                        if(!Constants.isPrimitiveType(next))
+                        if(!Constants.isPrimitiveType(next) && !next.isEmpty())
                         {
                             mode = NAME;
                         }
                         else return;
 
                 }
-                if(next.contentEquals("->")){
+                if(next.isEmpty())return;
+                else if(next.contentEquals("->")){
                     mode = RESET;
                     return;
                 }
-                if(next.contentEquals("::"))
+                else if(next.contentEquals("::"))
                 {
                     skip();
                     currentType+=next;

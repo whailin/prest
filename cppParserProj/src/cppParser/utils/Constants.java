@@ -200,6 +200,7 @@ public class Constants {
  */
     public static boolean isWordToken(String token) 
     {
+        if(token.isEmpty())return false;
         char c = token.charAt(0);
         if(!Constants.isValidNameChar(c))
             return false;
