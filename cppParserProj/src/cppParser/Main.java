@@ -1,5 +1,8 @@
 package cppParser;
 
+import cppParser.utils.Log;
+import profiling.Stats;
+
 
 public class Main {
 
@@ -30,6 +33,8 @@ public class Main {
 		// TODO Replace this main function with a call from Prest
         
         }
+        Stats.dumpTimesToLog();
+        Log.d("PCF:"+FunctionAnalyzer.pcf);
         /*
 		
 		*/

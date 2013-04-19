@@ -48,22 +48,34 @@ public class FunctionCall {
         this.parameters=parameters;
     }
     
-    @Override
-    public String toString(){
-        String owner="", params="";
+    public String ownersToString(){
+        String owner="";
         if(owners!=null){
             if(!owners.isEmpty())
             for(ParameterToken s:owners)
                 owner+=s.toString();
         }
+        return owner;
+    }
+    
+    public String parametersToString(){
+        String params="";
         if(parameters!=null){
             for(int i=0;i<parameters.size();i++){
-                if(i>0)
-                    params+=", ";
                 for(ParameterToken pt:parameters.get(i))
                     params+=pt.toString();
+                if(i<parameters.size()-1)
+                    params+=", ";
             }
         }
+        return params;
+    }
+    
+    @Override
+    public String toString(){
+        String params=parametersToString();
+        String owner=ownersToString();
+        
         return (owner+name+"("+params+")");
         
     }

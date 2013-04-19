@@ -108,8 +108,9 @@ public class FunctionFinder {
         switch(mode){
             case BEGIN:
                 FunctionCall fc=lookForFirstPart(token, next);
-                if(fc!=null)
+                if(fc!=null){
                     currentFc=fc;
+                }
                 break;
             case PARAMETERS:
                 parseParameters(token, next);
@@ -124,13 +125,6 @@ public class FunctionFinder {
     
     private void skip(){
         skip++;
-    }
-
-    private boolean isFuncCall(int ind) {
-        if((ind-1)<0) return false;
-        if(Constants.isKeyword(tokens[ind-1]))return false;
-        //if(isKnownType()) return false; //TBD
-        return true;
     }
     
     
@@ -177,10 +171,15 @@ public class FunctionFinder {
                         mode=RESET;
                         return null;
                 }
+                //If (-token to is found (and therefor mode=PARAMETERS) then FunctionCall object is created
+                //It will contain all owners that were found and stored in owners.
                 if(mode==PARAMETERS){
                     if(temp!=null)
                         owners.add(new StringToken(temp));
-                    return new FunctionCall(owners, token);
+                    //FunctionCall is created here. It does not contain parameters yet.
+                    FunctionCall fc=new FunctionCall(owners, token); 
+                    //Log.d("Found fc:"+token+" parsing params...");
+                    return fc;
                 }else{
                     currentOwner+=token;
                     if(temp!=null){
@@ -210,17 +209,24 @@ public class FunctionFinder {
         foundPtr=false;
         parenthesisDepth=0;
         skip=0;
+        currentFc=null;
     }
-
+    /**
+     * This method parses parameters that the function call has. Tokens are 
+     * collected to a list and once ,-token is found the list is sent to 
+     * parseParameter(List<String> tokens) which takes a closet look at the tokens.
+     * @param token
+     * @param next 
+     */
     private void parseParameters(String token, String next) {
         switch (token) {
             case ")":
                 if(parenthesisDepth==0){
                     currentFc.parameters.add(parseParameter(parameterTokens));
                     checkDependencies(currentFc.owners);
-                    // Log.d("Found FC: "+ currentFc.toString());
-                    if(next==null)
+                    if(next==null){
                         addToken(new FunctionCallToken(currentFc));
+                    }
                     mode=ANOTHER;
                 }else{ 
                     parenthesisDepth--;
@@ -239,12 +245,17 @@ public class FunctionFinder {
                 parameterTokens.add(token);
         }
     }
-    
+    /**
+     * This method takes tokens which form one parameter of a function call. Tokens
+     * are checked if they form function calls which are then parsed recursively.
+     * Tokens are sent to another FunctionFinder. Special constructor is called 
+     * which is only used by this method. It tells the FunctionFinder to keep all 
+     * in currentParameters ArrayList.
+     * @param tokens
+     * @return 
+     */
     private List<ParameterToken> parseParameter(List<String> tokens){
         FunctionFinder ff=new FunctionFinder(this, varFinder, func);
-        
-        
-        List<ParameterToken> parameter=new ArrayList<>();
         
         for(int i=0;i<tokens.size();i++){
             String currentToken=tokens.get(i);
@@ -275,6 +286,8 @@ public class FunctionFinder {
                 owners.add(new StringToken(token));
                 break;
             default:
+                if(currentFc!=null && !parameter)
+                    foundFunctionCall(currentFc);
                 addToken(token);
                 reset();
        }
@@ -303,6 +316,78 @@ public class FunctionFinder {
             
             
         }
+    }
+    /**
+     * When a function call is found this method is called. If the found function call 
+     * is an owner or parameter of another function call then this method should not be called
+     * Example:
+     * ownerFunc()->myFunc(paramFunc());
+     * 
+     * In above example foundFunctionCall should only be called with FunctionCall fc where fc.
+     * @param fc FunctionCall that is neither owner or parameter of another function call
+     */
+    private void foundFunctionCall(FunctionCall fc){
+        //Checking owners for function calls
+        List<FunctionCall> listOfFunctionCalls= new ArrayList<>();
+        List<FunctionCall> ownerFcs=getFunctionCallOwners(fc);
+        for(FunctionCall f:ownerFcs){
+            listOfFunctionCalls.add(f);
+            listOfFunctionCalls.addAll(getParameterFunctionCalls(f));
+        }
+        listOfFunctionCalls.add(fc);
+        listOfFunctionCalls.addAll(getParameterFunctionCalls(fc));
+        for(FunctionCall f:listOfFunctionCalls){
+            
+            //Log.d("Found FC: "+f.toString());
+            ParsedObjectManager.getInstance().currentFunc.addOperand(f.name);
+        }
+    }
+    /**
+     * This method returns list of FunctionCalls that are owners of a given FunctionCall
+     * @param fc
+     * @return 
+     */
+    private List<FunctionCall> getFunctionCallOwners(FunctionCall fc){
+        List<FunctionCall> ownerFcs= new ArrayList<>();
+        for(ParameterToken pt:fc.owners){
+            if(pt instanceof FunctionCallToken){
+                ownerFcs.add(((FunctionCallToken)pt).functionCall);
+            }else{
+                switch(pt.toString()){
+                    case "::":
+                    case "->":
+                    case ".":
+                        ParsedObjectManager.getInstance().currentFunc.addOperator(pt.toString());
+                        break;
+                    default:
+                    //Add owner to halstead calculations    
+                }
+                
+            }
+            
+        }
+        return ownerFcs;
+    }
+    /**
+     * This method goes through given FunctionCall and returns all function calls 
+     * that are in the parameters. Function calls are searched recursively, so the 
+     * list will include
+     * @param fc
+     * @return list of parameter function calls.
+     */
+    private List<FunctionCall> getParameterFunctionCalls(FunctionCall fc){
+        List<FunctionCall> parameterFcs= new ArrayList<>();
+        for(List<ParameterToken> ptl:fc.parameters){
+            for(ParameterToken pt:ptl){
+                //Log.d("Pt: "+pt.toString());
+                if(pt instanceof FunctionCallToken){
+                    //Log.d("FCT");
+                    parameterFcs.add(((FunctionCallToken)pt).functionCall);
+                    parameterFcs.addAll(getParameterFunctionCalls(((FunctionCallToken)pt).functionCall));
+                }
+            }
+        }
+        return parameterFcs;
     }
     
 
