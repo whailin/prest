@@ -5,6 +5,7 @@ package cppParser.utils;
 import cppParser.utils.parameter.ParameterToken;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.NullPointerException;
 
 /**
  *
@@ -39,11 +40,16 @@ public class FunctionCall {
     }
     
     public FunctionCall(List<ParameterToken> owners,String name, List<List<ParameterToken>> parameters) {
+        if(parameters==null)
+            throw new NullPointerException("Null params");
         this.owners=owners;
         this.name=name;
+        
         this.parameters=parameters;
     }
     public FunctionCall(String name, List<List<ParameterToken>> parameters) {
+        if(parameters==null)
+            throw new NullPointerException("Null params");
         this.name=name;
         this.parameters=parameters;
     }

@@ -82,7 +82,11 @@ public class FunctionFinder {
         if(parameter)
             currentParameter.add(token);
     }
-    private List<ParameterToken> getCurrentParameter(){return currentParameter;}
+    private List<ParameterToken> getCurrentParameter(){
+        if(currentParameter==null)
+            throw new NullPointerException();
+        return currentParameter;
+    }
     public void findFunctions(String[] tokens){
         //this.tokens=tokenizeLiterals(tokens);
         this.tokens=tokens;
@@ -99,7 +103,7 @@ public class FunctionFinder {
     }
     
     private void pushTokens(String token, String next) {
-        //Log.d("t: "+token+" n: "+next+" "+mode);
+       // Log.d("t: "+token/*+" n: "+next+" "+mode*/);
         if(skip>0){
             skip--;
             return;
@@ -331,8 +335,10 @@ public class FunctionFinder {
         List<FunctionCall> listOfFunctionCalls= new ArrayList<>();
         List<FunctionCall> ownerFcs=getFunctionCallOwners(fc);
         for(FunctionCall f:ownerFcs){
-            listOfFunctionCalls.add(f);
-            listOfFunctionCalls.addAll(getParameterFunctionCalls(f));
+            if(f!=null){
+                listOfFunctionCalls.add(f);
+                listOfFunctionCalls.addAll(getParameterFunctionCalls(f));
+            }
         }
         listOfFunctionCalls.add(fc);
         listOfFunctionCalls.addAll(getParameterFunctionCalls(fc));
@@ -377,6 +383,11 @@ public class FunctionFinder {
      */
     private List<FunctionCall> getParameterFunctionCalls(FunctionCall fc){
         List<FunctionCall> parameterFcs= new ArrayList<>();
+        if(fc==null){
+            throw new NullPointerException("fc is null");
+        }
+        if(fc.parameters==null)
+            throw new NullPointerException("Null params");
         for(List<ParameterToken> ptl:fc.parameters){
             for(ParameterToken pt:ptl){
                 //Log.d("Pt: "+pt.toString());
