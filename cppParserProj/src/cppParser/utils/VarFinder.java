@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class VarFinder
 {
-    private static final boolean silenced = false, showTokens = false;
+    private static final boolean silenced = true, showTokens = false;
     private static final String[] delims = {"<", ">"};
     
     private VarFinder recursive = null;
