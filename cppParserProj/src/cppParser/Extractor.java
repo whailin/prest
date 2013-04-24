@@ -158,8 +158,6 @@ public class Extractor
 		{
 			currentPass = Pass.MAINPASS;
 			
-			int handledFileCount = 0;
-			
 			// Loop through the found files
 			for(String s : fileLoader.getFiles())
 			{
@@ -168,16 +166,13 @@ public class Extractor
                 ParsedObjectManager.getInstance().addLocMetric(locM);
                 sentenceAnalyzer.fileChanged(s, locM);
                 
-                // Log.d("Processing file " + (++handledFileCount) + "/" + fileLoader.getFiles().size());
 				process(s);
-                
 			}
+			
 			sentenceAnalyzer.lastFileProcessed();
 			Log.d("Main pass done.");
 		}
 		
-
-
 		// TODO Second pass: fix unknown references / types / ambiguities
         // Verify that no macro calls are in the operands
         // verifyToFile();
@@ -219,16 +214,6 @@ public class Extractor
 				{
 					for(String s : cf.getOperands())
 					{
-						/*
-						for(CppDefine cd : defines)
-						{
-							if(s.equals(cd.getName()))
-							{
-								// Log.d("**** FOUND MACRO CALL -> " + s + " FILE: " + cf.fileOfFunc);
-								writer.write("File: " + cf.fileOfFunc + " Function: " + cf.getName() + ": Macro call -> " + s + " Macro source: " + cd.getFile() + "\n");
-							}
-						}
-						*/
 						if(MacroExpander.containsDefinition(s))
 						{
 							CppDefine cd = MacroExpander.getDefinition(s);
@@ -246,27 +231,201 @@ public class Extractor
 		}
 	}
 	
+	long startTime = 0;
+	
+	private void process(String file)
+	{
+		currentFile = file;
+		Log.d("Processing: " + file);
+		try
+		{
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			char c;
+			String line = "";
+			int lineno = 1;
+			int rawExpandStartIndex = 0;
+			boolean stringOpen = false, charOpen = false;
+			boolean codeFound = false, commentFound = false;
+			
+			while((c = (char)reader.read()) != (char)-1)
+			{
+				// Handle spaces, carriage returns and tabs
+				if(c == '\r') continue;
+				if(c == ' ' && line.endsWith(" ")) continue;
+				if(c == '\t')
+				{
+					if(line.length() > 0) line += " ";
+					continue;
+				}
+				
+				// Add the current char to the line
+				if(c == '\\') line += "\\"; 
+				else line += c;
+				
+				// Skip "empty" whitespaces
+				if(line.equals("\n") || line.equals("\t") || line.equals(" "))
+				{
+					line = "";
+					rawExpandStartIndex = 0;
+					addLine(false, false);
+					// Log.d("Line " + lineno);
+					// lineno++;
+					continue;
+				}
+				
+				// Toggle string and char literals on / off
+				if(c == '"' && !charOpen && !line.endsWith("\\\"")) stringOpen = !stringOpen;
+				if(c == '\'' && !stringOpen && !line.endsWith("\\\'")) charOpen = !charOpen;
+				
+				if(!stringOpen && !charOpen)
+				{
+					if(c == '\n')
+					{
+						lineno++;
+						if(!line.trim().isEmpty()) addLine(codeFound, commentFound);
+					}
+					
+					// Handle single-line comments
+					if(line.endsWith("//"))
+					{
+						processSingleLineComment(line, reader);
+						
+						if(!line.startsWith("//")) addLine(true, true);
+						else addLine(false, true);
+						
+						line = "";
+						rawExpandStartIndex = 0;
+						continue;
+					}
+					
+					// Handle multi-line comments
+					if(line.endsWith("/*"))
+					{
+						processMultiLineComment(line.substring(line.indexOf("/*")), reader);
+						if(!line.startsWith("/*"))
+						{
+							line = line.substring(0, line.indexOf("/*"));
+							addLine(true, true);
+						}
+						else
+						{
+							addLine(false, true);
+							line = "";
+							rawExpandStartIndex = 0;
+						}
+						continue;
+					}
+					
+					// Handle newline
+					if(line.endsWith("\n"))
+					{
+						// Handle preprocessor directives
+						if(line.startsWith("#"))
+						{
+							if(line.endsWith("\\\n"))
+							{
+								line = line.substring(0, line.length() - 2);
+							}
+							else
+							{
+								// Log.d("Found #: " + line);
+								if(currentPass == Pass.PREPASS)
+								{
+									line = line.substring(0, line.length() - 1);
+									prepassAnalyzer.process(line.trim());
+								}
+								line = "";
+							}
+							
+							continue;
+						}
+						else
+						{
+							line = line.substring(0, line.length() - 1);
+							line += " ";
+						}
+						addLine(true, false);
+					}
+					
+					// Expand macros
+					if(currentPass == Pass.MAINPASS)
+					{
+						if(!line.startsWith("#") && MacroExpander.shouldExpandRaw(c))
+						{
+							String beginLine = line.substring(0, rawExpandStartIndex);
+							String expandable = line.substring(rawExpandStartIndex);
+							expandable = MacroExpander.expandRaw(expandable);
+							line = beginLine + " " + expandable;
+							if(line.trim().endsWith(";")) line = line.trim();
+							rawExpandStartIndex = line.length() - 1;
+						}
+					}
+					
+					// Handle end-of-sentence
+					if(!line.startsWith("#"))
+					{
+						if(line.endsWith(";") || line.endsWith("{") || line.endsWith("}") || isVisibilityStatement(c, line))
+						{
+							// Log.d("Found sentence: " + line);
+							if(currentPass == Pass.MAINPASS)
+							{
+								sentenceAnalyzer.lexLine(line.trim());
+							}
+							addLine(true, false);
+							line = "";
+							rawExpandStartIndex = 0;
+							continue;
+						}
+
+					}
+				}
+			}
+			
+			resetLOCCounter();
+			loc++;
+			
+			reader.close();
+		}
+		catch(Exception e)
+		{
+			
+		}
+	}
+	
+	private void processSingleLineComment(String line, BufferedReader reader) throws IOException
+	{
+		char c;
+		while((c = (char)reader.read()) != '\n' && c != '\r' && c != (char)-1) line += c;
+		// Log.d("Found single-line comment: " + line);
+	}
+	
+	private void processMultiLineComment(String line, BufferedReader reader) throws IOException
+	{
+		char c;
+		while(!line.endsWith("*/"))
+		{
+			c = (char)reader.read();
+			line += c;
+		}
+		// Log.d("Found multi-line comment: " + line);
+	}
 	
 	/**
 	 * Processes the given file.
 	 * Processing includes tasks such as constructing internal format lines,
 	 * tokenizing them and creating a structure tree of the found data.
 	 */
-    private String readLine="";
-	private void process(String file)
+	private void process2(String file)
 	{
-            
+		if(startTime > 0) Log.d("Duration: " + (System.currentTimeMillis() - startTime));
+		startTime = System.currentTimeMillis();
+		
 		currentFile = file;
-		// currentFunc = null;
-		// currentScope = null;
+		Log.d("File: " + currentFile);
 		objManager.currentFunc = null;
 		ParsedObjectManager.getInstance().currentScope = null;
-		// objManager.setDefaultScope();
 		
 		cppScopeStack.clear();
-		// braceCount = 0;
-		// funcBraceCount = 0;
-		// this.lineDone = false;
 		lineno = 0;
 		
 		try
@@ -282,16 +441,59 @@ public class Extractor
 			char c;
 			boolean stringOpen = false;
 			boolean charOpen = false;
+			String currentToken = ""; // A 'token' string since the last whitespace char
 			
 			while((c = (char)reader.read()) != (char)-1)
 			{
+				// Token split and macro expansion
+				if(currentPass == Pass.MAINPASS && !skipComment && line.length() > 0 && !stringOpen && !charOpen)
+				{
+					if(c == '\n' || c == ' ' || c == '\t' || c == ')')
+					{
+						/*
+						if(!line.startsWith("#"))
+						{
+							currentToken = (line + c).trim();
+							
+							// String[] expanded = (new MacroExpander()).expand(currentToken);
+							String[] expanded = (new MacroExpander()).expand(currentToken);
+							line = "";
+							for(String s : expanded) line += (line.length() > 0 ? " " : "") + s;
+							while(line.endsWith(" ")) line = line.substring(0, line.length() - 1);
+							while(line.startsWith(" ")) line = line.substring(1, line.length());
+							c = ' ';
+							
+							// Expansion caused the sentence to end
+
+							if(!stringOpen && !charOpen && (line.endsWith(";") || line.endsWith("{") || line.endsWith("}") || (isVisibilityStatement(c, line))))
+							{
+								lloc++;
+								// lexLine(line);
+								line.trim();
+								
+								if(!line.startsWith("#")) sentenceAnalyzer.lexLine(line);
+
+								line = "";
+								commentLine = "";
+			                    codeFound=true;
+			                    continue;
+							}
+							
+						}
+						*/
+						currentToken = "";
+					}
+				}
+				
 				if(c == '\n')
 				{
 					loc++;
 					lineno++;
 					ploc++;
                     if(!line.trim().isEmpty())
+                    {
                         codeFound=true;
+                    }
                     
 					addLine(codeFound,commentFound);
 					
@@ -299,7 +501,7 @@ public class Extractor
 					if(line.startsWith("#"))
 					{
 						line = line.trim();
-						if(!stringOpen && !charOpen && line.charAt(line.length() - 1) != '\\')
+						if(line.charAt(line.length() - 1) != '\\')
 						{
 							lloc++;
 							switch(currentPass)
@@ -320,24 +522,21 @@ public class Extractor
 							continue;
 						}
 					}
-                    readLine="";
-					commentFound=false;
-                    codeFound=false;
-                    continue;
-				}else{
-                    if(c!='\r')
-                        readLine+=c;
-                }
+					else if(line.equals(";"))
+					{
+						line = "";
+					}
+					commentFound = false;
+                    codeFound = false;
+				}
 				
 				// Skips characters until the current comment ends
 				if(skipComment)
 				{
 					if(!isMultiLineComment)
 					{
-						if(c == '\r' || c == '\n')
+						if(c == '\n')
 						{
-							
-								
 							skipComment = false;
 							objManager.oneLineComments.add(commentLine);
 							commentLine = "";
@@ -345,7 +544,7 @@ public class Extractor
 					}
 					else if(isMultiLineComment)
 					{
-						if(commentLine.endsWith("*/"))
+						if(commentLine.endsWith("*") && c == '/')
 						{
 							skipComment = false;
 							isMultiLineComment = false;
@@ -356,15 +555,18 @@ public class Extractor
 					
 					if(skipComment)
 					{ 
-						if(c!=' ' && c!='\n' && c!='\t' && c!='\r')
+						if(c != ' ' && c != '\n' && c != '\t')
+						{
 							commentFound=true;
+						}
+						
 						commentLine += c;
 					}					
 					continue;
 				}
 				
 				// Check if a comment line is about to start
-				if(!stringOpen && (c == '/' || (c == '*' && commentLine.startsWith("/"))))
+				if(c == '/' || (c == '*' && commentLine.startsWith("/")))
 				{
 					commentLine += c;
 					if(commentLine.length() > 1)
@@ -382,8 +584,7 @@ public class Extractor
 								commentLine = "";
 							}
 						}
-							
-						if(commentLine.startsWith("/*"))
+						else if(commentLine.startsWith("/*"))
 						{
 							if(StringTools.getQuoteCount(line) % 2 == 0)
 							{
@@ -408,7 +609,6 @@ public class Extractor
                 }
 				
 				// Add a character to the "line"
-				
 				if(c != '\r' && c != '\n' && c != '\t')
 				{
 					
@@ -431,28 +631,29 @@ public class Extractor
 						else
 						{
 							line += c;
+							currentToken += c;
 						}
 					}
 								
 				}
-				else if(line.length() > 0 && line.charAt(line.length() - 1) != ' ')
+				else if(line.length() > 0 && line.charAt(line.length() - 1) != ' ' && c != '\n')
 				{
 					// Add a space (just one, even if there's multiple)
 					line += ' ';					
 				}
 				
-				
 				switch(currentPass)
 				{
 				case MAINPASS:
 					// If the line ends, start lexing it
-					if(!stringOpen && !charOpen && (c == ';' || c == '{' || c == '}' || (isVisibilityStatement(c, line))))
+					// if(!stringOpen && !charOpen && (c == ';' || c == '{' || c == '}' || (isVisibilityStatement(c, line))))
+					if(!stringOpen && !charOpen && (line.endsWith(";") || line.endsWith("{") || line.endsWith("}") || (isVisibilityStatement(c, line))))
 					{
 						lloc++;
 						// lexLine(line);
 						line.trim();
 						
-						sentenceAnalyzer.lexLine(line);
+						if(!line.startsWith("#")) sentenceAnalyzer.lexLine(line);
 
 						line = "";
 						commentLine = "";
@@ -462,6 +663,10 @@ public class Extractor
 				case PREPASS:
 					if(!stringOpen && !charOpen && (c == ';' || c == '{' || c == '}'))
 					{
+						if(line.startsWith("#"))
+						{
+							prepassAnalyzer.process(line);
+						}
 						lloc++;
 						line = "";
 						commentLine = "";
@@ -469,15 +674,7 @@ public class Extractor
 					}
 					break;
 				}
-				
 			}
-			
-			// if(fileDuration1 > 5) Log.d("D1: " + fileDuration1);
-			// if(fileDuration2 > 5) Log.d("D2: " + fileDuration2);
-			// if(fileDuration3 > 5) Log.d("D3: " + fileDuration3);
-			// if(fileDuration4 > 5) Log.d("D4: " + fileDuration4);
-			// if(fileDuration5 > 5) Log.d("D5: " + fileDuration5);
-			// Log.d("IF: " + ifDuration);
 			
 			addLine(codeFound,commentFound);
             resetLOCCounter();
@@ -501,34 +698,36 @@ public class Extractor
 	 * @param codeFound should be true if current line contains code
 	 * @param commentFound should be true if current line contains comments
 	 */
-	private void addLine(boolean codeFound, boolean commentFound){
-        if(currentPass==Pass.MAINPASS){
-		if(codeFound){
-            if(commentFound)
-				commentedCodeLines++;
+	private void addLine(boolean codeFound, boolean commentFound)
+	{
+        if(currentPass == Pass.MAINPASS)
+        {
+			if(codeFound)
+			{
+	            if(commentFound) commentedCodeLines++;
+				else codeLines++;
+			}
 			else
-				codeLines++;
-		}else{
-			if(commentFound)
-				commentOnlyLines++;
-			else
-				emptyLines++;
-		}
+			{
+				if(commentFound) commentOnlyLines++;
+				else emptyLines++;
+			}
         }
-        
 	}
 	
-    private void resetLOCCounter() {
-        if(currentPass==Pass.MAINPASS){
-        locM.codeOnlyLines=codeLines;
-        locM.emptyLines=emptyLines;
-        locM.commentLines=commentOnlyLines;
-        locM.commentedCodeLines=commentedCodeLines;
+    private void resetLOCCounter()
+    {
+        if(currentPass == Pass.MAINPASS)
+        {
+        	locM.codeOnlyLines = codeLines;
+        	locM.emptyLines = emptyLines;
+        	locM.commentLines = commentOnlyLines;
+        	locM.commentedCodeLines = commentedCodeLines;
         
-        codeLines=0;
-        emptyLines=0;
-        commentOnlyLines=0;
-        commentedCodeLines=0;
+        	codeLines = 0;
+        	emptyLines = 0;
+        	commentOnlyLines = 0;
+        	commentedCodeLines = 0;
         }
     }
 	
@@ -555,24 +754,12 @@ public class Extractor
 		{
 			writer = new BufferedWriter(new FileWriter("includetree.txt"));
 			
-			/*
-			for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
-			{
-				writer.write(cf.getFilename() + "\n");
-				for(String s : cf.getIncludes())
-				{
-					writer.write("  " + s + "\n");
-				}
-			}
-			*/
-			
 			Log.d("Dumping include tree...");
 			for(CppFile cf : ParsedObjectManager.getInstance().getFiles())
 			{
 				cf.dump(writer, new HashSet<CppFile>(), 0);
 				writer.write("\n");
 			}
-			
 			
 			writer.close();
 		}

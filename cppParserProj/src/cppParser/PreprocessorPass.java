@@ -128,7 +128,7 @@ public class PreprocessorPass {
 			}
 			// ParsedObjectManager.getInstance().getCurrentFile().addDefine(new CppDefine(tokens[2], def));
 			MacroExpander.addDefine(tokens[2], new CppDefine(def));
-			// Log.d("#define: " + tokens[2] + " " + def);
+			Log.d("#define: " + tokens[2] + " " + def);
 		}
 		else
 		{
@@ -167,7 +167,7 @@ public class PreprocessorPass {
 				// CppDefine cd = new CppDefine(tokens[2], params, def);
 				// ParsedObjectManager.getInstance().getCurrentFile().addDefine(cd);
 				MacroExpander.addDefine(tokens[2], new CppDefine(params, def));
-				// Log.d("#define: " + tokens[2] + " " + params + " " + def);
+				Log.d("#define: " + tokens[2] + " " + params + " " + def);
 			}
 			else
 			{
@@ -181,7 +181,7 @@ public class PreprocessorPass {
 				// CppDefine cd = new CppDefine(tokens[2], par);
 				// ParsedObjectManager.getInstance().getCurrentFile().addDefine(cd);
 				MacroExpander.addDefine(tokens[2], new CppDefine(par));
-				// Log.d("#define: " + tokens[2] + " " + par);
+				Log.d("#define: " + tokens[2] + " " + par);
 			}
 		}
 	}
