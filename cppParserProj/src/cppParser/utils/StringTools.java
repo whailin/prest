@@ -11,7 +11,7 @@ import java.util.HashSet;
 public class StringTools
 {
 	// List of "splitters" that are used to tokenize a single line of source code
-	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "[", "]", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>", "!", "~", "&", "|", "^"};
+	public static String[] delims = new String[] {" ", "(", ")", "{", "}", "[", "]", "<", ">", "->", ";", ",", "=", "+", "-", "*", "/", "::", ":", ".", "\"", "<<", ">>", "!", "~", "&", "|", "^"};
 	public static HashSet<String> delimSet = new HashSet<String>();
 	
 	// List of C++11 keywords, types (char, int, bool etc.) and type-related (signed, unsigned) words omitted
@@ -369,6 +369,42 @@ public class StringTools
 							i++;
 						}
 						
+					}
+					
+					else if(tokens[i].equals("<"))
+					{
+						String template = "<";
+						int bCount = 1;
+						for(int j = i + 1; j < tokens.length; ++j)
+						{
+							if(tokens[j].equals("<"))
+							{
+								template += "<";
+								bCount++;
+								continue;
+							}
+							
+							if(isOperator(tokens[j]) && !tokens[j].equals(">"))
+							{
+								// Abort.
+								newTokens.add("<");
+							}
+							else if(tokens[j].equals(">"))
+							{
+								bCount--;
+								template += ">";
+								if(bCount == 0)
+								{
+									newTokens.add(template);
+									i = j;
+									break;
+								}
+							}
+							else
+							{
+								template += (template.length() > 1 ? " " : "") + tokens[j];
+							}
+						}
 					}
 					else
 					{
