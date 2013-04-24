@@ -2,6 +2,7 @@ package cppParser.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import cppParser.Extractor;
 import cppParser.ParsedObjectManager;
@@ -17,6 +18,9 @@ public class MacroExpander {
 
 	private static final String[] delims = new String[] {" ", ",", "(", ")", "{", "}", "[", "]"};
 	
+	private static final String[] rawExpandDelims = new String[] {" ", ";", ":", "?", "{", ")", "]", ",", "+", "-", "*", "/", "%", "=", "==", "!=", "!"};
+	private static HashSet<String> rawExpandSet = new HashSet<String>();
+	
 	private static boolean isSetup = false;
 	
 	private static HashMap<String, CppDefine> currentDefines = new HashMap<String, CppDefine>();
@@ -24,6 +28,29 @@ public class MacroExpander {
 	private int callStart = -1;
 	private int callEnd = -1;
 	private String[] tokens = null;
+	
+	public MacroExpander()
+	{
+		if(rawExpandSet.isEmpty())
+		{
+			for(String s : rawExpandDelims) rawExpandSet.add(s);
+		}
+	}
+	
+	public static String expandRaw(String line)
+	{
+		char c = line.charAt(line.length() - 1);
+		if(c != ' ' && c != ';' && c != '{' && c != '}') return line;
+		
+		MacroExpander me = new MacroExpander();
+		String[] pieces = StringTools.split(line, null, true);
+		pieces = me.expand(pieces);
+		
+		String result = "";
+		for(String s : pieces) result += (result.length() > 0 ? " " : "") + s;
+		return result + (line.endsWith(" ") ? " " : "");
+		// return line;
+	}
 	
 	/**
 	 * Checks a given list of tokens for possible macro expansions.
@@ -36,8 +63,6 @@ public class MacroExpander {
 	{
 		this.tokens = t;
 		ArrayList<String> newTokens = new ArrayList<String>();
-		
-		long startTime = System.currentTimeMillis();
 		
 		for(int i = 0; i < tokens.length; ++i)
 		{
@@ -69,9 +94,6 @@ public class MacroExpander {
 			}
 		}
 		
-		long duration = System.currentTimeMillis() - startTime;
-		if(duration > 5) Log.d("Duration: " + duration);
-		
 		return StringTools.listToArray(newTokens);
 	}
 	
@@ -91,29 +113,6 @@ public class MacroExpander {
 		ArrayList<String> newTokens = new ArrayList<String>();
 		for(String s : expandedDefinition) newTokens.add(s);
 		return newTokens;
-		
-		// Add the original tokens before prior to the macro call
-		/*
-		for(int k = 0; k < i; ++k)
-		{
-			if(tokens[k].length() > 0) newTokens.add(tokens[k]);
-		}
-		
-		// Add the expanded macro tokens
-		for(String s : expandedDefinition)
-		{
-			newTokens.add(s);
-		}
-		
-		// Add the rest of the original tokens
-		for(int k = i + 1; k < tokens.length; ++k)
-		{
-			if(tokens[k].length() > 0) newTokens.add(tokens[k]);
-		}
-		*/
-		
-		// Finally, recurse through the resulting array (expand macro calls inside macros)
-		// return newTokens;
 	}
 	
 	/**
@@ -253,5 +252,16 @@ public class MacroExpander {
 	{
 		return currentDefines.get(s);
 	}
+
+	public static boolean shouldExpandRaw(char c)
+	{
+		// if(rawExpandSet.contains("" + c)) return true;
+		if(c == ' ' || c == ';') return true;
+		return false;
+	}
+
+	
+
+	
 	
 }

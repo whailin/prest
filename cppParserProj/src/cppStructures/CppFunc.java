@@ -4,6 +4,7 @@ import cppParser.utils.Constants;
 import cppParser.utils.Log;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * CppFunc.java
@@ -40,8 +41,10 @@ public class CppFunc {
 	// Halstead-related containers
 	private ArrayList<String> operators = new ArrayList<String>();
 	private ArrayList<String> operands = new ArrayList<String>();
-	private ArrayList<String> uniqueOperators = new ArrayList<String>();
-	private ArrayList<String> uniqueOperands = new ArrayList<String>();
+	// private ArrayList<String> uniqueOperators = new ArrayList<String>();
+	// private ArrayList<String> uniqueOperands = new ArrayList<String>();
+	private HashSet<String> uniqueOperators = new HashSet<String>();
+	private HashSet<String> uniqueOperands = new HashSet<String>();
 	
 	// Cyclomatic complexity-related containers
 	private ArrayList<String> statements = new ArrayList<String>();
@@ -114,7 +117,8 @@ public class CppFunc {
 	 * Retrieves the list of unique operators in this function
 	 * @return List of unique operators in this function
 	 */
-	public ArrayList<String> getUniqueOperators()
+	
+	public HashSet<String> getUniqueOperators()
 	{
 		return uniqueOperators;
 	}
@@ -124,10 +128,11 @@ public class CppFunc {
 		return operands;
 	}
 	
-	public ArrayList<String> getUniqueOperands()
+	public HashSet<String> getUniqueOperands()
 	{
 		return uniqueOperands;
 	}
+	
 	
 	/**
 	 * Retrieves the name of this function
@@ -202,6 +207,7 @@ public class CppFunc {
 	public void addOperator(String op)
 	{
 		op = formatOperator(op);
+		/*
 		boolean isUnique = true;
 		for(String s : operators)
 		{
@@ -213,6 +219,9 @@ public class CppFunc {
 		}
 		operators.add(op);
 		if(isUnique) uniqueOperators.add(op);
+		*/
+		operators.add(op);
+		uniqueOperators.add(op);
 	}
 	
 	/**
@@ -222,6 +231,7 @@ public class CppFunc {
 	 */
 	public void addOperand(String od)
 	{
+		/*
 		boolean isUnique = true;
 		for(String s : operands)
 		{
@@ -233,7 +243,9 @@ public class CppFunc {
 		}
 		operands.add(od);
 		if(isUnique) uniqueOperands.add(od);
-		
+		*/
+		operands.add(od);
+		uniqueOperands.add(od);
 	}
 	
 	/**

@@ -142,10 +142,10 @@ public class SentenceAnalyzer {
         }
 		
 		// Split the line into tokens
-		String[] tokens = StringTools.reconstructOperators(StringTools.split(line, null, true));
+		String[] tokens = StringTools.cleanEmptyEntries(StringTools.reconstructOperators(StringTools.split(line, null, true)));
 		
 		// Expand macros
-		tokens = StringTools.cleanEmptyEntries((new MacroExpander()).expand(tokens));
+		// tokens = StringTools.cleanEmptyEntries((new MacroExpander()).expand(tokens));
 		
 		boolean stringOpen = false;
 		for(int i = 0; i < tokens.length; ++i)
