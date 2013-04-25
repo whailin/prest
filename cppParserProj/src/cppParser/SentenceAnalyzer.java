@@ -168,7 +168,7 @@ public class SentenceAnalyzer {
 					lexEndBrace();
 					
 					// If there's only one token ("}"), don't continue to the analyzer stage
-					if(tokens.length == 1) return;
+					//if(tokens.length == 1) return;
 					
 					continue;
 				}

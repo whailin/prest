@@ -50,6 +50,8 @@ public class FunctionFinder {
     private FunctionFinder parent=null;
     private String[] tokens;
     private CppFunc func;
+    
+    private static List<Integer> handledIndices=new ArrayList<>();
     public FunctionFinder(VarFinder varFinder, CppFunc currentFunc){
         this.varFinder=varFinder;
         this.func=currentFunc;
@@ -87,6 +89,12 @@ public class FunctionFinder {
             throw new NullPointerException();
         return currentParameter;
     }
+    
+    /**
+     * This method searches the given tokens and looks for function calls in them.
+     * Function calls are built one by one using pushTokens()
+     * @param tokens 
+     */
     public void findFunctions(String[] tokens){
         //this.tokens=tokenizeLiterals(tokens);
         this.tokens=tokens;
@@ -101,7 +109,29 @@ public class FunctionFinder {
 
         
     }
+    /**
+     * returns index of current token
+     * @return 
+     */
+    public int getIndex(){
+        if(parent==null)
+            return index;
+        else
+            return parent.getIndex();     
+    }
     
+    private void markIndex(int index) {
+        //this will prevent duplicates caused by recursion
+        if(handledIndices.get(handledIndices.size()-1)!=index)
+            handledIndices.add(new Integer(index));
+    }
+    
+    /**
+     * pushTokens decides what to do with the next token that is received. 
+     * It directs it to correct place depending on if the tokens form function calls
+     * @param token current token
+     * @param next next token in the source to allow "peeking"
+     */
     private void pushTokens(String token, String next) {
        // Log.d("t: "+token/*+" n: "+next+" "+mode*/);
         if(skip>0){
@@ -131,10 +161,18 @@ public class FunctionFinder {
         skip++;
     }
     
-    
+    /**
+     * This method looks for the first part of the function call which should contain
+     * owners of the function and the name. Finally it checks if there is a ( token
+     * and switches mode to parameter to allow pushTokens() to form parameters. If
+     * there is no ( token mode is set to reset and tell pushTokens() to wait for tokens 
+     * that tell if new function call can be parsed.
+     * @param token
+     * @param next
+     * @return FunctionCall object that contains name and owners but no parameters
+     */
     private FunctionCall lookForFirstPart(String token, String next)
-    {
-        
+    {        
         if(next == null){
             addToken(token);
             reset();
@@ -162,6 +200,7 @@ public class FunctionFinder {
                         temp=next;
                         foundPtr=false;
                         skip();
+                        markIndex(getIndex()+1);
                         break;
                     case "(":
                         mode=PARAMETERS;
@@ -170,7 +209,7 @@ public class FunctionFinder {
                         break;
                     case "*":
                         foundPtr=true;
-                        break;
+                        break;    
                     default:
                         mode=RESET;
                         return null;
@@ -204,7 +243,10 @@ public class FunctionFinder {
         }
     }
 
-    
+    /**
+     * This method resets FunctionFinder to allow collecting tokens for a new
+     * function call
+     */
     private void reset(){
         mode=BEGIN;
         owners=new ArrayList<>();
@@ -214,6 +256,7 @@ public class FunctionFinder {
         parenthesisDepth=0;
         skip=0;
         currentFc=null;
+        handledIndices.clear();
     }
     /**
      * This method parses parameters that the function call has. Tokens are 
@@ -227,7 +270,7 @@ public class FunctionFinder {
             case ")":
                 if(parenthesisDepth==0){
                     currentFc.parameters.add(parseParameter(parameterTokens));
-                    checkDependencies(currentFc.owners);
+                    //checkDependencies(currentFc.owners); //No time for proper implementation
                     if(next==null){
                         addToken(new FunctionCallToken(currentFc));
                     }
@@ -273,12 +316,24 @@ public class FunctionFinder {
         
     }
 
+    /**
+     * This looks at the given token and resets FunctionFinder if the token can 
+     * be followed by a function call.
+     * @param token
+     * @param next 
+     */
     private void checkForReset(String token, String next) {
         addToken(token);
         if(StringTools.isOperator(token))
             reset();
     }
-
+/**
+ * Function call can be followed by another function call. eg hello()->hello()
+ * This method adds the previously found function call as the owner of the next 
+ * function call
+ * @param token
+ * @param next 
+ */
     private void waitForAnotherFunctionCall(String token, String next) {
         switch(token){
             case "->":
@@ -286,6 +341,7 @@ public class FunctionFinder {
             case "::":
                 FunctionCall temp=currentFc;
                 reset();
+                owners.addAll(temp.owners);
                 owners.add(new FunctionCallToken(temp));
                 owners.add(new StringToken(token));
                 break;
@@ -296,7 +352,11 @@ public class FunctionFinder {
                 reset();
        }
     }
-
+    /**
+     * This method looks for dependencies in the list of owners to be used with 
+     * coupling between objects metric
+     * @param owners 
+     */
     private void checkDependencies(List<ParameterToken> owners) {
         if(owners==null)
             return;
@@ -383,9 +443,7 @@ public class FunctionFinder {
      */
     private List<FunctionCall> getParameterFunctionCalls(FunctionCall fc){
         List<FunctionCall> parameterFcs= new ArrayList<>();
-        if(fc==null){
-            throw new NullPointerException("fc is null");
-        }
+        
         if(fc.parameters==null)
             throw new NullPointerException("Null params");
         for(List<ParameterToken> ptl:fc.parameters){

@@ -9,7 +9,9 @@ import java.util.List;
 
 
 /**
- * This class is responsible for finding variable declarations inside a c++ function
+ * This class is responsible for finding variable declarations inside a c++ function. 
+ * Search is done in different modes and once ( or { token is found
+ * 
  * @author Tomi
  */
 public class VarFinder
@@ -19,6 +21,8 @@ public class VarFinder
     
     private VarFinder recursive = null;
     private VarFinder parent = null;
+    
+    
     //private boolean isRecursive=false;
             
     private static final int TYPE = 0, NAME = 1, ARRAY = 2, EQUALS = 3, RESET = 4, TEMPLATE = 5;
@@ -49,18 +53,22 @@ public class VarFinder
     
     private static String[] originalTokens = null;
     
+    private VarFinder arrayVarFinder=null;
     private int arrays = 0; // This is for checking arrays inside arrays
     private String token, next;
     
     private FunctionAnalyzer functionAnalyzer;
     
-    private static ArrayList<Integer> handledIndices = new ArrayList<Integer>();
+    private static ArrayList<Integer> handledIndices = new ArrayList<>();
     
     public VarFinder(FunctionAnalyzer fa)
     {
     	this.functionAnalyzer = fa;
     }
-    
+    /**
+     * Constructor for recursive search of variables
+     * @param parent 
+     */
     private VarFinder(VarFinder parent)
     {
         this.parent = parent;
@@ -82,6 +90,13 @@ public class VarFinder
             originalTokens = tokens;
         else
             parent.setOriginalTokens(tokens);
+    }
+    
+    private int getIndex(){
+        if(parent==null)
+            return i;
+        else
+            return parent.getIndex();
     }
     
     public void findVariables(String[] tokens)
@@ -216,6 +231,7 @@ public class VarFinder
         arrays = 0;
         checkForOperator = false;
         literal = "";
+        handledIndices.clear();
     }
     public ArrayList<Integer> getHandledIndices()
     {
@@ -235,7 +251,6 @@ public class VarFinder
     
     private void createVariable()
     {
-        // TBD sometimes some variables pop that have no type or name... They should not make it here
         if(!(currentType.isEmpty() || currentName.isEmpty())) 
         {
             //This will sort out some of false positives, eg a * b; is recognized as declaration of variable *b of type a, when a is variable
@@ -249,7 +264,7 @@ public class VarFinder
                     }
                 }
             }
-
+            
             if(!silenced)
                 Log.d("Found variable " + currentType + currentTemplate + " " + currentPtr+currentName+currentArray);
             MemberVariable member = new MemberVariable(currentType, currentName);
@@ -260,8 +275,8 @@ public class VarFinder
             ParsedObjectManager.getInstance().currentFunc.addOperand(member.getName());
             ParsedObjectManager.getInstance().currentFunc.addOperand(member.getType());
             
-            storeHandledIndex(getIndexOfToken(currentType));
-            storeHandledIndex(getIndexOfToken(currentName));
+            for(Integer integer:handledIndices)
+                storeHandledIndex(integer.intValue());
             
             
         }//else Log.d("Var without name or type "+ token+ " "+next+" "+mode);
@@ -272,6 +287,7 @@ public class VarFinder
         templateDepth = 0;
         checkForOperator = false;
         literal = "";
+        handledIndices.clear();
     }
     
     private void storeHandledIndex(int index)
@@ -286,7 +302,9 @@ public class VarFinder
     	functionAnalyzer.getHandledIndices().add(new Integer(index));
     }
     
-
+/**
+ * This method looks for the type of the variable for example int
+ */
     private void lookForType()
     {
         if(next == null)
@@ -323,6 +341,7 @@ public class VarFinder
                     currentType += " " + token;
                 else
                     currentType += token;
+                markIndex(getIndex());
                 
                 if(primitive){
                         //Log.d("found primitive type");
@@ -342,6 +361,7 @@ public class VarFinder
                 {
                     skip();
                     currentType+=next;
+                    markIndex(getIndex()+1);
                 }
                 else if(Constants.isWordToken(next))
                 {
@@ -375,7 +395,11 @@ public class VarFinder
             }
         }
     }
-
+/**
+ * Method checks if the token can form name for the variable
+ * @param token
+ * @param next 
+ */
     private void lookForNames(String token, String next) 
     {
         if(token.contentEquals(";")){
@@ -386,10 +410,12 @@ public class VarFinder
         if(token.contentEquals("*") || token.contentEquals("&"))
         {
             currentPtr += token;
+            markIndex(getIndex());
         }
         else if(Constants.isWordToken(token))
         {            
             currentName += token;
+            markIndex(getIndex());
             if(next != null)
             {
                 switch(next)
@@ -414,12 +440,15 @@ public class VarFinder
                         break;
                     case ",":
                         createVariable();
+                        markIndex(getIndex()+1);
                         skip();
                         break;
                     case "[":
                         mode = ARRAY;
                         arrays++;
                         currentArray += "[";
+                        markIndex(getIndex()+1);
+                        arrayVarFinder=new VarFinder(this);
                         skip();
                         break;   
                     default:
@@ -430,13 +459,19 @@ public class VarFinder
             else throw new Error("Unexpected nullpointer");
         }
     }
-    
+    /**
+     * This method collects the tokens and builds an array from them eg. [9] in int a[9]
+     * This method also checks recursively if there is variable declarations inside the square brackets
+     */
     private void lookForArrays()
     {
         currentArray += token;
+        markIndex(getIndex());
         if(token.contentEquals("]"))
         {
             arrays--;
+            if(arrays>0)
+                arrayVarFinder.pushTokens(token, next);
         }
         if(next!=null)
         {
@@ -448,8 +483,17 @@ public class VarFinder
             }
             else if(next.contentEquals(";"))
             {
+                arrayVarFinder=null;
                 endOfDeclaration();
                 skip();
+            }
+            else if(next.contentEquals(","))
+            {
+                if(arrays==0){
+                    createVariable();
+                    mode = NAME;
+                    skip();
+                }
             }
         }
     }
@@ -471,7 +515,11 @@ public class VarFinder
                 break;
         }
     }
-    
+    /**
+     * This method collects tokens if template is used with the variable declaration
+     * @param token
+     * @param needsSplitting does the token need splitting? does it contain < or > chars?
+     */
     private void pushTokenForTemplate(String token, boolean needsSplitting) 
     {
         
@@ -500,6 +548,7 @@ public class VarFinder
                 templateDepth++;
                 checkForOperator = true;
                 currentTemplate += token;
+                markIndex(getIndex());
                 return;
             }
             else checkForOperator = false;
@@ -515,6 +564,7 @@ public class VarFinder
             if(templateDepth > 0)
             {
                 currentTemplate += token;
+                markIndex(getIndex());
                 if(token.contentEquals(">"))
                 {
                     templateDepth--;
@@ -538,13 +588,9 @@ public class VarFinder
     {
         switch(token){
             case "const":
-                return true;
             case "extern":
-                return true;
             case "mutable":
-                return true;
             case "register":
-                return true;
             case "thread_local":
                 return true;
             default:
@@ -575,5 +621,14 @@ public class VarFinder
                 ParsedObjectManager.getInstance().currentFunc.addDependency(str);
             
         }
+    }
+/**
+ * Method marks given index as handled for OperatorAnalyzer. 
+ * @param index 
+ */
+    private void markIndex(int index) {
+        //this will prevent duplicates caused by recursion
+        if(handledIndices.get(handledIndices.size()-1)!=index)
+            handledIndices.add(new Integer(index));
     }
 }
