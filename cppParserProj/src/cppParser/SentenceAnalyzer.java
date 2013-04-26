@@ -1,40 +1,36 @@
 package cppParser;
 
-import cppMetrics.LOCMetrics;
-import cppParser.utils.LLOCCounter;
 import java.util.ArrayList;
 
-import cppParser.utils.Log;
-import cppParser.utils.MacroExpander;
+import cppMetrics.LOCMetrics;
+import cppParser.utils.LLOCCounter;
 import cppParser.utils.StringTools;
-import cppStructures.CppClass;
-import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 
-public class SentenceAnalyzer {
-
-	
-	
+public class SentenceAnalyzer
+{
+	// Open brace count
 	public int braceCount = 0;
 	
 	public static boolean ignoreStd = false;
 	
-	//private String[] splitterChars = new String[] { " ", "(", ")", "{", "}", ";", "::", ","};
-	
+	// List of analyzers
 	private ArrayList<Analyzer> analyzers = new ArrayList<Analyzer>();
 	private FunctionAnalyzer functionAnalyzer;
 	private ClassAnalyzer classAnalyzer;
 	private ScopeAnalyzer scopeAnalyzer;
-    private LLOCCounter llocCounter=null;
-    private LOCMetrics loc=null;
+    private LLOCCounter llocCounter = null;
+    private LOCMetrics loc = null;
 	
+    /**
+     * Constructs a new sentence analyzer
+     */
 	public SentenceAnalyzer()
 	{
 		functionAnalyzer = new FunctionAnalyzer(this);
 		classAnalyzer = new ClassAnalyzer(this);
 		scopeAnalyzer = new ScopeAnalyzer(this);
 
-	
 		analyzers.add(functionAnalyzer);
 		analyzers.add(classAnalyzer);
 		analyzers.add(scopeAnalyzer);
@@ -75,13 +71,7 @@ public class SentenceAnalyzer {
 			if(addToStack)
 			{
 				ParsedObjectManager.getInstance().getCppScopeStack().push(cc);
-				// Log.d("SCOPE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " START (line: " + Extractor.lineno + ")");
 			}
-			else
-			{
-				// if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty()) Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " PART (line: " + Extractor.lineno + ")");
-			}
-			
 		}
 	}
 	
@@ -93,38 +83,18 @@ public class SentenceAnalyzer {
 	 */
 	private void lexEndBrace()
 	{
-		// if(ParsedObjectManager.getInstance().currentFunc != null) Log.d("Lexing end brace. " + ParsedObjectManager.getInstance().currentFunc.funcBraceCount + " | " + braceCount);
-		
 		// If function body is ended
 		if(ParsedObjectManager.getInstance().currentFunc != null && ParsedObjectManager.getInstance().currentFunc.funcBraceCount == braceCount)
 		{
-			// Log.d("   FUNCTION " + ParsedObjectManager.getInstance().currentFunc.getName() + " END (line: " + Extractor.lineno + ")");
 			ParsedObjectManager.getInstance().currentFunc = null;
 		}
 		
 		// If scope body is ended
 		if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty() && ParsedObjectManager.getInstance().getCppScopeStack().peek().braceCount == braceCount)
 		{
-			/*
-			if(ParsedObjectManager.getInstance().getCppScopeStack().peek() instanceof CppClass) Log.d("CLASS " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")");
-			else if(ParsedObjectManager.getInstance().getCppScopeStack().peek() instanceof CppNamespace)Log.d("NAMESPACE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")"); 
-			else Log.d("SCOPE " + ParsedObjectManager.getInstance().getCppScopeStack().peek().getName() + " END (line: " + Extractor.lineno + ")");
-			*/
-			
 			ParsedObjectManager.getInstance().getCppScopeStack().pop();
 			if(ParsedObjectManager.getInstance().getCppScopeStack().size() > 0) ParsedObjectManager.getInstance().currentScope = ParsedObjectManager.getInstance().getCppScopeStack().peek();
 		}
-		
-		/*
-		if(ParsedObjectManager.getInstance().currentScope != null)
-		{
-			if(ParsedObjectManager.getInstance().currentScope.braceCount == braceCount)
-			{
-				Log.d("SCOPE " + ParsedObjectManager.getInstance().currentScope.getName() + " END (line: " + Extractor.lineno + ")");
-				ParsedObjectManager.getInstance().currentScope = null;
-			}
-		}
-		*/
 		
 		braceCount--;
 	}
@@ -134,24 +104,14 @@ public class SentenceAnalyzer {
 	 */
 	public void lexLine(String line)
 	{
-		// TODO Create a preprocessor analyzer and remove this
-		if(line.startsWith("#"))
-		{ 
-            llocCounter.addLloc();
-            return;
-        }
-		
 		// Split the line into tokens
 		String[] tokens = StringTools.cleanEmptyEntries(StringTools.reconstructOperators(StringTools.split(line, null, true)));
 		
-		// Expand macros
-		// tokens = StringTools.cleanEmptyEntries((new MacroExpander()).expand(tokens));
-		
+		// Handle braces
 		boolean stringOpen = false;
 		for(int i = 0; i < tokens.length; ++i)
 		{
 			if(tokens[i].equals("\"")) stringOpen = !stringOpen;
-			
 			if(!stringOpen && tokens[i].length() == 1)
 			{
 				if(tokens[i].equals("{"))
@@ -161,35 +121,19 @@ public class SentenceAnalyzer {
 				}
 				if(tokens[i].equals("}"))
 				{
-					if(ParsedObjectManager.getInstance().currentFunc != null)
-					{
-						// ParsedObjectManager.getInstance().currentFunc.addOperator("}");
-					}
 					lexEndBrace();
-					
-					// If there's only one token ("}"), don't continue to the analyzer stage
-					//if(tokens.length == 1) return;
-					
 					continue;
 				}
 			}
 		}
 		
+		// Process LOC metrics
 		llocCounter.processSentence(tokens);
-
-		if(ParsedObjectManager.getInstance().currentFunc != null)
-		{
-			functionAnalyzer.processSentence(tokens);
-			return;
-		}
-		else if(ParsedObjectManager.getInstance().currentScope != null)
-		{
-			
-		}
 		
-		boolean handled = false;
+		
 		
 		// Loop through analyzers
+		boolean handled = false;
 		for(Analyzer a: analyzers)
 		{
 			if(handled = a.processSentence(tokens)) break;
@@ -204,17 +148,21 @@ public class SentenceAnalyzer {
  * Used by LLOC counting
  * @param file 
  */
-    public void fileChanged(String file, LOCMetrics loc) {
-        if(llocCounter!=null){
-            //Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
+    public void fileChanged(String file, LOCMetrics loc)
+    {
+        if(llocCounter != null)
+        {
             this.loc.logicalLOC=llocCounter.getLloc();
         }
-        this.loc=loc;
-        llocCounter = new LLOCCounter();        loc.file=file;
+        this.loc = loc;
+        llocCounter = new LLOCCounter();
+        loc.file = file;
         llocCounter.setFile(file);
     }
-    public void lastFileProcessed(){
-        //Log.d("File: "+llocCounter.getFile()+" LLOC: "+llocCounter.getLloc());
+    
+    
+    public void lastFileProcessed()
+    {
         this.loc.logicalLOC=llocCounter.getLloc();
     }
 }

@@ -23,7 +23,6 @@ public class CppScope
 	
 	public ArrayList<CppScope> parents = null;
 	public ArrayList<CppScope> children = null;
-	// public CppScope parentScope = null;	// Namespace, outer class etc.
 	public CppNamespace namespace = null;
 	
 	public int braceCount = 0;
@@ -120,7 +119,6 @@ public class CppScope
 					return mem;
 				}
 			}
-			
 		}
 		return null;
 	}
@@ -152,7 +150,11 @@ public class CppScope
 					}
 				}
 				
-				if(matchingParams == paramCount)
+				if(!mf.getType().equals(mem.getType()))
+				{
+					return false;
+				}
+				else if(matchingParams == paramCount)
 				{
 					return true;
 				}

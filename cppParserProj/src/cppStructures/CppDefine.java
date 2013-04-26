@@ -33,7 +33,6 @@ public class CppDefine {
 	// public CppDefine(String name, String definition)
 	public CppDefine(String definition)
 	{
-		// this.name = name;
 		this.definition = definition;
 		file = Extractor.currentFile;
 		users = new ArrayList<String>();
@@ -49,7 +48,6 @@ public class CppDefine {
 	// public CppDefine(String name, ArrayList<String> params, String definition)
 	public CppDefine(ArrayList<String> params, String definition)
 	{
-		// this.name = name;
 		this.params = params;
 		this.definition = definition;
 		file = Extractor.currentFile;
@@ -57,11 +55,19 @@ public class CppDefine {
 		users.add(file);
 	}
 	
+	/**
+	 * Adds a "user" file for this define
+	 * @param file File to add as a user
+	 */
 	public void addUser(String file)
 	{
 		if(!users.contains(file)) users.add(file);
 	}
 	
+	/**
+	 * Retrieves the list of users
+	 * @return List of users
+	 */
 	public ArrayList<String> getUsers()
 	{
 		return users;
@@ -75,17 +81,6 @@ public class CppDefine {
 	{
 		return file;
 	}
-	
-	/**
-	 * Retrieves the name of the #define statement
-	 * @return
-	 */
-	/*
-	public String getName()
-	{
-		return name;
-	}
-	*/
 	
 	/**
 	 * Retrieves the parameters of the definition

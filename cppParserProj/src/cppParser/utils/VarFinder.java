@@ -628,7 +628,7 @@ public class VarFinder
  */
     private void markIndex(int index) {
         //this will prevent duplicates caused by recursion
-        if(handledIndices.get(handledIndices.size()-1)!=index)
+        if(handledIndices.get(handledIndices.size() - 1) != index)
             handledIndices.add(new Integer(index));
     }
 }

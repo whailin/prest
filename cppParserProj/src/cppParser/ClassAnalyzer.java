@@ -11,7 +11,6 @@ import cppStructures.*;
  */
 public class ClassAnalyzer extends Analyzer
 {
-
 	// List of tokens currently under analysis (stored here for performance)
 	private String[] tokens = null;
 	
@@ -87,10 +86,6 @@ public class ClassAnalyzer extends Analyzer
 				// TODO handle typedefs properly
 				// Log.d("\tFound a typedef " + tokens[1] + "\n");				
 				return true;
-			/*case "struct":
-				// TODO handle structs
-				structOpen = true;
-				return true;*/
 			case "=":
 				assignIndex = i;
 				break;
@@ -215,6 +210,7 @@ public class ClassAnalyzer extends Analyzer
 				if(name.startsWith("~")) type = "dtor";
 			}
 		}
+		else if(type.equals("~")) type = "dtor";
 		
 		// Log.d("\tFunction: " + type + " | " + name);
 
@@ -281,11 +277,12 @@ public class ClassAnalyzer extends Analyzer
 		return true;
 	}
 	
+	
 	private boolean handleOpeningParenthesis()
 	{
 		if(i > 0 && tokens[i].equals("("))
 		{
-			// return handleFunctionDeclaration();
+			return handleFunctionDeclaration();
 		}
 		return false;
 	}

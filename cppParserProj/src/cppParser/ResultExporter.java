@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * @author Tomi
  */
 public class ResultExporter {
-    private static final String separator=",";
+    private static final String separator = ",";
     private String outputDir;
     private BufferedWriter writer;
     
