@@ -155,6 +155,7 @@ public class FunctionFinder {
                 break;
             case RESET:
                 checkForReset(token, next);
+                break;
             case ANOTHER:
                 waitForAnotherFunctionCall(token, next);
         }
