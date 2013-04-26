@@ -627,8 +627,12 @@ public class VarFinder
  * @param index 
  */
     private void markIndex(int index) {
+        if(index<0)
+            throw new Error("Negative index:"+ token+" "+next);
         //this will prevent duplicates caused by recursion
-        if(handledIndices.get(handledIndices.size() - 1) != index)
+        if(handledIndices.isEmpty())
+            handledIndices.add(new Integer(index));
+        else if(handledIndices.get(handledIndices.size() - 1) != index)
             handledIndices.add(new Integer(index));
     }
 }
