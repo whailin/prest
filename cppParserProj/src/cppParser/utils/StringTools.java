@@ -101,7 +101,7 @@ public class StringTools
 				
 				s += src.charAt(i);
 				i++;
-				while(true)
+				while(i < src.length())
 				{
 					s += src.charAt(i);
 					if(src.charAt(i) == '"')
@@ -119,7 +119,7 @@ public class StringTools
 			{
 				s += src.charAt(i);
 				i++;
-				while(true)
+				while(i < src.length())
 				{
 					s += src.charAt(i);
 					if(src.charAt(i) == '\'')
