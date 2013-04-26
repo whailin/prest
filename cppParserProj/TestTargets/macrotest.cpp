@@ -1,4 +1,4 @@
-/*
+
 #define MULTIPLY(x, y) (x) * (y)
 
 // Test for simple macro expansion
@@ -33,8 +33,11 @@ void Foo::Bar2()
 	
 	int mld = MULTILINEMACRO(d);
 }
-*/
 
+
+/*
+Testi.
+*/
 #define SEMICOLON ;
 
 void Foo::Bar3()

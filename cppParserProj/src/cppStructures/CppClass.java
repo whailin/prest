@@ -1,19 +1,28 @@
 package cppStructures;
 
-import cppParser.ParsedObjectManager;
-import cppParser.utils.Log;
-
-
-public class CppClass extends CppScope {
-
+/**
+ * Represents a C++ class
+ * @author Harri Pellikka
+ */
+public class CppClass extends CppScope
+{
+	// Depth of inheritance (0 is the 'root' class)
 	private int depthOfInheritance = -1;
 	
+	/**
+	 * Constructs a new class object
+	 * @param name Name of the class
+	 */
 	public CppClass(String name)
 	{
 		super(name);
-        type=CLASS;
+        type = CLASS;
 	}
 	
+	/**
+	 * Constructs a new class from an existing scope
+	 * @param scope Scope to convert into a class
+	 */
 	public CppClass(CppScope scope)
 	{
 		super(scope.name);
@@ -21,9 +30,13 @@ public class CppClass extends CppScope {
 		this.functions = scope.functions;
 		this.members = scope.members;
 		this.nameOfFile = scope.nameOfFile;
-        type=CLASS;
+        type = CLASS;
 	}
 	
+	/**
+	 * Retrieves the depth of inheritance
+	 * @return Depth of inheritance
+	 */
 	public int getDepthOfInheritance()
 	{
 		if(depthOfInheritance == -1)
@@ -40,15 +53,8 @@ public class CppClass extends CppScope {
 	 */
 	public void calculateDepthOfInheritance()
 	{
-		// Log.d("DOI: " + this.name + " : " + this.nameOfFile);
 		for(CppScope cs : this.parents)
 		{
-			if(this == cs)
-			{
-				// Log.d("CHILD SAME AS PARENT?");
-				break;
-			}
-			
 			if(cs instanceof CppClass)
 			{
 				if(((CppClass) cs).getDepthOfInheritance() + 1 > depthOfInheritance)

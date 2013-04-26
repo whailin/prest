@@ -16,12 +16,11 @@ import cppStructures.CppDefine;
  */
 public class PreprocessorPass {
 
+	// Simple counter for #defines found
 	public static int defineCount = 0;
 	
 	// List of deliminators used for tokenization
 	private String[] delims = {" ", "#", "(", ")", ",", "*", "/", "+", "-", "<", ">"};
-	
-	private Extractor extractor;
 	
 	// Current index of tokens
 	private int i = 0;
@@ -29,15 +28,15 @@ public class PreprocessorPass {
 	// List of current tokens
 	private String[] tokens = null;
 	
+	// Determines whether or not the current #define is "function-like"
 	private boolean functionLike = false;
 	
 	/**
 	 * Constructs a new preprocess pass analyzer
-	 * @param e Extractor
 	 */
-	public PreprocessorPass(Extractor e)
+	public PreprocessorPass()
 	{
-		this.extractor = e;
+
 	}
 	
 	/**
@@ -93,7 +92,7 @@ public class PreprocessorPass {
 	
 	/**
 	 * Checks if the #include statement refers to a file in the project,
-	 * and if it does, it will store 
+	 * and if it does, it will store the include to the current file object.
 	 */
 	private void handleInclude()
 	{
@@ -126,9 +125,9 @@ public class PreprocessorPass {
 			{
 				def += (def.length() > 0 ? " " : "") + tokens[i];
 			}
-			// ParsedObjectManager.getInstance().getCurrentFile().addDefine(new CppDefine(tokens[2], def));
+
 			MacroExpander.addDefine(tokens[2], new CppDefine(def));
-			Log.d("#define: " + tokens[2] + " " + def);
+			// Log.d("#define: " + tokens[2] + " " + def);
 		}
 		else
 		{
@@ -164,10 +163,8 @@ public class PreprocessorPass {
 			
 			if(def.length() > 0)
 			{
-				// CppDefine cd = new CppDefine(tokens[2], params, def);
-				// ParsedObjectManager.getInstance().getCurrentFile().addDefine(cd);
 				MacroExpander.addDefine(tokens[2], new CppDefine(params, def));
-				Log.d("#define: " + tokens[2] + " " + params + " " + def);
+				// Log.d("#define: " + tokens[2] + " " + params + " " + def);
 			}
 			else
 			{
@@ -178,10 +175,8 @@ public class PreprocessorPass {
 					par += (par.length() > 0 ? " " : "") + params.get(k);
 				}
 				
-				// CppDefine cd = new CppDefine(tokens[2], par);
-				// ParsedObjectManager.getInstance().getCurrentFile().addDefine(cd);
 				MacroExpander.addDefine(tokens[2], new CppDefine(par));
-				Log.d("#define: " + tokens[2] + " " + par);
+				// Log.d("#define: " + tokens[2] + " " + par);
 			}
 		}
 	}

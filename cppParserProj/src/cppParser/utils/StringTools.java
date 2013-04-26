@@ -1,10 +1,12 @@
 package cppParser.utils;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
- * A collection of parsing and lexing -related string tools
+ * A collection of parsing and lexing -related string tools.
  * 
  * @author Harri Pellikka 
  */
@@ -325,6 +327,21 @@ public class StringTools
 					{
 						newTokens.add("=");
 					}
+				}
+				break;
+			case ".":
+				String left = tokens[i-1];
+				try
+				{
+					NumberFormat.getInstance().parse(left);
+					newTokens.remove(newTokens.size() - 1);
+					newTokens.add(left + "." + tokens[i+1]);
+					i++;
+				}
+				catch (ParseException e)
+				{
+					// e.printStackTrace();
+					newTokens.add(".");
 				}
 				break;
 			case "<":

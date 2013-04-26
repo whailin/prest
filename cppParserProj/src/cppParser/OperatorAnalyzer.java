@@ -5,25 +5,29 @@ import cppParser.utils.StringTools;
 
 /**
  * Analyses lists of tokens and tries to figure out operands and operators.
- * Currently not working:
- * - Template brackets are not identified correctly
  * 
  * @author Harri Pellikka
  */
 public class OperatorAnalyzer extends Analyzer 
 {
+	// List of operators that tend to pop up in the operand list (and thus they should be skipped)
 	private String[] operandSkipList = {"{", "(", ";", "=", "]", "::"};
 	
+	// Extra splitters
 	private String[] splitters = {"!", "~"};
 	
 	private int i = -1;
-	private String[] origTokens = null;
 	private String[] tokens = null;
 	
 	private boolean openString = false;
 	
 	private FunctionAnalyzer functionAnalyzer = null;
 	
+	/**
+	 * Constructs a new operator analyze
+	 * @param sa Sentence analyzer
+	 * @param fa Function analyzer
+	 */
 	public OperatorAnalyzer(SentenceAnalyzer sa, FunctionAnalyzer fa) {
 		super(sa);
 		this.functionAnalyzer = fa;
@@ -35,16 +39,12 @@ public class OperatorAnalyzer extends Analyzer
 	 */
 	public boolean processSentence(String[] tokens) {
 		
-		this.origTokens = tokens;
+		// Split and reconstruct the tokens
 		this.tokens = StringTools.reconstructOperators(StringTools.split(tokens, splitters, true));
 		
-		i = 0;
-		
+		// Loop through the tokens
 		for(i = 0; i < this.tokens.length; ++i)
 		{
-			// Early bail out on tokens that are too long to be delimiters
-			// if(tokens[i].length() > 2) continue;
-			
 			if(this.tokens[i].equals("\"")) openString = !openString;
 			
 			if(!openString)
@@ -127,8 +127,8 @@ public class OperatorAnalyzer extends Analyzer
 		{
 			if(StringTools.isOperator(tokens[i]))
 			{
+				// Operator found, construct and store it
 				origIndex = i;
-				// op = constructOperator();
 				op = tokens[i];
 				if(canAddOperator(i))
 				{
@@ -139,31 +139,26 @@ public class OperatorAnalyzer extends Analyzer
 					objManager.currentFunc.addOperator(op);
 					functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 				}
-				else
-				{
-					if(tokens[i].equals("."))
-					{
-						constructFloatingPointOperand();
-					}
-				}
 			}
 			else
 			{
 				if(StringTools.isKeyword(tokens[i]))
 				{
+					// Operator found, construct and store it
 					objManager.currentFunc.addOperator(tokens[i]);
 					functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 				}
 				else
 				{
-				
-					// TODO Construct a whole operand, if it consists of multiple tokens
+					// Operand found, construct and store it
 					String operand = tokens[i];
 					if(operand.equals("\"")) operand = constructStringLiteral(i, false);
 					if(operand != null && canAddOperand(i))
 					{
 						objManager.currentFunc.addOperand(operand);
 						functionAnalyzer.getHandledIndices().add(new Integer(i));
+						
+						// Check for possible post-increment or post-decrement operator
 						if(i < tokens.length - 1)
 						{
 							if(tokens[i+1].equals("++") || tokens[i+1].equals("--"))
@@ -176,162 +171,6 @@ public class OperatorAnalyzer extends Analyzer
 					}
 				}
 			}
-		}
-	}
-	
-	private void constructFloatingPointOperand()
-	{
-		String od = "";
-		for(int j = i - 1; j < i + 2 && j < tokens.length; ++j)
-		{
-			od += tokens[j];
-			i = j;
-		}
-		objManager.currentFunc.addOperand(od);
-		
-	}
-	
-	/**
-	 * Checks if the given 'possible operand' should be skipped.
-	 * @param t The operand to inspect
-	 * @return 'True' if the operand should be skipped (not an operand), 'false' otherwise
-	 */
-	private boolean skipPossibleOperand(String t)
-	{
-		for(String s : operandSkipList)
-		{
-			if(t.equals(s)) return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * Constructs an operator from the token at the current index
-	 * and stores the related operand, if the operator is a unary operator (!, ++ or --).
-	 * 
-	 * The main purpose for this method is to check if the token
-	 * is part of a multi-token operator, for example when "<" is found,
-	 * this method checks if there is a "=" following it.
-	 * 
-	 * @return String representation of the operator
-	 */
-	private String constructOperator()
-	{
-		String op = tokens[i];
-		
-		switch(tokens[i])
-		{
-		case "~":
-			return handleBitwiseNotOperator();
-		case "+":
-		case "-":
-			return constructPlusMinusOperator();
-		case "*":
-		case "/":
-		case "%":
-		case "&":
-		case "|":
-		case "^":
-		case "=":
-		case "!":
-			return constructCompoundOperator();
-		case "<":
-		case ">":
-		case "<<":
-		case ">>":
-			return constructAngleBracketOperator();
-		}
-		
-		return op;
-	}
-	
-	/**
-	 * Handles the bitwise NOT operator (~)
-	 * @return The bitwise NOT operator
-	 */
-	private String handleBitwiseNotOperator()
-	{
-		objManager.currentFunc.addOperand(tokens[i+1]);
-		i++;
-		return "~";
-	}
-	
-	/**
-	 * Constructs an operator that has '<' or '>' in it.
-	 * @return The constructed operator ('<', '<<', '<=', '<<=' etc.)
-	 */
-	private String constructAngleBracketOperator()
-	{
-		String op = tokens[i];
-		if(tokens[i+1].equals("="))
-		{
-			op += "=";
-			i++;
-		}
-		else if(tokens[i+1].equals(op) || tokens[i-1].equals(op))
-		{
-			op = op + op;
-			i++;
-			if(tokens[i+1].equals("="))
-			{
-				op += "=";
-				i++;
-			}
-		}
-		return op;
-	}
-	
-	/**
-	 * Constructs an operator that may be a part of a compoun
-	 * operator (i.e. + can be a part of +=)
-	 * @return The operator itself, or the compound operator if one is found.
-	 */
-	private String constructCompoundOperator()
-	{
-		String op = tokens[i];
-		if(tokens[i+1].equals("="))
-		{
-			op += "=";
-			i++;
-		}
-		return op;
-	}
-	
-	/**
-	 * Constructs an operator which has '+' or '-' in it.
-	 * @return The constructed operator ('+', '++', '+=' etc.)
-	 */
-	private String constructPlusMinusOperator()
-	{
-		String op = tokens[i];
-		
-		String compound = constructCompoundOperator();
-		if(!compound.equals(op)) return compound;
-		else
-		{
-			if(tokens[i-1].equals(op) && !tokens[i+1].equals(op))
-			{
-				op = op + op;
-				op += " PRE";
-				// TODO Check if the attached operand is "real"
-				if(canAddOperand(i+1)) objManager.currentFunc.addOperand(tokens[i+1]);
-				i++;
-			}
-			else if(tokens[i+1].equals(op) && !tokens[i-1].equals(op))
-			{
-				op = op + op;
-				op += " POST";
-				// TODO Check if the attached operand is "real"
-				if(canAddOperand(i-1)) objManager.currentFunc.addOperand(tokens[i-1]);
-				i++;
-			}
-			else if(tokens[i+1].equals("="))
-			{
-				op = op + tokens[i+1];
-				i++;
-			}
-			
-			return op;
 		}
 	}
 	

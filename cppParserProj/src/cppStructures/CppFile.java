@@ -13,10 +13,19 @@ import cppParser.ParsedObjectManager;
  */
 public class CppFile {
 
+	// Filename (absolute file path)
 	private String filename = null;
+	
+	// List of #includes in the file
 	private ArrayList<String> includes = null;
+	
+	// List of #defines in the file
 	private ArrayList<CppDefine> defines = null;
 	
+	/**
+	 * Constructs a new CPP file object
+	 * @param filename Absolute file path
+	 */
 	public CppFile(String filename)
 	{
 		this.filename = filename;
@@ -24,26 +33,46 @@ public class CppFile {
 		defines = new ArrayList<CppDefine>();
 	}
 	
+	/**
+	 * Adds a new #include to this file
+	 * @param include Include to add
+	 */
 	public void addInclude(String include)
 	{
 		this.includes.add(include);
 	}
 	
+	/**
+	 * Retrieves the list of #includes
+	 * @return List of #includes
+	 */
 	public ArrayList<String> getIncludes()
 	{
 		return includes;
 	}
 	
+	/**
+	 * Adds a new #define
+	 * @param cd #define to add
+	 */
 	public void addDefine(CppDefine cd)
 	{
 		this.defines.add(cd);
 	}
 	
+	/**
+	 * Retrieves teh list of #defines
+	 * @return List of #defines
+	 */
 	public ArrayList<CppDefine> getDefines()
 	{
 		return defines;
 	}
 	
+	/**
+	 * Retrieves the absolute file path of this file
+	 * @return Absolute path to this file
+	 */
 	public String getFilename()
 	{
 		return filename;
@@ -71,7 +100,12 @@ public class CppFile {
 		includes = expandedIncludes;
 	}
 
-	
+	/**
+	 * Retrieves #defines recursively from this file
+	 * and all #included files.
+	 * @param incs #include files from previous recursive stages
+	 * @return List of #defines in this file and all #included files
+	 */
 	public ArrayList<CppDefine> getDefinesRecursively(ArrayList<String> incs) {
 		
 		if(incs == null) incs = new ArrayList<String>();
@@ -92,20 +126,16 @@ public class CppFile {
 			incs.add(s);
 		}
 		
-		
-		
-		/*
-		for(String s : includes)
-		{
-			CppFile cf = ParsedObjectManager.getInstance().getFileByFilename(s);
-			defs.addAll(cf.getDefinesRecursively(incs));
-		}
-		*/
-		
-		
 		return defs;
 	}
 	
+	/**
+	 * Dumps the include tree for this file
+	 * @param writer Writer to write the debug dump to
+	 * @param visited Set of files already visited
+	 * @param depth Depth of the include tree
+	 * @throws IOException Thrown if the writer cannot handle the writing operation
+	 */
 	public void dump(BufferedWriter writer, HashSet<CppFile> visited, int depth) throws IOException
 	{
 		visited.add(this);

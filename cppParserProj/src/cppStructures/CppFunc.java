@@ -19,7 +19,6 @@ public class CppFunc {
     
 	private String type = "void";
 	private String name = "";
-	// private MetricsParam[] params;
 	
 	public String fileOfFunc = "";
 	
@@ -41,8 +40,6 @@ public class CppFunc {
 	// Halstead-related containers
 	private ArrayList<String> operators = new ArrayList<String>();
 	private ArrayList<String> operands = new ArrayList<String>();
-	// private ArrayList<String> uniqueOperators = new ArrayList<String>();
-	// private ArrayList<String> uniqueOperands = new ArrayList<String>();
 	private HashSet<String> uniqueOperators = new HashSet<String>();
 	private HashSet<String> uniqueOperands = new HashSet<String>();
 	
@@ -114,25 +111,31 @@ public class CppFunc {
 	}
 	
 	/**
-	 * Retrieves the list of unique operators in this function
-	 * @return List of unique operators in this function
+	 * Retrieves the set of unique operators in this function
+	 * @return Set of unique operators in this function
 	 */
-	
 	public HashSet<String> getUniqueOperators()
 	{
 		return uniqueOperators;
 	}
 	
+	/**
+	 * Retrieves the list of operands in this function
+	 * @return List of operands in this function
+	 */
 	public ArrayList<String> getOperands()
 	{
 		return operands;
 	}
 	
+	/**
+	 * Retrieves the set of unique operands in this function
+	 * @return Set of unique operands in this function
+	 */
 	public HashSet<String> getUniqueOperands()
 	{
 		return uniqueOperands;
 	}
-	
 	
 	/**
 	 * Retrieves the name of this function
@@ -158,7 +161,6 @@ public class CppFunc {
 	 */
 	public void addMember(MemberVariable mv)
 	{
-        // Log.d("Adding  member "+ mv.getType()+" "+mv.getName() +" to "+name);
 		members.add(mv);
 	}
 	
@@ -207,19 +209,6 @@ public class CppFunc {
 	public void addOperator(String op)
 	{
 		op = formatOperator(op);
-		/*
-		boolean isUnique = true;
-		for(String s : operators)
-		{
-			if(s.equals(op))
-			{
-				isUnique = false;
-				break;
-			}
-		}
-		operators.add(op);
-		if(isUnique) uniqueOperators.add(op);
-		*/
 		operators.add(op);
 		uniqueOperators.add(op);
 	}
@@ -231,19 +220,6 @@ public class CppFunc {
 	 */
 	public void addOperand(String od)
 	{
-		/*
-		boolean isUnique = true;
-		for(String s : operands)
-		{
-			if(s.equals(od))
-			{
-				isUnique = false;
-				break;
-			}
-		}
-		operands.add(od);
-		if(isUnique) uniqueOperands.add(od);
-		*/
 		operands.add(od);
 		uniqueOperands.add(od);
 	}

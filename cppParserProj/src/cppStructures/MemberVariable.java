@@ -1,5 +1,9 @@
 package cppStructures;
 
+/**
+ * Represents a member variable
+ * @author Harri Pellikka
+ */
 public class MemberVariable
 {
 

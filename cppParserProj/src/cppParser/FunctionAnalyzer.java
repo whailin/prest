@@ -18,10 +18,10 @@ import profiling.Stats;
  * @author Harri Pellikka
  */
 public class FunctionAnalyzer extends Analyzer {
-	public static int pcf=0;
+	public static int pcf = 0;
+	
 	// Keywords that increment the cyclomatic complexity
 	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "#ifdef", "and", "or"};
-	// private static final String[] inFuncHalsteadOps = {"::", ";", "+", "-", "*", "/", "%", ".", "<<", ">>", "<", "<=", ">", ">=", "!=", "==", "=", "&", "|"};
 	
 	// Operands found from the sentence that is currently being processed
 	private HashSet<Integer> handledOperatorIndices = new HashSet<Integer>();
@@ -148,7 +148,7 @@ public class FunctionAnalyzer extends Analyzer {
 				{
 					returnType = "ctor";
 				}
-				else if(returnType.equals("~" + funcName))
+				else if(returnType.equals("~" + funcName) || returnType.endsWith("~"))
 				{
 					returnType = "dtor";
 				}

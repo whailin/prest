@@ -15,9 +15,6 @@ import cppStructures.*;
  */
 public class ParsedObjectManager
 {
-
-	// If 'true', the same class can be implemented in multiple ways (via PP directives)
-	private boolean allowMultipleVariantsOfClass = true;
 	
 	private static ParsedObjectManager instance = new ParsedObjectManager();
 	
@@ -35,10 +32,6 @@ public class ParsedObjectManager
 	// List of files found in the target folder
 	private ArrayList<CppFile> files = new ArrayList<CppFile>();
 	
-	// List of #defines found in the pre-pass
-	// private ArrayList<CppDefine> defines = new ArrayList<CppDefine>();
-	
-	
 	// List of scopes found
 	private ArrayList<CppScope> scopes = new ArrayList<CppScope>();
 	private Stack<CppScope> cppScopeStack = new Stack<CppScope>();
@@ -48,12 +41,11 @@ public class ParsedObjectManager
 	// Array lists for misc. stuff found from source code
 	ArrayList<String> oneLineComments = new ArrayList<String>();
 	ArrayList<String> multiLineComments = new ArrayList<String>();
-	// ArrayList<String> defines = new ArrayList<String>();
 	ArrayList<String> includes = new ArrayList<String>();
 	ArrayList<String> classes = new ArrayList<String>();
     
-    ArrayList<CppType> knownTypes=new ArrayList<>();
-    ArrayList<LOCMetrics> locMetrics=new ArrayList<>();
+    ArrayList<CppType> knownTypes = new ArrayList<>();
+    ArrayList<LOCMetrics> locMetrics = new ArrayList<>();
 	
 	/**
 	 * Retrieves the singleton instance
@@ -71,21 +63,38 @@ public class ParsedObjectManager
 	{
 		
 	}
+	
+	/**
+	 * Adds a new LOC Metrics object
+	 * @param loc LOC Metrics object
+	 */
     public void addLocMetric(LOCMetrics loc)
     {
         locMetrics.add(loc);
     }
     
+    /**
+     * Retrieves all LOC metrics objects
+     * @return Arraylist of loc metrics objects
+     */
     public ArrayList<LOCMetrics> getLocMetrics()
     {
         return locMetrics;
     }
     
+    /**
+     * Retrieves a list of all known types
+     * @return List of all known types
+     */
     public ArrayList<CppType> getKnownTypes()
     {
         return knownTypes;
     }
     
+    /**
+     * Adds a new type
+     * @param type Type to add
+     */
     public void addKnownType(CppType type)
     {
         for(CppType ct:knownTypes)
@@ -102,26 +111,46 @@ public class ParsedObjectManager
         knownTypes.add(type);
     }
 
+    /**
+     * Resets the current scope to the default scope
+     */
 	public void setDefaultScope()
 	{
 		currentScope = defaultScope;
 	}
 	
+	/**
+	 * Retrieves all the scopes
+	 * @return List of scopes
+	 */
 	public ArrayList<CppScope> getScopes()
 	{
 		return scopes;
 	}
 	
+	/**
+	 * Adds a new file
+	 * @param file File to add
+	 */
 	public void addFile(CppFile file)
 	{
 		this.files.add(file);
 	}
 	
+	/**
+	 * Retrieves all known files
+	 * @return List of files
+	 */
 	public ArrayList<CppFile> getFiles()
 	{
 		return files;
 	}
 	
+	/**
+	 * Retrieves a file by its filename
+	 * @param filename Name of the file
+	 * @return File which has the filename 'filename', or null if not found
+	 */
 	public CppFile getFileByFilename(String filename)
 	{
 		for(CppFile cf : files)
@@ -131,12 +160,21 @@ public class ParsedObjectManager
 		}
 		return null;
 	}
-	
+	/**
+	 * Sets the current file to 'cf'
+	 * @param cf File
+	 */
 	public void setCurrentFile(CppFile cf)
 	{
 		this.currentFile = cf;
 	}
 	
+	/**
+	 * Sets the current file to a file with the name 'name',
+	 * or sets the current file to 'null' if no file with the
+	 * given name was found.
+	 * @param name Name of the file to set as the current file
+	 */
 	public void setCurrentFile(String name)
 	{
 		for(CppFile cf : files)
@@ -151,17 +189,26 @@ public class ParsedObjectManager
 		currentFile = null;
 	}
 	
+	/**
+	 * Retrieves the current file
+	 * @return Current file
+	 */
 	public CppFile getCurrentFile()
 	{
 		return currentFile;
 	}
 	
-	
+	/**
+	 * Adds a new class
+	 * @param name Name of the class
+	 * @param namespace Namespace the class belongs to
+	 * @return The newly constructed class object or an existing class if one was found
+	 */
 	public CppClass addClass(String name, CppNamespace namespace)
 	{
-		assert(name != null);
-		
 		CppClass newClass = null;
+		
+		// Search for an existing class
 		for(CppScope cs : scopes)
 		{
 			if(cs instanceof CppClass)
@@ -186,6 +233,7 @@ public class ParsedObjectManager
 			}
 		}
 		
+		// If no existing class was found, create a new one
 		if(newClass == null)
 		{
 			newClass = new CppClass(name);
@@ -194,30 +242,32 @@ public class ParsedObjectManager
             addKnownType(new CppType(name,CppType.CLASS));
 		}
 		
-		// if(newClass.namespace != null) Log.d("Added class: " + newClass.getName() + " | " + newClass.namespace.getName());
-		// else Log.d("Added class: " + newClass.getName());
-		
 		return newClass;
 	}
     
+	/**
+	 * Adds a new struct
+	 * @param name Name of the struct
+	 * @return The newly created struct, or an existing one if found
+	 */
     public CppScope addStruct(String name)
     {
-        assert(name != null);
-		
 		CppScope newStruct = null;
+		
+		// Search for an existing struct
 		for(CppScope cs : scopes)
 		{
 			if(cs.type == CppScope.STRUCT)
 			{
 				if(cs.getName().equals(name))
 				{
-					// Log.d("Found an existing scope " + name);
 					newStruct = cs;
 					break;
 				}
 			}
 		}
 		
+		// If no existing struct was found, create a new one
 		if(newStruct == null)
 		{
 			newStruct = new CppScope(name);
@@ -229,24 +279,29 @@ public class ParsedObjectManager
 		return newStruct;
     }
     
+    /**
+     * Adds a new union
+     * @param name Name of the union
+     * @return The newly created union, or an existing one if found
+     */
     public CppScope addUnion(String name)
-    {
-        assert(name != null);
-		
+    {	
 		CppScope newUnion = null;
+		
+		// Search for an existing union
 		for(CppScope cs : scopes)
 		{
 			if(cs.type == CppScope.UNION)
 			{
 				if(cs.getName().equals(name))
 				{
-					// Log.d("Found an existing scope " + name);
 					newUnion = cs;
 					break;
 				}
 			}
 		}
 		
+		// If no existing union was found, create a new one
 		if(newUnion == null)
 		{
 			newUnion = new CppScope(name);
@@ -258,30 +313,47 @@ public class ParsedObjectManager
 		return newUnion;
     }
 
+    /**
+     * Adds a new namespace.
+     * @param ns Namespace to add
+     * @param addToStack If 'true', the namespace is added to a scope stack. 
+     * This should be 'true' if the namespace was found as "namespace Foo {...", 
+     * and 'false if the namespace was found as "namespace::Foo"
+     */
 	public void addNamespace(CppNamespace ns, boolean addToStack) 
 	{
+		// Check that namespace is not null
 		if(ns == null)
 		{
 			throw new NullPointerException("Tried to add namespace that is null.");
 		}
-		if(ns.getName() == null) throw new NullPointerException("Tried to add namespace which name is null.");
 		
+		// Check that the name of the namespace is not null
+		if(ns.getName() == null)
+		{
+			throw new NullPointerException("Tried to add namespace which name is null.");
+		}
+		
+		// Check that no namespace with the same name exists
+		boolean canAdd = true;
 		for(CppScope cs : scopes)
 		{
 			if(cs instanceof CppNamespace)
 			{
-				if(cs.getName().equals(ns.getName())) return;
+				if(cs.getName().equals(ns.getName())) canAdd = false;
 			}
 		}
 		
 		// Set the parent namespace, if there is one
 		if(addToStack && currentNamespace != null)
 		{
-			// ns.addParent(currentNamespace);
 			currentNamespace.addChild(ns);
 		}
 		
-		scopes.add(ns);
+		// Store the namespace, if it's not yet stored
+		if(canAdd) scopes.add(ns);
+		
+		// Add to stack, if needed
 		if(addToStack)
 		{
 			this.cppScopeStack.push(ns);
@@ -300,11 +372,24 @@ public class ParsedObjectManager
 		if(b) currentFunc = func;
 	}
 
+	/**
+	 * Retrieves the scope stack.
+	 * Scope stack holds the currently "open" scopes.
+	 * For example, if there is a class "Foo" with an inner class
+	 * "Bar", this stack will hold both "Foo" and "Bar" when
+	 * processing "Bar".
+	 * @return Scope stack
+	 */
 	public Stack<CppScope> getCppScopeStack()
 	{
 		return this.cppScopeStack;
 	}
 
+	/**
+	 * Retrieves a namespace called 'ns'
+	 * @param ns Name of the namespace
+	 * @return Namespace or null if not found
+	 */
 	public CppNamespace getNamespace(String ns)
 	{
 		for(CppScope scope : scopes)
