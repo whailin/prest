@@ -226,7 +226,7 @@ public class FunctionAnalyzer extends Analyzer {
 		handledIndices.clear();
 		pcf++;
         varFinder.clearHandledIndices();
-        // varFinder.findVariables(tokens);
+        varFinder.findVariables(tokens);
         long time = System.currentTimeMillis();
         funcFinder.findFunctions(tokens);
         
