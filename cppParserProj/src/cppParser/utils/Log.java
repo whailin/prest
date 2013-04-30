@@ -10,6 +10,7 @@ public class Log {
 
 	// If 'true', no output is done
 	public static boolean isSilent = false;
+	public static boolean printErrors = true;
 	
 	/**
 	 * An empty override of 'd'
@@ -45,5 +46,25 @@ public class Log {
 		}
 		s += "]";
 		d(s);
+	}
+	
+	/**
+	 * An empty override of 'e'
+	 */
+	public static void e()
+	{
+		e("");
+	}
+	
+	/**
+	 * Prints out the given string to the error stream
+	 * @param s String to print
+	 */
+	public static void e(String s)
+	{
+		if(printErrors)
+		{
+			System.err.println(s);
+		}
 	}
 }

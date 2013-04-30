@@ -331,9 +331,11 @@ public class StringTools
 				break;
 			case ".":
 				String left = tokens[i-1];
+				String right = tokens[i+1];
 				try
 				{
 					NumberFormat.getInstance().parse(left);
+					NumberFormat.getInstance().parse(right);
 					newTokens.remove(newTokens.size() - 1);
 					newTokens.add(left + "." + tokens[i+1]);
 					i++;

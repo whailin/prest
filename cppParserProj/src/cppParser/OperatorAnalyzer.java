@@ -76,7 +76,7 @@ public class OperatorAnalyzer extends Analyzer
 			// Log.d("Found brace pair " + tokens[Math.min(i, bracketPairIndex)] + " " + tokens[Math.max(i, bracketPairIndex)]);
 			if(functionAnalyzer.getHandledIndices().contains(new Integer(bracketPairIndex)))
 			{
-				Log.d("  Already handled.");
+				// Log.d("  Already handled.");
 			}
 			else
 			{
