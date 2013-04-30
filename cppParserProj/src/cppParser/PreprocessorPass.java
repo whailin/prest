@@ -2,7 +2,6 @@ package cppParser;
 
 import java.util.ArrayList;
 
-import cppParser.utils.Log;
 import cppParser.utils.MacroExpander;
 import cppParser.utils.StringTools;
 import cppStructures.CppDefine;
@@ -66,7 +65,7 @@ public class PreprocessorPass {
 			analyze(tokens);
 		}
 	}
-
+	
 	/**
 	 * Analyzes the given list of tokens
 	 * @param tokens Tokens that form the sentence under analysis

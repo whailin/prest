@@ -257,17 +257,39 @@ public class Extractor
 			// Initialize the variables used
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			char c; // Current char
+			lineno = 1;
 			String line = ""; // Sentence under construction
-			int lineno = 1; // Current line number
 			int rawExpandStartIndex = 0; // Index of the char in line where the last macro expansion ended
 			boolean stringOpen = false, charOpen = false; // Booleans to determine if string or char is open
 			boolean codeFound = false, commentFound = false; // Booleans for adding various LOC metrics
+			
+			if(ParsedObjectManager.getInstance().currentFunc != null)
+			{
+				Log.d("Error: Current function was not null when starting a new file.");
+				ParsedObjectManager.getInstance().currentFunc = null;
+			}
+			if(ParsedObjectManager.getInstance().currentScope != null)
+			{
+				Log.d("Error: Current scope was not null when starting a new file.");
+				ParsedObjectManager.getInstance().currentScope = null;
+			}
+			if(ParsedObjectManager.getInstance().currentNamespace != null)
+			{
+				Log.d("Error: Current namespace was not null when starting a new file.");
+				ParsedObjectManager.getInstance().currentNamespace = null;
+			}
+			if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty())
+			{
+				Log.d("Error: CPP scope stack was not empty when starting a new file.");
+				ParsedObjectManager.getInstance().getCppScopeStack().clear();
+			}
 			
 			// Loop through the file char-by-char
 			while((c = (char)reader.read()) != (char)-1)
 			{
 				// Handle spaces, carriage returns and tabs
 				if(c == '\r') continue;
+				if(c == '\f') continue;
 				if(c == ' ' && line.endsWith(" ")) continue;
 				if(c == '\t')
 				{
@@ -279,14 +301,17 @@ public class Extractor
 				if(c == '\\') line += "\\"; 
 				else line += c;
 				
+				
+				
 				// Skip "empty" whitespaces
 				if(line.equals("\n") || line.equals("\t") || line.equals(" "))
 				{
+					if(line.equals("\n"))lineno++;
 					line = "";
+					
 					rawExpandStartIndex = 0;
 					addLine(false, false);
 					// Log.d("Line " + lineno);
-					// lineno++;
 					continue;
 				}
 				
@@ -296,10 +321,12 @@ public class Extractor
 				
 				if(!stringOpen && !charOpen)
 				{
+					// Count line numbers
+					if(line.endsWith("\n")) lineno++;
+					
 					// Handle new line feed
 					if(c == '\n')
 					{
-						lineno++;
 						if(!line.trim().isEmpty()) addLine(codeFound, commentFound);
 					}
 					
@@ -389,12 +416,12 @@ public class Extractor
 							{
 								sentenceAnalyzer.lexLine(line.trim());
 							}
+
 							addLine(true, false);
 							line = "";
 							rawExpandStartIndex = 0;
 							continue;
 						}
-
 					}
 				}
 			}
@@ -417,7 +444,7 @@ public class Extractor
 	{
 		char c;
 		while((c = (char)reader.read()) != '\n' && c != '\r' && c != (char)-1) line += c;
-		// Log.d("Found single-line comment: " + line);
+		// lineno++;
 	}
 	
 	/**
@@ -430,6 +457,7 @@ public class Extractor
 		{
 			c = (char)reader.read();
 			line += c;
+			if(line.endsWith("\n")) lineno++;
 		}
 	}
 	

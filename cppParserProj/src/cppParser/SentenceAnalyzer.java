@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import cppMetrics.LOCMetrics;
 import cppParser.utils.LLOCCounter;
+import cppParser.utils.Log;
 import cppParser.utils.StringTools;
 import cppStructures.CppScope;
 
@@ -104,6 +105,11 @@ public class SentenceAnalyzer
 	 */
 	public void lexLine(String line)
 	{
+		if(line.contains("FilterTick"))
+		{
+			Log.d("Dbg");
+		}
+		
 		// Split the line into tokens
 		String[] tokens = StringTools.cleanEmptyEntries(StringTools.reconstructOperators(StringTools.split(line, null, true)));
 		

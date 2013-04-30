@@ -242,7 +242,14 @@ public class ClassAnalyzer extends Analyzer
 					cf.parameters.add(attrib);
 					paramType = "";
 					paramName = "";
-					if(tokens[j].equals("=")) while(!tokens[j].equals(",") && !tokens[j+1].equals(")")) j++;
+					try
+					{
+						if(tokens[j].equals("=")) while(!tokens[j].equals(",") && !tokens[j+1].equals(")")) j++;
+					}
+					catch(ArrayIndexOutOfBoundsException e)
+					{
+						Log.e("Expected ')'.\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
+					}
 				}
 				else
 				{
@@ -297,8 +304,16 @@ public class ClassAnalyzer extends Analyzer
 	{
 		for(int i = 0; i < tokens.length; ++i)
 		{
-			if(tokens[i].equals("class") || tokens[i].equals("struct")|| tokens[i].equals("union"))
-			{				
+			if(tokens[i].equals("class") || tokens[i].equals("struct") || tokens[i].equals("union"))
+			{	
+				// Get the class keyword count (if > 1, preprocessor directives do messy things)
+				int classWordCount = 1;
+				for(int z = i + 1; z < tokens.length; ++z)
+				{
+					if(tokens[z].equals("class")) classWordCount++;
+				}
+				if(classWordCount > 1) Log.e("Two class declarations on the same line\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
+				
 				// Log.d("Found "+tokens[i]);
 				if(tokens[tokens.length - 1].equals(";"))
 				{

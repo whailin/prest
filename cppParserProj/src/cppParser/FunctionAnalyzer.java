@@ -112,7 +112,18 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			if(tokens[i].equals("("))
 			{
-				// Log.d("   FUNCTION " + tokens[i-1] + " START (file: " + Extractor.currentFile + " | line: " + Extractor.lineno + ")");
+				// Get the "zero-level" parenthesis pair count (if > 1, preprocessor directives do messy things)
+				int parCount = 1, zeroParCount = 0;
+				for(int z = i + 1; z < tokens.length; ++z)
+				{
+					if(tokens[z].equals("(")) parCount++;
+					else if(tokens[z].equals(")"))
+					{
+						parCount--;
+						if(parCount == 0) zeroParCount++;
+					}
+				}
+				if(zeroParCount > 1) Log.e("Two function declarations on the same line\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
 				
 				// Get scope
 				String scope = getScope(tokens, i);
