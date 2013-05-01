@@ -31,7 +31,7 @@ public class StringTools
 		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
 	
 	// List of Halstead operators
-	public static String[] operators = {";", ")", "}", "[", "+", "-", "++", "--", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or"};
+	public static String[] operators = {";", ")", "}", "[", "+", "-", "++", "--", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or", "+=", "-=", "*=", "/=", "%=", "^=", "&=", "|="};
 	public static HashSet<String> opSet = new HashSet<String>();
 	
 	// List of primitive types and values
@@ -403,10 +403,11 @@ public class StringTools
 								continue;
 							}
 							
-							if(isOperator(tokens[j]) && !tokens[j].equals(">"))
+							if(isOperator(tokens[j]) && !tokens[j].equals(">") && !tokens[j].equals(","))
 							{
 								// Abort.
 								newTokens.add("<");
+								break;
 							}
 							else if(tokens[j].equals(">"))
 							{
@@ -414,7 +415,9 @@ public class StringTools
 								template += ">";
 								if(bCount == 0)
 								{
-									newTokens.add(template);
+									String tempType = newTokens.get(newTokens.size() - 1);
+									newTokens.remove(newTokens.size() - 1);
+									newTokens.add(tempType + template);
 									i = j;
 									break;
 								}

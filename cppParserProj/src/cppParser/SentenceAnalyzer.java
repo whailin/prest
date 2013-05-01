@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import cppMetrics.LOCMetrics;
 import cppParser.utils.LLOCCounter;
 import cppParser.utils.Log;
+import cppParser.utils.MacroExpander;
 import cppParser.utils.StringTools;
 import cppStructures.CppScope;
 
@@ -32,6 +33,7 @@ public class SentenceAnalyzer
 		classAnalyzer = new ClassAnalyzer(this);
 		scopeAnalyzer = new ScopeAnalyzer(this);
 
+		analyzers.add(new TypedefAnalyzer(this));
 		analyzers.add(functionAnalyzer);
 		analyzers.add(classAnalyzer);
 		analyzers.add(scopeAnalyzer);
@@ -105,13 +107,11 @@ public class SentenceAnalyzer
 	 */
 	public void lexLine(String line)
 	{
-		if(line.contains("FilterTick"))
-		{
-			Log.d("Dbg");
-		}
-		
 		// Split the line into tokens
-		String[] tokens = StringTools.cleanEmptyEntries(StringTools.reconstructOperators(StringTools.split(line, null, true)));
+		String[] tokens = StringTools.split(line, null, true);
+		tokens = (new MacroExpander()).expand(tokens);
+		tokens = StringTools.reconstructOperators(tokens);
+		tokens = StringTools.cleanEmptyEntries(tokens);
 		
 		// Handle braces
 		boolean stringOpen = false;
