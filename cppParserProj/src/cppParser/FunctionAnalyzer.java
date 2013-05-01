@@ -18,7 +18,6 @@ import profiling.Stats;
  * @author Harri Pellikka
  */
 public class FunctionAnalyzer extends Analyzer {
-	public static int pcf = 0;
 	
 	// Keywords that increment the cyclomatic complexity
 	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "#ifdef", "and", "or"};
@@ -235,14 +234,11 @@ public class FunctionAnalyzer extends Analyzer {
 	private boolean processCurrentFunction(String[] tokens)
 	{
 		handledIndices.clear();
-		pcf++;
         varFinder.clearHandledIndices();
         varFinder.findVariables(tokens);
-        long time = System.currentTimeMillis();
         funcFinder.findFunctions(tokens);
         
-        time=System.currentTimeMillis()-time;
-        Stats.addTime("funcFinder.findFunctions(String[])", time);
+        
         
         operatorAnalyzer.processSentence(tokens);
         

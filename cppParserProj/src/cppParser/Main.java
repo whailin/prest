@@ -33,8 +33,6 @@ public class Main {
 		// TODO Replace this main function with a call from Prest
         
         }
-        Stats.dumpTimesToLog();
-        Log.d("PCF:"+FunctionAnalyzer.pcf);
         /*
 		
 		*/
