@@ -40,7 +40,7 @@ public class MacroExpander {
 	public static String expandRaw(String line)
 	{
 		char c = line.charAt(line.length() - 1);
-		if(c != ' ' && c != ';' && c != '{' && c != '}') return line;
+		if(c != ' ' && c != ';' && c != '{' && c != '}' && c != ')') return line;
 		
 		MacroExpander me = new MacroExpander();
 		String[] pieces = StringTools.split(line, null, true);
@@ -230,7 +230,12 @@ public class MacroExpander {
 		
 		// return (new MacroExpander()).expand(StringTools.listToArray(newTokensList));
 		// String[] newTokensListArray = (new MacroExpander()).expand(StringTools.listToArray(newTokensList));
-		return newTokensList;
+		
+		String[] recArray = (new MacroExpander()).expand(newTokensList.toArray(new String[] {}));
+		ArrayList<String> recList = new ArrayList<String>();
+		for(String s : recArray) recList.add(s);
+		// return newTokensList;
+		return recList;
 	}
 
 	/**
@@ -253,9 +258,8 @@ public class MacroExpander {
 		return currentDefines.get(s);
 	}
 
-	public static boolean shouldExpandRaw(char c)
+	public static boolean shouldExpandRaw(String line, char c)
 	{
-		// if(rawExpandSet.contains("" + c)) return true;
 		if(c == ' ' || c == ';') return true;
 		return false;
 	}

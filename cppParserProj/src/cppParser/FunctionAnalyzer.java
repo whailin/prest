@@ -64,21 +64,6 @@ public class FunctionAnalyzer extends Analyzer {
 	
 	private String getScope(String[] tokens, int i)
 	{
-		/*
-		for(int j = 1; j < i - 1; ++j)
-		{
-			if(tokens[j].equals("::"))
-			{
-				String scope = tokens[j-1];
-				if(scope.startsWith("&") || scope.startsWith("*"))
-				{
-					scope = scope.substring(1);
-				}
-				return scope;
-			}
-		}
-		*/
-		
 		if(i > 2)
 		{
 			if(tokens[i-2].equals("::"))
@@ -92,6 +77,10 @@ public class FunctionAnalyzer extends Analyzer {
 		{
 			return ParsedObjectManager.getInstance().currentScope.getName();
 		}
+		else if(ParsedObjectManager.getInstance().currentNamespace != null)
+		{
+			return ParsedObjectManager.getInstance().currentNamespace.getName();
+		}
 		
 		return "__MAIN__";
 	}
@@ -104,25 +93,46 @@ public class FunctionAnalyzer extends Analyzer {
 	 */
 	private boolean processNewFunction(String[] tokens)
 	{
-		// Bail out instantly if there's no body starting
-		if(!tokens[tokens.length - 1].equals("{")) return false;
+		
 		
 		for(int i = 1; i < tokens.length; ++i)
 		{
-			if(tokens[i].equals("("))
+			if(tokens[i].equals("typedef")) return false;
+			if(tokens[i].equals(",") || tokens[i].equals("=") || tokens[i].equals("{")) return false;
+			else if(tokens[i].equals("("))
 			{
+				if(tokens[i-1].equals("operator")) continue;
+				
 				// Get the "zero-level" parenthesis pair count (if > 1, preprocessor directives do messy things)
 				int parCount = 1, zeroParCount = 0;
+				boolean isThrow = false;
 				for(int z = i + 1; z < tokens.length; ++z)
 				{
-					if(tokens[z].equals("(")) parCount++;
+					if(tokens[z].equals("{")) break;
+					else if(tokens[z].equals(":")) break;
+					else if(tokens[z].equals("("))
+					{
+						if(tokens[z-1].equals("throw")) isThrow = true;
+						
+						parCount++;
+					}
 					else if(tokens[z].equals(")"))
 					{
 						parCount--;
-						if(parCount == 0) zeroParCount++;
+						if(isThrow)
+						{
+							isThrow = false;
+						}
+						else
+						{
+							if(parCount == 0) zeroParCount++;
+						}
 					}
 				}
-				if(zeroParCount > 1) Log.e("Two function declarations on the same line\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
+				if(zeroParCount > 1)
+				{
+					Log.e("Two function declarations on the same line\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
+				}
 				
 				// Get scope
 				String scope = getScope(tokens, i);
@@ -210,14 +220,7 @@ public class FunctionAnalyzer extends Analyzer {
 				
 				func.funcBraceCount = sentenceAnalyzer.braceCount;
 				func.fileOfFunc = Extractor.currentFile;
-				ParsedObjectManager.getInstance().addFunction(func, true);
-				
-				/*
-				ParsedObjectManager.getInstance().currentFunc = func;
-				ParsedObjectManager.getInstance().currentScope.addFunc(ParsedObjectManager.getInstance().currentFunc);
-				ParsedObjectManager.getInstance().currentFunc.funcBraceCount = sentenceAnalyzer.braceCount;
-				ParsedObjectManager.getInstance().currentFunc.fileOfFunc = Extractor.currentFile;
-				*/
+				ParsedObjectManager.getInstance().addFunction(func, tokens[tokens.length - 1].equals("{"));
 				return true;
 			}
 		}
@@ -266,11 +269,6 @@ public class FunctionAnalyzer extends Analyzer {
 		
 		return true;
 	}
-	
-	
-	
-	
-	
 	
 	/**
 	 * Checks if the given token should increase the function's cyclomatic complexity

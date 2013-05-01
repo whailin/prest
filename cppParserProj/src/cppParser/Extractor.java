@@ -278,11 +278,17 @@ public class Extractor
                     Log.d("Error: CPP scope stack was not empty when starting a new file.");
                     ParsedObjectManager.getInstance().getCppScopeStack().clear();
                 }
-                plocCounter=new PLOCCounter();
+                
+                plocCounter = new PLOCCounter();
+                
                 // Loop through the file char-by-char
                 while((c = (char)reader.read()) != (char)-1)
                 {
-                    if(currentPass == Pass.MAINPASS)plocCounter.push(c);
+                    if(currentPass == Pass.MAINPASS) plocCounter.push(c);
+                    
+                    // Skip system macros
+                    line = skipSystemMacros(line, reader);
+                    
                     // Handle spaces, carriage returns and tabs
                     if(c == '\r') continue;
                     if(c == '\f') continue;
@@ -296,8 +302,6 @@ public class Extractor
                     // Add the current char to the line
                     if(c == '\\') line += "\\"; 
                     else line += c;
-                    
-                    
                     
                     // Skip "empty" whitespaces
                     if(line.equals("\n") || line.equals("\t") || line.equals(" "))
@@ -384,7 +388,7 @@ public class Extractor
                         // Expand macros
                         if(currentPass == Pass.MAINPASS)
                         {
-                            if(!line.startsWith("#") && MacroExpander.shouldExpandRaw(c))
+                            if(!line.startsWith("#") && MacroExpander.shouldExpandRaw(line, c))
                             {
                                 String beginLine = line.substring(0, rawExpandStartIndex);
                                 String expandable = line.substring(rawExpandStartIndex);
@@ -427,14 +431,31 @@ public class Extractor
 		}
 	}
 	
+	private String skipSystemMacros(String line, BufferedReader reader) throws IOException
+	{
+		if(line.endsWith("__declspec"))
+		{
+			while((char)reader.read() != ')');
+			line = line.substring(line.indexOf("__declspec"));
+		}
+		else if(line.endsWith("STDMETHODIMP"))
+		{
+			line = line.substring(line.indexOf("STDMETHODIMP"));
+			line += (char)reader.read();
+			if(line.endsWith("_")) line = line.substring(0, line.length() - 1);
+		}
+		return line;
+	}
+	
 	/**
 	 * Handles a single line comment. Advances the reader to the end of the comment.
 	 */
 	private void processSingleLineComment(String line, BufferedReader reader) throws IOException
 	{
 		char c;
-		while((c = (char)reader.read()) != '\n' && c != '\r' && c != (char)-1){
-            if(currentPass == Pass.MAINPASS)plocCounter.push(c);
+		while((c = (char)reader.read()) != '\n' && c != '\r' && c != (char)-1)
+		{
+            if(currentPass == Pass.MAINPASS) plocCounter.push(c);
             line += c;
         }
 		// lineno++;
@@ -449,7 +470,7 @@ public class Extractor
 		while(!line.endsWith("*/"))
 		{
 			c = (char)reader.read();
-            if(currentPass == Pass.MAINPASS)plocCounter.push(c);
+            if(currentPass == Pass.MAINPASS) plocCounter.push(c);
 			line += c;
 			if(line.endsWith("\n")) lineno++;
 		}

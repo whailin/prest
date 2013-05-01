@@ -2,6 +2,7 @@ package cppParser;
 
 import java.util.ArrayList;
 
+import cppParser.utils.Log;
 import cppParser.utils.MacroExpander;
 import cppParser.utils.StringTools;
 import cppStructures.CppDefine;
@@ -126,7 +127,7 @@ public class PreprocessorPass {
 			}
 
 			MacroExpander.addDefine(tokens[2], new CppDefine(def));
-			// Log.d("#define: " + tokens[2] + " " + def);
+			Log.d("#define: " + tokens[2] + " " + def);
 		}
 		else
 		{
@@ -163,7 +164,7 @@ public class PreprocessorPass {
 			if(def.length() > 0)
 			{
 				MacroExpander.addDefine(tokens[2], new CppDefine(params, def));
-				// Log.d("#define: " + tokens[2] + " " + params + " " + def);
+				Log.d("#define: " + tokens[2] + " " + params + " " + def);
 			}
 			else
 			{
@@ -175,7 +176,7 @@ public class PreprocessorPass {
 				}
 				
 				MacroExpander.addDefine(tokens[2], new CppDefine(par));
-				// Log.d("#define: " + tokens[2] + " " + par);
+				Log.d("#define: " + tokens[2] + " " + par);
 			}
 		}
 	}
