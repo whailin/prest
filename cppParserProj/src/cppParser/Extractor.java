@@ -334,8 +334,8 @@ public class Extractor
                         if(line.endsWith("//"))
                         {
                             processSingleLineComment(line, reader);
-                            line = "";
-                            rawExpandStartIndex = 0;
+                            line = line.substring(0, line.indexOf("//"));
+                            if(rawExpandStartIndex > line.length()) rawExpandStartIndex = 0;
                             continue;
                         }
                         
