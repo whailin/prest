@@ -3,7 +3,6 @@ package cppParser;
 import cppMetrics.LOCMetrics;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.util.Stack;
 
 import cppParser.utils.Log;
 import cppParser.utils.MacroExpander;
+import cppParser.utils.PLOCCounter;
 import cppParser.utils.StringTools;
 import cppStructures.CppClass;
 import cppStructures.CppDefine;
@@ -20,8 +20,7 @@ import cppStructures.CppFile;
 import cppStructures.CppFunc;
 import cppStructures.CppNamespace;
 import cppStructures.CppScope;
-import cppStructures.MemberVariable;
-import java.util.List;
+import java.io.*;
 
 /**
  * Extractor.java
@@ -67,10 +66,6 @@ public class Extractor
 	public int loc = 0;
 	public int lloc = 0;
 	public int ploc = 0;
-	public int codeLines=0;
-	public int emptyLines = 0;
-    public int commentedCodeLines = 0;
-	public int commentOnlyLines = 0;		//comment lines	
 	
 	
 	// Reference to the singleton parsed object manager
@@ -81,6 +76,7 @@ public class Extractor
 	
 	private PreprocessorPass prepassAnalyzer;
     private LOCMetrics locM;
+    private PLOCCounter plocCounter=null;
     
 	/**
 	 * Constructor
@@ -254,182 +250,176 @@ public class Extractor
 		Log.d("Processing: " + file);
 		try
 		{
-			// Initialize the variables used
-			BufferedReader reader = new BufferedReader(new FileReader(file));
-			char c; // Current char
-			lineno = 1;
-			String line = ""; // Sentence under construction
-			int rawExpandStartIndex = 0; // Index of the char in line where the last macro expansion ended
-			boolean stringOpen = false, charOpen = false; // Booleans to determine if string or char is open
-			boolean codeFound = false, commentFound = false; // Booleans for adding various LOC metrics
-			
-			if(ParsedObjectManager.getInstance().currentFunc != null)
-			{
-				Log.d("Error: Current function was not null when starting a new file.");
-				ParsedObjectManager.getInstance().currentFunc = null;
-			}
-			if(ParsedObjectManager.getInstance().currentScope != null)
-			{
-				Log.d("Error: Current scope was not null when starting a new file.");
-				ParsedObjectManager.getInstance().currentScope = null;
-			}
-			if(ParsedObjectManager.getInstance().currentNamespace != null)
-			{
-				Log.d("Error: Current namespace was not null when starting a new file.");
-				ParsedObjectManager.getInstance().currentNamespace = null;
-			}
-			if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty())
-			{
-				Log.d("Error: CPP scope stack was not empty when starting a new file.");
-				ParsedObjectManager.getInstance().getCppScopeStack().clear();
-			}
-			
-			// Loop through the file char-by-char
-			while((c = (char)reader.read()) != (char)-1)
-			{
-				// Handle spaces, carriage returns and tabs
-				if(c == '\r') continue;
-				if(c == '\f') continue;
-				if(c == ' ' && line.endsWith(" ")) continue;
-				if(c == '\t')
-				{
-					if(line.length() > 0) line += " ";
-					continue;
-				}
-				
-				// Add the current char to the line
-				if(c == '\\') line += "\\"; 
-				else line += c;
-				
-				
-				
-				// Skip "empty" whitespaces
-				if(line.equals("\n") || line.equals("\t") || line.equals(" "))
-				{
-					if(line.equals("\n"))lineno++;
-					line = "";
-					
-					rawExpandStartIndex = 0;
-					addLine(false, false);
-					// Log.d("Line " + lineno);
-					continue;
-				}
-				
-				// Toggle string and char literals on / off
-				if(c == '"' && !charOpen && !line.endsWith("\\\"")) stringOpen = !stringOpen;
-				if(c == '\'' && !stringOpen && !line.endsWith("\\\'")) charOpen = !charOpen;
-				
-				if(!stringOpen && !charOpen)
-				{
-					// Count line numbers
-					if(line.endsWith("\n")) lineno++;
-					
-					// Handle new line feed
-					if(c == '\n')
-					{
-						if(!line.trim().isEmpty()) addLine(codeFound, commentFound);
-					}
-					
-					// Handle single-line comments
-					if(line.endsWith("//"))
-					{
-						processSingleLineComment(line, reader);
-						
-						if(!line.startsWith("//")) addLine(true, true);
-						else addLine(false, true);
-						
-						line = "";
-						rawExpandStartIndex = 0;
-						continue;
-					}
-					
-					// Handle multi-line comments
-					if(line.endsWith("/*"))
-					{
-						processMultiLineComment(line.substring(line.indexOf("/*")), reader);
-						if(!line.startsWith("/*"))
-						{
-							line = line.substring(0, line.indexOf("/*"));
-							addLine(true, true);
-						}
-						else
-						{
-							addLine(false, true);
-							line = "";
-							rawExpandStartIndex = 0;
-						}
-						continue;
-					}
-					
-					// Handle newline
-					if(line.endsWith("\n"))
-					{
-						// Handle preprocessor directives
-						if(line.startsWith("#"))
-						{
-							if(line.endsWith("\\\n"))
-							{
-								line = line.substring(0, line.length() - 2);
-							}
-							else
-							{
-								// Log.d("Found #: " + line);
-								if(currentPass == Pass.PREPASS)
-								{
-									line = line.substring(0, line.length() - 1);
-									prepassAnalyzer.process(line.trim());
-								}
-								line = "";
-							}
-							
-							continue;
-						}
-						else
-						{
-							line = line.substring(0, line.length() - 1);
-							line += " ";
-						}
-						addLine(true, false);
-					}
-					
-					// Expand macros
-					if(currentPass == Pass.MAINPASS)
-					{
-						if(!line.startsWith("#") && MacroExpander.shouldExpandRaw(c))
-						{
-							String beginLine = line.substring(0, rawExpandStartIndex);
-							String expandable = line.substring(rawExpandStartIndex);
-							expandable = MacroExpander.expandRaw(expandable);
-							line = beginLine + " " + expandable;
-							if(line.trim().endsWith(";")) line = line.trim();
-							rawExpandStartIndex = line.length() - 1;
-						}
-					}
-					
-					// Handle end-of-sentence
-					if(!line.startsWith("#"))
-					{
-						if(line.endsWith(";") || line.endsWith("{") || line.endsWith("}") || isVisibilityStatement(c, line))
-						{
-							// Log.d("Found sentence: " + line);
-							if(currentPass == Pass.MAINPASS)
-							{
-								sentenceAnalyzer.lexLine(line.trim());
-							}
+                BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
+                
+                char c; // Current char
+                lineno = 1;
+                String line = ""; // Sentence under construction
+                int rawExpandStartIndex = 0; // Index of the char in line where the last macro expansion ended
+                boolean stringOpen = false, charOpen = false; // Booleans to determine if string or char is open
+                
+                if(ParsedObjectManager.getInstance().currentFunc != null)
+                {
+                    Log.d("Error: Current function was not null when starting a new file.");
+                    ParsedObjectManager.getInstance().currentFunc = null;
+                }
+                if(ParsedObjectManager.getInstance().currentScope != null)
+                {
+                    Log.d("Error: Current scope was not null when starting a new file.");
+                    ParsedObjectManager.getInstance().currentScope = null;
+                }
+                if(ParsedObjectManager.getInstance().currentNamespace != null)
+                {
+                    Log.d("Error: Current namespace was not null when starting a new file.");
+                    ParsedObjectManager.getInstance().currentNamespace = null;
+                }
+                if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty())
+                {
+                    Log.d("Error: CPP scope stack was not empty when starting a new file.");
+                    ParsedObjectManager.getInstance().getCppScopeStack().clear();
+                }
+                plocCounter=new PLOCCounter();
+                // Loop through the file char-by-char
+                while((c = (char)reader.read()) != (char)-1)
+                {
+                    if(currentPass == Pass.MAINPASS)plocCounter.push(c);
+                    // Handle spaces, carriage returns and tabs
+                    if(c == '\r') continue;
+                    if(c == '\f') continue;
+                    if(c == ' ' && line.endsWith(" ")) continue;
+                    if(c == '\t')
+                    {
+                        if(line.length() > 0) line += " ";
+                        continue;
+                    }
+                    
+                    // Add the current char to the line
+                    if(c == '\\') line += "\\"; 
+                    else line += c;
+                    
+                    
+                    
+                    // Skip "empty" whitespaces
+                    if(line.equals("\n") || line.equals("\t") || line.equals(" "))
+                    {
+                        if(line.equals("\n"))
+                            lineno++;
+                        line = "";
+                        
+                        rawExpandStartIndex = 0;
+                        
+                        // Log.d("Line " + lineno);
+                        continue;
+                    }
+                    
+                    // Toggle string and char literals on / off
+                    if(c == '"' && !charOpen && !line.endsWith("\\\"")) stringOpen = !stringOpen;
+                    if(c == '\'' && !stringOpen && !line.endsWith("\\\'")) charOpen = !charOpen;
+                    
+                    if(!stringOpen && !charOpen)
+                    {
+                        // Count line numbers
+                        if(line.endsWith("\n")) lineno++;
+                        
+                        // Handle new line feed
+                        /*if(c == '\n')
+                        {
+                            
+                        }*/
+                        
+                        if(line.endsWith("//"))
+                        {
+                            processSingleLineComment(line, reader);
+                            line = "";
+                            rawExpandStartIndex = 0;
+                            continue;
+                        }
+                        
+                        // Handle multi-line comments
+                        if(line.endsWith("/*"))
+                        {
+                            processMultiLineComment(line.substring(line.indexOf("/*")), reader);
+                            if(!line.startsWith("/*"))
+                            {
+                                line = line.substring(0, line.indexOf("/*"));
+                            }
+                            else
+                            {
+                                line = "";
+                                rawExpandStartIndex = 0;
+                            }
+                            continue;
+                        }
+                        
+                        // Handle newline
+                        if(line.endsWith("\n"))
+                        {
+                            // Handle preprocessor directives
+                            if(line.startsWith("#"))
+                            {
+                                if(line.endsWith("\\\n"))
+                                {
+                                    line = line.substring(0, line.length() - 2);
+                                }
+                                else
+                                {
+                                    // Log.d("Found #: " + line);
+                                    if(currentPass == Pass.PREPASS)
+                                    {
+                                        line = line.substring(0, line.length() - 1);
+                                        prepassAnalyzer.process(line.trim());
+                                    }
+                                    line = "";
+                                }
+                                
+                                continue;
+                            }
+                            else
+                            {
+                                line = line.substring(0, line.length() - 1);
+                                line += " ";
+                            }
+                        }
+                        
+                        // Expand macros
+                        if(currentPass == Pass.MAINPASS)
+                        {
+                            if(!line.startsWith("#") && MacroExpander.shouldExpandRaw(c))
+                            {
+                                String beginLine = line.substring(0, rawExpandStartIndex);
+                                String expandable = line.substring(rawExpandStartIndex);
+                                expandable = MacroExpander.expandRaw(expandable);
+                                line = beginLine + " " + expandable;
+                                if(line.trim().endsWith(";")) line = line.trim();
+                                rawExpandStartIndex = line.length() - 1;
+                            }
+                        }
+                        
+                        // Handle end-of-sentence
+                        if(!line.startsWith("#"))
+                        {
+                            if(line.endsWith(";") || line.endsWith("{") || line.endsWith("}") || isVisibilityStatement(c, line))
+                            {
+                                // Log.d("Found sentence: " + line);
+                                if(currentPass == Pass.MAINPASS)
+                                {
+                                    sentenceAnalyzer.lexLine(line.trim());
+                                }
 
-							addLine(true, false);
-							line = "";
-							rawExpandStartIndex = 0;
-							continue;
-						}
-					}
-				}
-			}
-			
-			resetLOCCounter();
-			loc++;
-			
-			reader.close();
+                                line = "";
+                                rawExpandStartIndex = 0;
+                                continue;
+                            }
+                        }
+                    }
+                }
+                if(currentPass == Pass.MAINPASS){
+                    plocCounter.push('\n');              
+                
+                    resetLOCCounter(plocCounter);
+                }
+                loc++;
+            
 		}
 		catch(IOException e)
 		{
@@ -443,7 +433,10 @@ public class Extractor
 	private void processSingleLineComment(String line, BufferedReader reader) throws IOException
 	{
 		char c;
-		while((c = (char)reader.read()) != '\n' && c != '\r' && c != (char)-1) line += c;
+		while((c = (char)reader.read()) != '\n' && c != '\r' && c != (char)-1){
+            if(currentPass == Pass.MAINPASS)plocCounter.push(c);
+            line += c;
+        }
 		// lineno++;
 	}
 	
@@ -456,49 +449,23 @@ public class Extractor
 		while(!line.endsWith("*/"))
 		{
 			c = (char)reader.read();
+            if(currentPass == Pass.MAINPASS)plocCounter.push(c);
 			line += c;
 			if(line.endsWith("\n")) lineno++;
 		}
 	}
 	
-	/**
-	 * Counts lines for physical loc metrics
-	 * @param codeFound should be true if current line contains code
-	 * @param commentFound should be true if current line contains comments
-	 */
-	private void addLine(boolean codeFound, boolean commentFound)
-	{
-        if(currentPass == Pass.MAINPASS)
-        {
-			if(codeFound)
-			{
-	            if(commentFound) commentedCodeLines++;
-				else codeLines++;
-			}
-			else
-			{
-				if(commentFound) commentOnlyLines++;
-				else emptyLines++;
-			}
-        }
-	}
 	
-	/**
-	 * Resets the LOC counter for next file
-	 */
-    private void resetLOCCounter()
+	
+    private void resetLOCCounter(PLOCCounter ploc)
     {
         if(currentPass == Pass.MAINPASS)
         {
-        	locM.codeOnlyLines = codeLines;
-        	locM.emptyLines = emptyLines;
-        	locM.commentLines = commentOnlyLines;
-        	locM.commentedCodeLines = commentedCodeLines;
-        
-        	codeLines = 0;
-        	emptyLines = 0;
-        	commentOnlyLines = 0;
-        	commentedCodeLines = 0;
+        	locM.codeOnlyLines = ploc.codeLines;
+        	locM.emptyLines = ploc.emptyLines;
+        	locM.commentLines = ploc.commentOnlyLines;
+        	locM.commentedCodeLines = ploc.commentedCodeLines;
+
         }
     }
 	
