@@ -102,7 +102,7 @@ public class FunctionFinder {
      * @param tokens 
      */
     public void findFunctions(String[] tokens){
-        /*("Tokens:");
+        /*Log.d("Tokens:");
         for(String tok:tokens)
             System.out.print(" "+tok);*/
         //this.tokens=tokenizeLiterals(tokens);
@@ -128,6 +128,7 @@ public class FunctionFinder {
     }
     
     private void markIndex(int index) {
+        Log.d("Marked "+tokens[index] +" "+index);
         if(index<0)
             throw new Error("Negative index:"+ token+" "+next);
         
@@ -212,7 +213,6 @@ public class FunctionFinder {
                         temp=next;
                         foundPtr=false;
                         skip();
-                        markIndex(getIndex()+1);
                         break;
                     case "(":
                         mode=PARAMETERS;
@@ -356,7 +356,7 @@ public class FunctionFinder {
             case ".":
             case "::":
                 FunctionCall temp=currentFc;
-                reset();
+                resetWithoutClearingIndices();
                 owners.addAll(temp.owners);
                 owners.add(new FunctionCallToken(temp));
                 owners.add(new StringToken(token));
@@ -421,8 +421,12 @@ public class FunctionFinder {
         for(FunctionCall f:listOfFunctionCalls){
             
             //Log.d("Found FC: "+f.toString());
-            for(Integer i:handledIndices)
+            //String str="";
+            for(Integer i:handledIndices){
                 functionAnalyzer.storeHandledIndex(i);
+                //str+=" "+i.intValue();
+            }
+            //Log.d("indices "+str);
             ParsedObjectManager.getInstance().currentFunc.addOperand(f.name);
         }
     }
@@ -476,6 +480,17 @@ public class FunctionFinder {
             }
         }
         return parameterFcs;
+    }
+
+    private void resetWithoutClearingIndices() {
+        mode=BEGIN;
+        owners=new ArrayList<>();
+        parameterTokens=new ArrayList<>();
+        currentOwner="";
+        foundPtr=false;
+        parenthesisDepth=0;
+        skip=0;
+        currentFc=null;
     }
 
     
