@@ -48,13 +48,13 @@ public class FunctionFinder {
     private FunctionCall currentFc;
     private FunctionAnalyzer functionAnalyzer;
     private VarFinder varFinder;
-    private String[] tokens;
+    private static String[] tokens;
     private CppFunc func;
     
     
     private int paramIndex=0;
     private int tempParamIndex=0;
-    private static List<Integer> handledIndices=new ArrayList<>();
+    private List<Integer> handledIndices=new ArrayList<>();
     public FunctionFinder(FunctionAnalyzer functionAnalyzer, VarFinder varFinder, CppFunc currentFunc){
         this.functionAnalyzer=functionAnalyzer;
         this.varFinder=varFinder;
@@ -74,7 +74,7 @@ public class FunctionFinder {
         this.func=currentFunc;
         parameter=true;
         this.paramIndex=paramIndex;
-        //Log.d("parameters start at token "+getIndex() );
+        Log.d("parameters start at token "+getIndex() );
         
     }
     /**
@@ -102,11 +102,11 @@ public class FunctionFinder {
      * @param tokens 
      */
     public void findFunctions(String[] tokens){
-        /*Log.d("Tokens:");
+        Log.d("Tokens:");
         for(String tok:tokens)
-            System.out.print(" "+tok);*/
+            System.out.print(" "+tok);
         //this.tokens=tokenizeLiterals(tokens);
-        this.tokens=tokens;
+        FunctionFinder.tokens=tokens;
         for(index=0;tokens.length>index;index++){
             token=tokens[index];
             if(tokens.length>(index+1))
@@ -115,6 +115,7 @@ public class FunctionFinder {
                 next=null;
             pushTokens(token, next);
         }
+        Log.d("Cleared ind1");
         handledIndices.clear();
 
         
@@ -128,7 +129,7 @@ public class FunctionFinder {
     }
     
     private void markIndex(int index) {
-        //Log.d("Marked "+tokens[index] +" "+index);
+        Log.d("Marked "+tokens[index] +" "+index);
         if(index<0)
             throw new Error("Negative index:"+ token+" "+next);
         
@@ -145,9 +146,11 @@ public class FunctionFinder {
      * @param next next token in the source to allow "peeking"
      */
     private void pushTokens(String token, String next) {
-        //Log.d("t: "+token+" n: "+next+" "+mode);
+        Log.d("t: "+token+" "+next+" "+mode);
         if(skip>0){
             skip--;
+            if(parameter)
+                index++;
             return;
         }
         //if(parameter) Log.d("PT: "+token+" "+next+" "+ mode);
@@ -167,6 +170,8 @@ public class FunctionFinder {
             case ANOTHER:
                 waitForAnotherFunctionCall(token, next);
         }
+        if(parameter)
+            index++;
     }
 
     
@@ -234,6 +239,7 @@ public class FunctionFinder {
                     if(temp!=null)
                         owners.add(new StringToken(temp));
                     //FunctionCall is created here. It does not contain parameters yet.
+                    Log.d("index:"+index+" "+getIndex()+" "+paramIndex);
                     markIndex(getIndex());
                     FunctionCall fc=new FunctionCall(owners, token); 
                     //Log.d("Found fc:"+token+" parsing params...");
@@ -271,7 +277,9 @@ public class FunctionFinder {
         parenthesisDepth=0;
         skip=0;
         currentFc=null;
-        if(!parameter)handledIndices.clear();
+        //if(!parameter)
+            handledIndices.clear();
+            Log.d("Cleared ind2");
         
     }
     /**
@@ -329,6 +337,7 @@ public class FunctionFinder {
             else nextToken=tokens.get(i+1);
             ff.pushTokens(currentToken, nextToken);
         }
+        handledIndices.addAll(ff.getIndices());
         return ff.getCurrentParameter();
         
     }
@@ -421,16 +430,17 @@ public class FunctionFinder {
         listOfFunctionCalls.addAll(getParameterFunctionCalls(fc));
         for(FunctionCall f:listOfFunctionCalls){
             
-            //Log.d("Found FC: "+f.toString());
+            Log.d("Found FC: "+f.toString());
             //String str="";
-            for(Integer i:handledIndices){
-                //Log.d("reported index "+i.intValue());
-                functionAnalyzer.storeHandledIndex(i);
-                
-            }
+            
             //Log.d("indices "+str);
             ParsedObjectManager.getInstance().currentFunc.addOperand(f.name);
         }
+        for(Integer i:handledIndices){
+                Log.d("reported index "+i.intValue()+" "+ tokens[i.intValue()]);
+                functionAnalyzer.storeHandledIndex(i);
+                
+            }
     }
     /**
      * This method returns list of FunctionCalls that are owners of a given FunctionCall
@@ -493,6 +503,10 @@ public class FunctionFinder {
         parenthesisDepth=0;
         skip=0;
         currentFc=null;
+    }
+
+    private List<Integer> getIndices() {
+        return handledIndices;
     }
 
     
