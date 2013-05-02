@@ -38,6 +38,7 @@ public class LLOCCounter
      */
     public void processSentence(String[] tokens)
     {
+        
         String next;
         for(index = 0; index < tokens.length; index++) {//TBD bracket skipping
             next = null;
@@ -49,6 +50,7 @@ public class LLOCCounter
             if((index+1) < tokens.length){
                 next = tokens[index+1];
             }
+            //Log.d(tokens[index]+" "+next+mode);
             chooseAction(tokens[index], next);
         }  
     }
