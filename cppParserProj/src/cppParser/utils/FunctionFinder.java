@@ -128,7 +128,7 @@ public class FunctionFinder {
     }
     
     private void markIndex(int index) {
-        Log.d("Marked "+tokens[index] +" "+index);
+        //Log.d("Marked "+tokens[index] +" "+index);
         if(index<0)
             throw new Error("Negative index:"+ token+" "+next);
         
@@ -145,7 +145,7 @@ public class FunctionFinder {
      * @param next next token in the source to allow "peeking"
      */
     private void pushTokens(String token, String next) {
-       // Log.d("t: "+token/*+" n: "+next+" "+mode*/);
+        //Log.d("t: "+token+" n: "+next+" "+mode);
         if(skip>0){
             skip--;
             return;
@@ -271,7 +271,8 @@ public class FunctionFinder {
         parenthesisDepth=0;
         skip=0;
         currentFc=null;
-        handledIndices.clear();
+        if(!parameter)handledIndices.clear();
+        
     }
     /**
      * This method parses parameters that the function call has. Tokens are 
@@ -423,8 +424,9 @@ public class FunctionFinder {
             //Log.d("Found FC: "+f.toString());
             //String str="";
             for(Integer i:handledIndices){
+                //Log.d("reported index "+i.intValue());
                 functionAnalyzer.storeHandledIndex(i);
-                //str+=" "+i.intValue();
+                
             }
             //Log.d("indices "+str);
             ParsedObjectManager.getInstance().currentFunc.addOperand(f.name);
