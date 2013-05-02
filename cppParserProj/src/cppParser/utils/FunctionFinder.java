@@ -190,7 +190,7 @@ public class FunctionFinder {
             reset();
             return null;
         }
-        if(token.contentEquals(";")){
+        if(token.contentEquals(";") || token.contentEquals("return")){
             addToken(token);
             reset();
             return null;
