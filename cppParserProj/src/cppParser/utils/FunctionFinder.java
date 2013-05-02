@@ -2,7 +2,7 @@
 
 package cppParser.utils;
 
-import cppParser.Extractor;
+import cppParser.FunctionAnalyzer;
 import cppParser.ParsedObjectManager;
 import cppParser.utils.parameter.FunctionCallToken;
 import cppParser.utils.parameter.ParameterToken;
@@ -46,13 +46,17 @@ public class FunctionFinder {
     
     private String currentOwner="";
     private FunctionCall currentFc;
+    private FunctionAnalyzer functionAnalyzer;
     private VarFinder varFinder;
-    private FunctionFinder parent=null;
     private String[] tokens;
     private CppFunc func;
     
+    
+    private int paramIndex=0;
+    private int tempParamIndex=0;
     private static List<Integer> handledIndices=new ArrayList<>();
-    public FunctionFinder(VarFinder varFinder, CppFunc currentFunc){
+    public FunctionFinder(FunctionAnalyzer functionAnalyzer, VarFinder varFinder, CppFunc currentFunc){
+        this.functionAnalyzer=functionAnalyzer;
         this.varFinder=varFinder;
         this.func=currentFunc;
     }
@@ -64,11 +68,13 @@ public class FunctionFinder {
      * @param varFinder
      * @param currentFunc 
      */
-    private FunctionFinder(FunctionFinder parent, VarFinder varFinder, CppFunc currentFunc){
-        this.parent=parent;
+    private FunctionFinder(FunctionAnalyzer functionAnalyzer, VarFinder varFinder, CppFunc currentFunc, int paramIndex){
+        this.functionAnalyzer=functionAnalyzer;
         this.varFinder=varFinder;
         this.func=currentFunc;
         parameter=true;
+        this.paramIndex=paramIndex;
+        //Log.d("parameters start at token "+getIndex() );
         
     }
     /**
@@ -96,6 +102,9 @@ public class FunctionFinder {
      * @param tokens 
      */
     public void findFunctions(String[] tokens){
+        /*("Tokens:");
+        for(String tok:tokens)
+            System.out.print(" "+tok);*/
         //this.tokens=tokenizeLiterals(tokens);
         this.tokens=tokens;
         for(index=0;tokens.length>index;index++){
@@ -106,18 +115,16 @@ public class FunctionFinder {
                 next=null;
             pushTokens(token, next);
         }
+        handledIndices.clear();
 
         
     }
     /**
-     * returns index of current token
+     * returns index of current token that is pushed with pushToken()
      * @return 
      */
-    public int getIndex(){
-        if(parent==null)
-            return index;
-        else
-            return parent.getIndex();     
+    public final int getIndex(){
+        return index+paramIndex;    
     }
     
     private void markIndex(int index) {
@@ -211,8 +218,10 @@ public class FunctionFinder {
                         mode=PARAMETERS;
                         foundPtr=false;
                         skip();
+                        tempParamIndex=getIndex()+2;
                         break;
                     case "*":
+                        markIndex(getIndex()+1);
                         foundPtr=true;
                         break;    
                     default:
@@ -274,7 +283,7 @@ public class FunctionFinder {
         switch (token) {
             case ")":
                 if(parenthesisDepth==0){
-                    currentFc.parameters.add(parseParameter(parameterTokens));
+                    currentFc.parameters.add(parseParameter(parameterTokens,tempParamIndex));
                     //checkDependencies(currentFc.owners); //No time for proper implementation
                     if(next==null){
                         addToken(new FunctionCallToken(currentFc));
@@ -291,7 +300,8 @@ public class FunctionFinder {
                 break;
             case ",":
                 if(parenthesisDepth==0)
-                    currentFc.parameters.add(parseParameter(parameterTokens));
+                    currentFc.parameters.add(parseParameter(parameterTokens,tempParamIndex));
+                tempParamIndex=getIndex()+1;
                 break;
             default:
                 parameterTokens.add(token);
@@ -306,8 +316,8 @@ public class FunctionFinder {
      * @param tokens
      * @return 
      */
-    private List<ParameterToken> parseParameter(List<String> tokens){
-        FunctionFinder ff=new FunctionFinder(this, varFinder, func);
+    private List<ParameterToken> parseParameter(List<String> tokens, int paramIndex){
+        FunctionFinder ff=new FunctionFinder(functionAnalyzer, varFinder, func, paramIndex);
         
         for(int i=0;i<tokens.size();i++){
             String currentToken=tokens.get(i);
@@ -410,6 +420,8 @@ public class FunctionFinder {
         for(FunctionCall f:listOfFunctionCalls){
             
             //Log.d("Found FC: "+f.toString());
+            for(Integer i:handledIndices)
+                functionAnalyzer.storeHandledIndex(i);
             ParsedObjectManager.getInstance().currentFunc.addOperand(f.name);
         }
     }
@@ -428,6 +440,7 @@ public class FunctionFinder {
                     case "::":
                     case "->":
                     case ".":
+                        
                         ParsedObjectManager.getInstance().currentFunc.addOperator(pt.toString());
                         break;
                     default:
@@ -463,6 +476,7 @@ public class FunctionFinder {
         }
         return parameterFcs;
     }
+
     
 
     

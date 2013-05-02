@@ -10,7 +10,6 @@ import java.util.HashSet;
 import cppStructures.*;
 import cppParser.utils.VarFinder;
 import java.util.List;
-import profiling.Stats;
 
 /**
  * This class is responsible of analyzing and constructing functions found in the source code.
@@ -37,7 +36,7 @@ public class FunctionAnalyzer extends Analyzer {
         
     // Helper class for finding variables and function calls
     private VarFinder varFinder = new VarFinder(this);
-    private FunctionFinder funcFinder = new FunctionFinder(varFinder,func);
+    private FunctionFinder funcFinder;
 	
     private OperatorAnalyzer operatorAnalyzer;
     
@@ -55,12 +54,25 @@ public class FunctionAnalyzer extends Analyzer {
 	{
 		super(sa);
 		this.operatorAnalyzer = new OperatorAnalyzer(sa, this);
+        funcFinder=new FunctionFinder(this,varFinder,func);
 	}
 	
 	public VarFinder getVarFinder()
 	{
 		return varFinder;
 	}
+    
+    public void storeHandledIndex(Integer index)
+    {
+    	if(index.intValue() < 0) return;
+    	
+    	for(Integer storedIndex : getHandledIndices())
+    	{
+    		if(storedIndex.intValue() == index.intValue()) return;
+    	}
+    	
+    	getHandledIndices().add(index);
+    }
 	
 	private String getScope(String[] tokens, int i)
 	{

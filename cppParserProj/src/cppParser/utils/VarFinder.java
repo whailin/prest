@@ -276,7 +276,7 @@ public class VarFinder
             ParsedObjectManager.getInstance().currentFunc.addOperand(member.getType());
             
             for(Integer integer:handledIndices)
-                storeHandledIndex(integer.intValue());
+                functionAnalyzer.storeHandledIndex(integer);
             
             
         }//else Log.d("Var without name or type "+ token+ " "+next+" "+mode);
@@ -290,17 +290,7 @@ public class VarFinder
         handledIndices.clear();
     }
     
-    private void storeHandledIndex(int index)
-    {
-    	if(index < 0) return;
-    	
-    	for(Integer storedIndex : functionAnalyzer.getHandledIndices())
-    	{
-    		if(storedIndex.intValue() == index) return;
-    	}
-    	
-    	functionAnalyzer.getHandledIndices().add(new Integer(index));
-    }
+    
     
 /**
  * This method looks for the type of the variable for example int
