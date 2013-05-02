@@ -234,6 +234,7 @@ public class FunctionFinder {
                     if(temp!=null)
                         owners.add(new StringToken(temp));
                     //FunctionCall is created here. It does not contain parameters yet.
+                    markIndex(getIndex());
                     FunctionCall fc=new FunctionCall(owners, token); 
                     //Log.d("Found fc:"+token+" parsing params...");
                     return fc;
