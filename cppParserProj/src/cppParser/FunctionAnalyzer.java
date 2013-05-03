@@ -249,11 +249,9 @@ public class FunctionAnalyzer extends Analyzer {
 	private boolean processCurrentFunction(String[] tokens)
 	{
 		handledIndices.clear();
-        varFinder.clearHandledIndices();
-        varFinder.findVariables(tokens);
-        funcFinder.findFunctions(tokens);
-        
-        
+        // varFinder.clearHandledIndices();
+        // varFinder.findVariables(tokens);
+        // funcFinder.findFunctions(tokens);        
         
         operatorAnalyzer.processSentence(tokens);
         

@@ -31,7 +31,7 @@ public class StringTools
 		                                       "virtual", "volatile", "while", "xor", "xor_eq"};
 	
 	// List of Halstead operators
-	public static String[] operators = {";", ")", "}", "[", "+", "-", "++", "--", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "and", "not", "or", "+=", "-=", "*=", "/=", "%=", "^=", "&=", "|="};
+	public static String[] operators = {";", ")", "}", "[", "+", "-", "++", "--", "*", "/", "%", ".", ",", "->", "==", "<=", ">=", "!=", "<<", ">>", "<<=", ">>=", "=", "<", ">", "&&", "&", "||", "|", "!", "^", "~", "::", "public", "private", "protected", "and", "not", "or", "+=", "-=", "*=", "/=", "%=", "^=", "&=", "|="};
 	public static HashSet<String> opSet = new HashSet<String>();
 	
 	// List of primitive types and values
@@ -366,7 +366,7 @@ public class StringTools
 						newTokens.add(tokens[i] + "=");
 						i++;
 					}
-					else if(tokens[i+1].equals(tokens[i]))
+					else if(tokens[i+1].equals(tokens[i]) && !tokens[i].equals("*"))
 					{
 						
 						if(i < tokens.length - 2)
