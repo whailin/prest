@@ -555,6 +555,12 @@ public class Extractor
 					{
 						writer.write("    " + s + "\n");
 					}
+					writer.write("Metrics:\n");
+					writer.write("  Op count: " + func.getOperandCount() + "\n");
+					writer.write("  Od count: " + func.getOperatorCount() + "\n");
+					writer.write("  Unique Op count: " + func.getUniqueOperandCount() + "\n");
+					writer.write("  Unique Od count: " + func.getUniqueOperatorCount() + "\n");
+					writer.write("  Cyclomatic complexity: " + func.getCyclomaticComplexity() + "\n");
 					writer.write("\n\n");
 				}
 				

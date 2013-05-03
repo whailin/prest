@@ -1,5 +1,7 @@
 package cppParser;
 
+import java.util.HashSet;
+
 import cppParser.utils.Log;
 import cppParser.utils.StringTools;
 
@@ -21,6 +23,8 @@ public class OperatorAnalyzer extends Analyzer
 	
 	private boolean openString = false;
 	
+	private HashSet<Integer> handledIndices = new HashSet<Integer>();
+	
 	private FunctionAnalyzer functionAnalyzer = null;
 	
 	/**
@@ -33,11 +37,31 @@ public class OperatorAnalyzer extends Analyzer
 		this.functionAnalyzer = fa;
 	}
 
+	private void storeOperand(String operand)
+	{
+		if(!handledIndices.contains(new Integer(i)))
+		{
+			objManager.currentFunc.addOperand(operand);
+			handledIndices.add(new Integer(i));
+		}
+	}
+	
+	private void storeOperator(String operator)
+	{
+		if(!handledIndices.contains(new Integer(i)))
+		{
+			objManager.currentFunc.addOperator(operator);
+			handledIndices.add(new Integer(i));
+		}
+	}
+	
 	@Override
 	/**
 	 * Processes the tokens in order to find operators and operands
 	 */
 	public boolean processSentence(String[] tokens) {
+		
+		handledIndices.clear();
 		
 		// Split and reconstruct the tokens
 		this.tokens = StringTools.reconstructOperators(StringTools.split(tokens, splitters, true));
@@ -55,7 +79,19 @@ public class OperatorAnalyzer extends Analyzer
 				}
 				else if(StringTools.isKeyword(this.tokens[i]) && !StringTools.isPrimitiveType(this.tokens[i]))
 				{
-					objManager.currentFunc.addOperator(this.tokens[i]);
+					// objManager.currentFunc.addOperator(this.tokens[i]);
+					storeOperator(this.tokens[i]);
+					if(tokens[i].equals("do")) break;
+				}
+				else
+				{
+					if(i < this.tokens.length - 1 && this.tokens[i+1].equals("*"))
+					{
+						i++;
+						handleAsterisk();
+					}
+					// else objManager.currentFunc.addOperand(this.tokens[i]);
+					else if(!this.tokens[i].equals("(")) storeOperand(this.tokens[i]);
 				}
 			}
 		}
@@ -63,12 +99,62 @@ public class OperatorAnalyzer extends Analyzer
 		return true;
 	}
 
+	private void handleAsterisk()
+	{
+		if(i == 0)
+		{
+			String operand = "";
+			for(; i < tokens.length; ++i)
+			{
+				if(tokens[i].equals("*")) operand += "*";
+				else break;
+			}
+			operand = tokens[i] + operand;
+			
+			// String operand = tokens[i+1] + "*";
+			
+			// Log.d("Found operand: " + operand);
+			// objManager.currentFunc.addOperand(operand);
+			storeOperand(operand);
+			return;
+		}
+		
+		if(i == 1)
+		{
+			// String operand = tokens[0] + "*";
+			String operand = tokens[0];
+			for(; i < tokens.length; ++i)
+			{
+				if(tokens[i].equals("*")) operand += "*";
+				else break;
+			}
+			i--;
+			
+			// Log.d("Found operand: " + operand);
+			// objManager.currentFunc.addOperand(operand);
+			storeOperand(operand);
+			return;
+		}
+	}
+	
 	/**
 	 * When an operator is found, this method handles the line,
 	 * searching for operators and operands in the sentence.
 	 */
 	private void handleOperator()
 	{
+		if(tokens[i].equals(";"))
+		{
+			// objManager.currentFunc.addOperator(";");
+			storeOperator(";");
+			return;
+		}
+		else if(tokens[i].equals("*"))
+		{
+			handleAsterisk();
+			return;
+		}
+		
 		// Handle bracket pairs
 		int bracketPairIndex = StringTools.getBracketPair(tokens, i);
 		if(bracketPairIndex > -1)
@@ -80,7 +166,8 @@ public class OperatorAnalyzer extends Analyzer
 			}
 			else
 			{
-				functionAnalyzer.getHandledIndices().add(new Integer(bracketPairIndex));
+				// functionAnalyzer.getHandledIndices().add(new Integer(bracketPairIndex));
+				handledIndices.add(new Integer(bracketPairIndex));
 			}
 		
 		}
@@ -98,26 +185,30 @@ public class OperatorAnalyzer extends Analyzer
 			else op += " POST";
 		}
 		
-		objManager.currentFunc.addOperator(op);
-		functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
+		// objManager.currentFunc.addOperator(op);
+		storeOperator(op);
+		// functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 		
 		// If there's a "left side" for the operator, handle that
 		if(i > 0)
 		{
 			String leftSide = tokens[origIndex-1];
 			
+			/*
 			if(leftSide.equals("\""))
 			{
 				leftSide = constructStringLiteral(origIndex-i, true);
 			}
+			*/
 			
 			// Add the leftside operand
 			if(!StringTools.isOperator(leftSide))
 			{
 				if(leftSide != null && canAddOperand(origIndex-1)) 
 				{
-					objManager.currentFunc.addOperand(leftSide);
-					functionAnalyzer.getHandledIndices().add(new Integer(origIndex-1));
+					storeOperand(leftSide);
+					// objManager.currentFunc.addOperand(leftSide);
+					// functionAnalyzer.getHandledIndices().add(new Integer(origIndex-1));
 				}
 			}
 		}
@@ -136,8 +227,9 @@ public class OperatorAnalyzer extends Analyzer
 					{
 						op += " PRE";
 					}
-					objManager.currentFunc.addOperator(op);
-					functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
+					storeOperator(op);
+					// objManager.currentFunc.addOperator(op);
+					// functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 				}
 			}
 			else
@@ -145,8 +237,9 @@ public class OperatorAnalyzer extends Analyzer
 				if(StringTools.isKeyword(tokens[i]))
 				{
 					// Operator found, construct and store it
-					objManager.currentFunc.addOperator(tokens[i]);
-					functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
+					storeOperator(tokens[i]);
+					// objManager.currentFunc.addOperator(tokens[i]);
+					// functionAnalyzer.getHandledIndices().add(new Integer(origIndex));
 				}
 				else
 				{
@@ -155,17 +248,19 @@ public class OperatorAnalyzer extends Analyzer
 					if(operand.equals("\"")) operand = constructStringLiteral(i, false);
 					if(operand != null && canAddOperand(i))
 					{
-						objManager.currentFunc.addOperand(operand);
-						functionAnalyzer.getHandledIndices().add(new Integer(i));
+						storeOperand(operand);
+						// objManager.currentFunc.addOperand(operand);
+						// functionAnalyzer.getHandledIndices().add(new Integer(i));
 						
 						// Check for possible post-increment or post-decrement operator
 						if(i < tokens.length - 1)
 						{
 							if(tokens[i+1].equals("++") || tokens[i+1].equals("--"))
 							{
-								objManager.currentFunc.addOperator(tokens[i+1] + " POST");
-								functionAnalyzer.getHandledIndices().add(new Integer(i+1));
 								i++;
+								storeOperator(tokens[i] + " POST");
+								// objManager.currentFunc.addOperator(tokens[i+1] + " POST");
+								// functionAnalyzer.getHandledIndices().add(new Integer(i+1));
 							}
 						}
 					}
