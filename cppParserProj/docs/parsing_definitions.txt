@@ -160,8 +160,36 @@ Keywords that cause increment in cyclomatic complexity:
 It should be noted that pre-processor directive '#ifdef' should also be counted towards the cyclomatic complexity, but as of now, it is not.
 
 
-4. Line metrics
+4. Line of code metrics
 ---------------
 
+LOC metrics consist of 4 different metrics.
+Empty lines: These are lines that are read from the source file. They are considered to be empty if they are empty or contains only space, tab or new line characters.
+Commented lines: These are lines that contain comments.
+Physical loc: These are lines that are not empty and contain character or characters that are not comments.
+Executable loc: These are also known as logical lines of code and executable source statements. They are counted using rules in the following section.
 
+4.1 Counting executable lines of code
+-Function, struct and union declarations and definitions will increment the count by one. Splitting definition to multiple lines will not affect counting.
+-Class definition are counted like functions with exception that each inheritance increments the count by one. Counting is done by finding visibility keywords(public, protected, private)
+Following example would count as 2 executable locs:
+class Rectangle: public Shape{};
+
+-If class, struct or union definition contains variable declarations after } token then the count is increased by two regardless of how many variables were defined. Variable or alias declarations inside the brackets are counted separately.
+Example of struct definition which consists of two executable locs:
+struct MyStruct{} myStruct;
+
+-Statements that end in ; increment executable loc count by one with exception that empty statements are not counted. 
+-Visibility modifiers public, protected and private increment the count.
+-if and else if's that are found increase the count by one. Separate else words will not increase the count. Condition that follows if keyword is not counted separately
+-catch, switch, while keywords increase the count by one. Content in parenthesis that follow those keywords will not increase the count.
+-do and try keywords are considered to be part of while or catch statements and they are not counted.
+-Each case and default keyword inside a switch increases the count by one 
+-for keyword increases the count by one. Each of the three statements in the for loop parenthesis increase the count by one unless the statement is empty. in case of for-each loop content inside the parenthesis increase the count by one
+Examples:
+for(;i<5;i++){} //This line contains three executable locs
+for(string str: names){} //This line contains two executable locs
+-Each preprocessor directive increases the count by one.
+Example:
+#include <iostream>
 
