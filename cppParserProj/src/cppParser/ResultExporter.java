@@ -79,38 +79,41 @@ public class ResultExporter {
     }
     
     private void writeLOCMetrics(BufferedWriter writer) throws IOException{
-        LOCMetrics projectLevelMetrics=new LOCMetrics();
+        
         List<LOCMetrics> list=ParsedObjectManager.getInstance().getLocMetrics();
         writer.write("filename"+separator+
                 "physicalLOC"+separator+
                 "executableLOC"+separator+
                 "emptyLines"+separator+
-                "commentOnlyLines"+separator+
-                "commentedCodeLines"+separator+
-                "commentLinesTotal");
-        for(LOCMetrics l:list){            writer.write("\n"); 
-			writer.write("\""+l.file+"\""+separator + (l.codeOnlyLines+l.commentedCodeLines) + ","
+                //"commentOnlyLines"+separator+
+                //"commentedCodeLines"+separator+
+                "commentLines");
+        for(LOCMetrics l:list){            
+            writer.write("\n");
+			writer.write("\""+l.file+"\""+separator 
+                    +(l.codeOnlyLines+l.commentedCodeLines) + ","
                     +l.logicalLOC+separator
                     +l.emptyLines+separator
-                    +l.commentLines + separator
-                    +l.commentedCodeLines + separator
+                    //+l.commentLines + separator
+                    //+l.commentedCodeLines + separator
                     +(l.commentLines+l.commentedCodeLines));
+        }
+        writer.write("\n");
+        
+    }
+    
+    private LOCMetrics getProjectLevelLOCMetrics(){
+        LOCMetrics projectLevelMetrics=new LOCMetrics();
+        List<LOCMetrics> list=ParsedObjectManager.getInstance().getLocMetrics();
+        for(LOCMetrics l:list){            
+           
             projectLevelMetrics.codeOnlyLines+=l.codeOnlyLines;
             projectLevelMetrics.commentLines+=l.commentLines;
             projectLevelMetrics.commentedCodeLines+=l.commentedCodeLines;
             projectLevelMetrics.emptyLines+=l.emptyLines;
             projectLevelMetrics.logicalLOC+=l.logicalLOC;
-        }
-        writer.write("\n");
-        writer.write("\n");
-        writer.write("projectPhysicalLOC"+separator+"projectExecutableLOC"+separator+"projectEmptyLines"+separator+"projectCommentOnlyLines"+separator+"projectCommentedCodeLines"+separator+"projectCommentLinesTotal");
-        writer.write("\n");
-        writer.write((projectLevelMetrics.codeOnlyLines+projectLevelMetrics.commentedCodeLines) + separator
-                    +projectLevelMetrics.logicalLOC+separator
-                    +projectLevelMetrics.emptyLines+separator
-                    +projectLevelMetrics.commentLines + separator
-                    +projectLevelMetrics.commentedCodeLines + separator
-                    +(projectLevelMetrics.commentLines+projectLevelMetrics.commentedCodeLines));
+        } 
+        return projectLevelMetrics;
     }
 
     private void writeClassMetrics(BufferedWriter writer) throws IOException{
@@ -160,12 +163,35 @@ public class ResultExporter {
         }
                 
     }
-
+    
+    private void writeProjectLOC(BufferedWriter writer) throws IOException{
+        LOCMetrics l=getProjectLevelLOCMetrics();
+        writer.write(
+                "totalPhysicalLOC"+separator+
+                "totalExecutableLOC"+separator+
+                "totalEmptyLines"+separator+
+                //"commentOnlyLines"+separator+
+                //"commentedCodeLines"+separator+
+                "totalCommentLines");            
+            writer.write("\n");
+			writer.write("\""+l.file+"\""+separator 
+                    +(l.codeOnlyLines+l.commentedCodeLines) + ","
+                    +l.logicalLOC+separator
+                    +l.emptyLines+separator
+                    //+l.commentLines + separator
+                    //+l.commentedCodeLines + separator
+                    +(l.commentLines+l.commentedCodeLines));
+        
+    }
     private void writeNamespaces(BufferedWriter writer) throws IOException{
         String parameters="";
+        writeProjectLOC(writer);
         for(CppScope scope:ParsedObjectManager.getInstance().getScopes()){
             if(scope.type==CppScope.NAMESPACE){
-                writer.write("name"+separator+"numberOfVariables"+separator+"numberOfFunctions");
+                writer.write(
+                        "name"+separator+
+                        "numberOfVariables"+separator+
+                        "numberOfFunctions");
                 writer.write("\n");
                 writer.write(scope.name+separator+
                         scope.getMembers().size()+separator+
@@ -205,9 +231,9 @@ public class ResultExporter {
     private void writeFunctionMetrics(BufferedWriter writer) throws IOException{
         String parameters;
         writer.write(
+                "file"+separator+
                 "returnType"+separator+
                 "functionName"+separator+
-                "parameters"+separator+
                 "operatorCount"+separator+
                 "operandCount"+separator+
                 "uniqueOperatorCount"+separator+
@@ -239,9 +265,9 @@ public class ResultExporter {
                     if(parameters.contentEquals("\"void\"") || parameters.contentEquals("\"\""))
                         parameters="";		
 					writer.write(
+                            func.fileOfFunc+separator+
                             func.getType()+separator+
-                            func.getName()+separator+
-                            parameters+separator+
+                            func.getName()+parameters+separator+
                             func.getOperatorCount()+separator+
                             func.getOperandCount()+separator+
                             func.getUniqueOperatorCount()+separator+
@@ -264,5 +290,7 @@ public class ResultExporter {
 				}
         }
     }
+
+    
 
 }
