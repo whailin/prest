@@ -286,16 +286,23 @@ public class StringTools
 	
 	/**
 	 * Cleans up a given string array so that the resulting array will not
-	 * contain empty strings
+	 * contain empty strings or strings that are not compatible with the
+	 * main pass (mainly preprocessor directives)
 	 * @param s Array of strings to clean
-	 * @return String array without empty strings
+	 * @return String array without empty strings or non-compatible tokens
 	 */
-	public static String[] cleanEmptyEntries(String[] s)
+	public static String[] cleanEntries(String[] s)
 	{
 		ArrayList<String> list = new ArrayList<String>();
 		for(String t : s)
 		{
-			if(t.length() > 0) list.add(t);
+			if(t.length() > 0)
+			{
+				if(!t.equals("#if") && !t.equals("#else") && !t.equals("#endif"))
+				{
+					list.add(t);
+				}
+			}
 		}
 		return listToArray(list);
 	}

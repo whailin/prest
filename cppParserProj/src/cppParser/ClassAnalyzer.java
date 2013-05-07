@@ -308,11 +308,23 @@ public class ClassAnalyzer extends Analyzer
 			{	
 				// Get the class keyword count (if > 1, preprocessor directives do messy things)
 				int classWordCount = 1;
+				int lastClassIndex = i;
 				for(int z = i + 1; z < tokens.length; ++z)
 				{
-					if(tokens[z].equals("class")) classWordCount++;
+					if(tokens[z].equals("class"))
+					{
+						classWordCount++;
+						lastClassIndex = z;
+					}
 				}
-				if(classWordCount > 1) Log.e("Two class declarations on the same line\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
+				
+				// If there was multiple class declarations on the same line,
+				// use only the latest one
+				if(classWordCount > 1)
+				{
+					Log.e("Two class declarations on the same line\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
+					i = lastClassIndex;
+				}
 				
 				// Log.d("Found "+tokens[i]);
 				if(tokens[tokens.length - 1].equals(";"))

@@ -111,7 +111,7 @@ public class SentenceAnalyzer
 		String[] tokens = StringTools.split(line, null, true);
 		tokens = (new MacroExpander()).expand(tokens);
 		tokens = StringTools.reconstructOperators(tokens);
-		tokens = StringTools.cleanEmptyEntries(tokens);
+		tokens = StringTools.cleanEntries(tokens);
 		
 		// Handle braces
 		boolean stringOpen = false;
