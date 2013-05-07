@@ -114,7 +114,11 @@ public class CppScope
 					}
 				}
 				
-				if(matchingParams == paramCount)
+				if(!mf.getType().equals(mem.getType()))
+				{
+					continue;
+				}
+				else if(matchingParams == paramCount)
 				{
 					return mem;
 				}
@@ -152,7 +156,7 @@ public class CppScope
 				
 				if(!mf.getType().equals(mem.getType()))
 				{
-					return false;
+					continue;
 				}
 				else if(matchingParams == paramCount)
 				{
