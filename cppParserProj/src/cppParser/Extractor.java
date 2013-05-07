@@ -504,6 +504,8 @@ public class Extractor
         	locM.emptyLines = ploc.emptyLines;
         	locM.commentLines = ploc.commentOnlyLines;
         	locM.commentedCodeLines = ploc.commentedCodeLines;
+            Log.d("prepro:"+ploc.preProcessorDirectives);
+            locM.logicalLOC+=ploc.preProcessorDirectives;
 
         }
     }

@@ -215,6 +215,9 @@ public class LLOCCounter
     public void addLloc() {
         lloc++;
     }
+    public void addLloc(int count){
+        lloc+=count;
+    }
 
     public int getLloc() {
         return lloc;

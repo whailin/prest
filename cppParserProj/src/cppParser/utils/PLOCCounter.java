@@ -3,7 +3,8 @@
 package cppParser.utils;
 
 /**
- *
+ * This class is responsible for counting physical loc metrics. Logical lines of
+ * code are counted in separate class
  * @author Tomi
  */
 public class PLOCCounter {
@@ -12,7 +13,8 @@ public class PLOCCounter {
     public int codeLines=0;
 	public int emptyLines = 0;
     public int commentedCodeLines = 0;
-	public int commentOnlyLines = 0;		//comment lines	
+	public int commentOnlyLines = 0;		//comment lines
+    public int preProcessorDirectives=0;
 
     public char last=' ';
     private String line="";
@@ -21,9 +23,8 @@ public class PLOCCounter {
     private boolean foundSlash=false;
     
     public void push(char c){
-       // Log.d(last+" "+c+" "+mode);
-        if(c!='\n' && c!='\r')
-            line+=c;
+        //System.out.print(c);
+        
         switch(mode){
             case COMMENT:
                 pushComment(c);
@@ -34,6 +35,8 @@ public class PLOCCounter {
                 last=c;
                 return;
         }
+        if(c!='\n' && c!='\r')
+            line+=c;
         boolean justFoundComment=false;
         switch(c){
             case ' ':
@@ -43,7 +46,7 @@ public class PLOCCounter {
                 return;
             case '\n':
                 if(foundSlash) codeFound=true;
-                last=c;
+                last=c;                
                 countLine();
                 return;
             case '*':
@@ -111,6 +114,9 @@ public class PLOCCounter {
     
     private void countLine()
 	{
+            if(!line.isEmpty())
+                if(line.charAt(0)=='#')
+                    preProcessorDirectives++;
 			if(codeFound)
 			{
 	            if(commentFound) commentedCodeLines++;
@@ -121,7 +127,7 @@ public class PLOCCounter {
 				if(commentFound) commentOnlyLines++;
 				else emptyLines++;
 			}
-            //Log.d(line+" "+codeFound+" "+commentFound);
+            
             commentFound=false;
             codeFound=false;
             foundSlash=false;

@@ -158,9 +158,12 @@ public class SentenceAnalyzer
     {
         if(llocCounter != null)
         {
-            this.loc.logicalLOC=llocCounter.getLloc();
+            this.loc.logicalLOC+=llocCounter.getLloc();
+            //System.out.println("LLoc:"+this.loc.logicalLOC);
         }
+        
         this.loc = loc;
+        
         llocCounter = new LLOCCounter();
         loc.file = file;
         llocCounter.setFile(file);
@@ -169,6 +172,6 @@ public class SentenceAnalyzer
     
     public void lastFileProcessed()
     {
-        this.loc.logicalLOC=llocCounter.getLloc();
+        this.loc.logicalLOC+=llocCounter.getLloc();
     }
 }
