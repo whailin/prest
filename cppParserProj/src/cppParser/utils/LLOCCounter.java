@@ -65,7 +65,7 @@ public class LLOCCounter
                 if(tokens[tokens.length-2].contentEquals(")")) {
                     for(int i = 0; i < tokens.length; i++) {
                         if(tokens[i].contentEquals("(")) {
-                            if(Constants.isKeyword(tokens[i-1]))
+                            if(StringTools.isKeyword(tokens[i-1])|| StringTools.isPrimitiveType(tokens[i-1]))
                                 return false;
                             else return true;
                         }
