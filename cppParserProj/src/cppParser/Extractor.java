@@ -18,7 +18,6 @@ import cppStructures.CppClass;
 import cppStructures.CppDefine;
 import cppStructures.CppFile;
 import cppStructures.CppFunc;
-import cppStructures.CppFuncParam;
 import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 import java.io.*;
@@ -259,12 +258,28 @@ public class Extractor
                 int rawExpandStartIndex = 0; // Index of the char in line where the last macro expansion ended
                 boolean stringOpen = false, charOpen = false; // Booleans to determine if string or char is open
                 
-                plocCounter = new PLOCCounter();
+                if(ParsedObjectManager.getInstance().currentFunc != null)
+                {
+                    Log.d("Error: Current function was not null when starting a new file.");
+                    ParsedObjectManager.getInstance().currentFunc = null;
+                }
+                if(ParsedObjectManager.getInstance().currentScope != null)
+                {
+                    Log.d("Error: Current scope was not null when starting a new file.");
+                    ParsedObjectManager.getInstance().currentScope = null;
+                }
+                if(ParsedObjectManager.getInstance().currentNamespace != null)
+                {
+                    Log.d("Error: Current namespace was not null when starting a new file.");
+                    ParsedObjectManager.getInstance().currentNamespace = null;
+                }
+                if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty())
+                {
+                    Log.d("Error: CPP scope stack was not empty when starting a new file.");
+                    ParsedObjectManager.getInstance().getCppScopeStack().clear();
+                }
                 
-                // Keeps track of consecutive newlines found.
-                // If newLineCount reachers newLineReset, the current line is reset.
-                int newLineCount = 0;
-                int newLineReset = 2;
+                plocCounter = new PLOCCounter();
                 
                 // Loop through the file char-by-char
                 while((c = (char)reader.read()) != (char)-1)
@@ -284,14 +299,6 @@ public class Extractor
                         continue;
                     }
                     
-                    if(c == '\n') newLineCount++;
-                    else newLineCount = 0;
-                    if(newLineCount == newLineReset)
-                    {
-                    	// line = "";
-                    	// continue;
-                    }
-                    
                     // Add the current char to the line
                     if(c == '\\') line += "\\"; 
                     else line += c;
@@ -300,9 +307,7 @@ public class Extractor
                     if(line.equals("\n") || line.equals("\t") || line.equals(" "))
                     {
                         if(line.equals("\n"))
-                        {
                             lineno++;
-                        }
                         line = "";
                         
                         rawExpandStartIndex = 0;
@@ -376,8 +381,6 @@ public class Extractor
                             else
                             {
                                 line = line.substring(0, line.length() - 1);
-                                line.replace("#endif", "");
-                                line.replace("#else", "");
                                 line += " ";
                             }
                         }
@@ -420,27 +423,6 @@ public class Extractor
                     resetLOCCounter(plocCounter);
                 }
                 loc++;
-                
-                if(ParsedObjectManager.getInstance().currentFunc != null)
-                {
-                    Log.d("Error: Current function was not null.");
-                    ParsedObjectManager.getInstance().currentFunc = null;
-                }
-                if(ParsedObjectManager.getInstance().currentScope != null)
-                {
-                    Log.d("Error: Current scope was not null.");
-                    ParsedObjectManager.getInstance().currentScope = null;
-                }
-                if(ParsedObjectManager.getInstance().currentNamespace != null)
-                {
-                    Log.d("Error: Current namespace was not null.");
-                    ParsedObjectManager.getInstance().currentNamespace = null;
-                }
-                if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty())
-                {
-                    Log.d("Error: CPP scope stack was not empty.");
-                    ParsedObjectManager.getInstance().getCppScopeStack().clear();
-                }
             
 		}
 		catch(IOException e)
@@ -504,7 +486,6 @@ public class Extractor
         	locM.emptyLines = ploc.emptyLines;
         	locM.commentLines = ploc.commentOnlyLines;
         	locM.commentedCodeLines = ploc.commentedCodeLines;
-            Log.d("prepro:"+ploc.preProcessorDirectives);
             locM.logicalLOC+=ploc.preProcessorDirectives;
 
         }
@@ -563,14 +544,7 @@ public class Extractor
 			{
 				for(CppFunc func : scope.getFunctions())
 				{
-					writer.write(func.getType() + " " + func.getName() + "(");
-					int pCount = 0;
-					for(CppFuncParam cfp : func.parameters)
-					{
-						writer.write(cfp.type + " " + cfp.name + (func.parameters.size() > 1 && pCount < func.parameters.size() - 1 ? ", " : ""));
-						pCount++;
-					}
-					writer.write(")" + " | " + func.fileOfFunc + "\n");
+					writer.write(func.getType() + " " + func.getName() + "()" + " | " + func.fileOfFunc + "\n");
 					writer.write("------------------------\n");
 					writer.write("Operands:\n");
 					for(String s : func.getOperands())
