@@ -302,6 +302,9 @@ public class ClassAnalyzer extends Analyzer
 	 */
 	private boolean processNewClass(String[] tokens)
 	{
+		// Workaround for some problems caused by pre-processor directives
+		if(tokens[0].equals(":")) return false;
+		
 		for(int i = 0; i < tokens.length; ++i)
 		{
 			if(tokens[i].equals("class") || tokens[i].equals("struct") || tokens[i].equals("union"))

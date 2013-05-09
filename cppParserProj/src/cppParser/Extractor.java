@@ -258,27 +258,6 @@ public class Extractor
                 int rawExpandStartIndex = 0; // Index of the char in line where the last macro expansion ended
                 boolean stringOpen = false, charOpen = false; // Booleans to determine if string or char is open
                 
-                if(ParsedObjectManager.getInstance().currentFunc != null)
-                {
-                    Log.d("Error: Current function was not null when starting a new file.");
-                    ParsedObjectManager.getInstance().currentFunc = null;
-                }
-                if(ParsedObjectManager.getInstance().currentScope != null)
-                {
-                    Log.d("Error: Current scope was not null when starting a new file.");
-                    ParsedObjectManager.getInstance().currentScope = null;
-                }
-                if(ParsedObjectManager.getInstance().currentNamespace != null)
-                {
-                    Log.d("Error: Current namespace was not null when starting a new file.");
-                    ParsedObjectManager.getInstance().currentNamespace = null;
-                }
-                if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty())
-                {
-                    Log.d("Error: CPP scope stack was not empty when starting a new file.");
-                    ParsedObjectManager.getInstance().getCppScopeStack().clear();
-                }
-                
                 plocCounter = new PLOCCounter();
                 
                 // Loop through the file char-by-char
@@ -359,7 +338,7 @@ public class Extractor
                         if(line.endsWith("\n"))
                         {
                             // Handle preprocessor directives
-                            if(line.startsWith("#"))
+                            if(line.startsWith("#") || line.contains("#ifdef") || line.contains("#ifndef"))
                             {
                                 if(line.endsWith("\\\n"))
                                 {
@@ -424,6 +403,27 @@ public class Extractor
                 }
                 loc++;
             
+                // Check for non-cleared references
+                if(ParsedObjectManager.getInstance().currentFunc != null)
+                {
+                    Log.d("Warning: Current function was not null after processing.");
+                    ParsedObjectManager.getInstance().currentFunc = null;
+                }
+                if(ParsedObjectManager.getInstance().currentScope != null)
+                {
+                    Log.d("Warning: Current scope was not null after processing.");
+                    ParsedObjectManager.getInstance().currentScope = null;
+                }
+                if(ParsedObjectManager.getInstance().currentNamespace != null)
+                {
+                    Log.d("Warning: Current namespace was not null after processing.");
+                    ParsedObjectManager.getInstance().currentNamespace = null;
+                }
+                if(!ParsedObjectManager.getInstance().getCppScopeStack().isEmpty())
+                {
+                    Log.d("Warning: CPP scope stack was not empty after processing.");
+                    ParsedObjectManager.getInstance().getCppScopeStack().clear();
+                }
 		}
 		catch(IOException e)
 		{
@@ -431,6 +431,13 @@ public class Extractor
 		}
 	}
 	
+	/**
+	 * Skips system macros
+	 * @param line Line read so far
+	 * @param reader Input reader
+	 * @return Line without the system macros
+	 * @throws IOException Thrown if an error happens in reading
+	 */
 	private String skipSystemMacros(String line, BufferedReader reader) throws IOException
 	{
 		if(line.endsWith("__declspec"))
@@ -486,7 +493,7 @@ public class Extractor
         	locM.emptyLines = ploc.emptyLines;
         	locM.commentLines = ploc.commentOnlyLines;
         	locM.commentedCodeLines = ploc.commentedCodeLines;
-            locM.logicalLOC+=ploc.preProcessorDirectives;
+            locM.logicalLOC += ploc.preProcessorDirectives;
 
         }
     }
