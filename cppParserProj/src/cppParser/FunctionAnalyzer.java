@@ -115,7 +115,7 @@ public class FunctionAnalyzer extends Analyzer {
 			{
 				if(tokens[i-1].equals("operator")) continue;
 				
-				// Check for operators before "(" -> only "::" is allowed
+				// Check for operators before "(" -> only "::" and "~" is allowed
 				for(int j = i - 1; j >= 0; --j)
 				{
 					if(StringTools.isOperator(tokens[j]) && !tokens[j].equals("::") && !tokens[j].equals("~")) return false;

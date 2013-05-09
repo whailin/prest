@@ -86,8 +86,17 @@ public class PreprocessorPass {
 				handleDefine();
 				defineCount++;
 				break;
+			case "ifdef":
+			case "ifndef":
+				handleIf();
+				break;
 			}
 		}
+	}
+	
+	private void handleIf()
+	{
+		Log.d("Found " + tokens[i]);
 	}
 	
 	/**

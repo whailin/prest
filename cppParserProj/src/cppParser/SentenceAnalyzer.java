@@ -7,6 +7,7 @@ import cppParser.utils.LLOCCounter;
 import cppParser.utils.Log;
 import cppParser.utils.MacroExpander;
 import cppParser.utils.StringTools;
+import cppStructures.CppNamespace;
 import cppStructures.CppScope;
 
 public class SentenceAnalyzer
@@ -97,6 +98,14 @@ public class SentenceAnalyzer
 		{
 			ParsedObjectManager.getInstance().getCppScopeStack().pop();
 			if(ParsedObjectManager.getInstance().getCppScopeStack().size() > 0) ParsedObjectManager.getInstance().currentScope = ParsedObjectManager.getInstance().getCppScopeStack().peek();
+			else
+			{
+				if(ParsedObjectManager.getInstance().currentScope instanceof CppNamespace)
+				{
+					ParsedObjectManager.getInstance().currentNamespace = null;
+				}
+				ParsedObjectManager.getInstance().currentScope = null;
+			}
 		}
 		
 		braceCount--;
