@@ -22,9 +22,11 @@ public class ResultExporter {
     private static final String separator = ",";
     private String outputDir;
     private BufferedWriter writer;
+    private boolean includeStructs=false;
     
 
-    public ResultExporter(String outputDir){
+    public ResultExporter(String outputDir, boolean includeStructs){
+        this.includeStructs=includeStructs;
         this.outputDir=outputDir;
         if(!outputDir.isEmpty()){
             char c=outputDir.charAt(outputDir.length()-1);
@@ -126,10 +128,18 @@ public class ResultExporter {
                 "Number of children"+separator+
                 "Depth of Inheritance"+separator+
                 "Weighted Methods per Class");
-        String parents, children;
+        if(includeStructs)
+            writer.write(separator+"Type");
+        String parents, children, type="";
         for(CppScope cc : ParsedObjectManager.getInstance().getScopes()){
             if(cc instanceof CppClass){
-                
+                if(cc.type==CppScope.STRUCT){
+                    if(includeStructs)
+                        type="struct";
+                    else
+                        continue;
+                }else if(cc.type==CppScope.CLASS)
+                    type="class";
                 CppClass c=(CppClass) cc;
                 String namespace="";
                 CppNamespace ns=c.namespace;
@@ -175,14 +185,14 @@ public class ResultExporter {
                 writer.write(
                         c.nameOfFile+separator+
                         namespace+separator+
-                        c.getName()+separator+
+                        "\""+c.getName()+"\""+separator+
                         parents+separator+
                         children+separator+
                         c.children.size()+separator+
                         c.getDepthOfInheritance()+separator+
                         c.getFunctions().size()
                         );
-                
+                if(includeStructs)writer.write(separator+type);
             }
         }
                 
@@ -198,7 +208,7 @@ public class ResultExporter {
                 //"commentedCodeLines"+separator+
                 "Total Comment Lines");            
             writer.write("\n");
-			writer.write("\""+l.file+"\""+separator 
+			writer.write(
                     +(l.codeOnlyLines+l.commentedCodeLines) + ","
                     +l.logicalLOC+separator
                     +l.emptyLines+separator

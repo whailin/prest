@@ -170,10 +170,7 @@ Physical loc: These are lines that are not empty and contain character or charac
 Executable loc: These are also known as logical lines of code and executable source statements. They are counted using rules in the following section.
 
 4.1 Counting executable lines of code
--Function, struct and union declarations and definitions will increment the count by one. Splitting definition to multiple lines will not affect counting.
--Class definition are counted like functions with exception that each inheritance increments the count by one. Counting is done by finding visibility keywords(public, protected, private)
-Following example would count as 2 executable locs:
-class Rectangle: public Shape{};
+-Function, struct, union and class declarations and definitions will increment the count by one. Splitting definition to multiple lines will not affect counting.
 
 -If class, struct or union definition contains variable declarations after } token then the count is increased by two regardless of how many variables were defined. Variable or alias declarations inside the brackets are counted separately.
 Example of struct definition which consists of two executable locs:

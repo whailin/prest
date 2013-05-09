@@ -39,6 +39,12 @@ public class Main {
     
     private static void printInstructions(){
         System.out.println("Instructions");
+        System.out.println(
+                "use following parameters: \n"+ 
+                "-parse <input directory/file> -out <output directory>"+
+                "alternatively you can just give input folder as a parameter and "+
+                 "results are put into same folder where the parser is"
+                );
     }
 
 }

@@ -197,16 +197,14 @@ public class ParsedObjectManager
 	{
 		return currentFile;
 	}
-	
-	/**
-	 * Adds a new class
-	 * @param name Name of the class
-	 * @param namespace Namespace the class belongs to
-	 * @return The newly constructed class object or an existing class if one was found
-	 */
-	public CppClass addClass(String name, CppNamespace namespace)
-	{
-		CppClass newClass = null;
+    /**
+     * Method looks if given struct or class has already been defined
+     * @param name name of the class/struct
+     * @param namespace namespace of the class
+     * @return null if given class/struct was not found with the namespace else that class/struct is returned
+     */
+	private CppClass searchForClassOrStruct(String name, CppNamespace namespace){
+        CppClass newClass = null;
 		
 		// Search for an existing class
 		for(CppScope cs : scopes)
@@ -232,6 +230,19 @@ public class ParsedObjectManager
 				}
 			}
 		}
+        return newClass;
+    }
+	/**
+	 * Adds a new class
+	 * @param name Name of the class
+	 * @param namespace Namespace the class belongs to
+	 * @return The newly constructed class object or an existing class if one was found
+	 */
+	public CppClass addClass(String name, CppNamespace namespace)
+	{
+        // Search for an existing class
+		CppClass newClass = searchForClassOrStruct(name,namespace);
+		
 		
 		// If no existing class was found, create a new one
 		if(newClass == null)
@@ -245,32 +256,22 @@ public class ParsedObjectManager
 		return newClass;
 	}
     
+    
+    
 	/**
 	 * Adds a new struct
 	 * @param name Name of the struct
 	 * @return The newly created struct, or an existing one if found
 	 */
-    public CppScope addStruct(String name)
+    public CppClass addStruct(String name, CppNamespace namespace)
     {
-		CppScope newStruct = null;
+		CppClass newStruct = searchForClassOrStruct(name,namespace);
 		
-		// Search for an existing struct
-		for(CppScope cs : scopes)
-		{
-			if(cs.type == CppScope.STRUCT)
-			{
-				if(cs.getName().equals(name))
-				{
-					newStruct = cs;
-					break;
-				}
-			}
-		}
 		
 		// If no existing struct was found, create a new one
 		if(newStruct == null)
 		{
-			newStruct = new CppScope(name);
+			newStruct = new CppClass(name);
             newStruct.type = CppScope.STRUCT;
 			scopes.add(newStruct);
             addKnownType(new CppType(name, CppType.STRUCT));
@@ -365,13 +366,11 @@ public class ParsedObjectManager
 	 * Stores the given function
 	 * @param func Function to store
 	 * @param b If 'true', set the new function as the current function
-	 * @return The newly added function (or an existing one, if one was found)
 	 */
-	public CppFunc addFunction(CppFunc func, boolean b)
+	public void addFunction(CppFunc func, boolean b)
 	{
 		func = currentScope.addFunc(func);
 		if(b) currentFunc = func;
-		return func;
 	}
 
 	/**
