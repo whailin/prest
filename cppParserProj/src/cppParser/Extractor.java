@@ -338,7 +338,7 @@ public class Extractor
                         if(line.endsWith("\n"))
                         {
                             // Handle preprocessor directives
-                            if(line.startsWith("#") || line.contains("#ifdef") || line.contains("#ifndef"))
+                            if(line.startsWith("#"))
                             {
                                 if(line.endsWith("\\\n"))
                                 {
