@@ -311,23 +311,11 @@ public class ClassAnalyzer extends Analyzer
 			{	
 				// Get the class keyword count (if > 1, preprocessor directives do messy things)
 				int classWordCount = 1;
-				int lastClassIndex = i;
 				for(int z = i + 1; z < tokens.length; ++z)
 				{
-					if(tokens[z].equals("class"))
-					{
-						classWordCount++;
-						lastClassIndex = z;
-					}
+					if(tokens[z].equals("class")) classWordCount++;
 				}
-				
-				// If there was multiple class declarations on the same line,
-				// use only the latest one
-				if(classWordCount > 1)
-				{
-					Log.e("Two class declarations on the same line\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
-					i = lastClassIndex;
-				}
+				if(classWordCount > 1) Log.e("Two class declarations on the same line\n  File: " + Extractor.currentFile + "\n  Line: " + Extractor.lineno);
 				
 				// Log.d("Found "+tokens[i]);
 				if(tokens[tokens.length - 1].equals(";"))
@@ -339,7 +327,7 @@ public class ClassAnalyzer extends Analyzer
                             cc = ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2], ParsedObjectManager.getInstance().currentNamespace);
                             break;
                         case "struct":
-                            cc = ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2]);
+                            cc = ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2], ParsedObjectManager.getInstance().currentNamespace);
                             break;
                         case "union":
                             cc = ParsedObjectManager.getInstance().addUnion(tokens[tokens.length - 2]);
@@ -354,23 +342,54 @@ public class ClassAnalyzer extends Analyzer
 				{
 					// Found a class with definition
 					boolean isInheriting = false;
-					
+                    //indices for templates if they are found. template0 contains < token, when the template starts and template1 index of end token 
+					int template0=0, template1=0;
+                    String template="";
+                    int templates=0; //This is used for checking templates inside templates
+                    boolean templateFound=false;
+                    
 					for(int j = i + 1; j < tokens.length - 1; ++j)
 					{
+                        
 						if(tokens[j].equals(":"))
 						{
 							isInheriting = true;
 							// Log.d("   ... called " + tokens[j-1]);							
 							
-							CppClass cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[j-1], ParsedObjectManager.getInstance().currentNamespace);
+							CppClass cc;
+                            if(tokens[i].contentEquals("class"))
+                                cc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[j-1], ParsedObjectManager.getInstance().currentNamespace);
+                            else
+                                cc = (CppClass)ParsedObjectManager.getInstance().addStruct(tokens[j-1], ParsedObjectManager.getInstance().currentNamespace);
 							cc.nameOfFile = Extractor.currentFile;
 							cc.braceCount = sentenceAnalyzer.braceCount;
 							cc.namespace = ParsedObjectManager.getInstance().currentNamespace; 
 							// cc.parentScope = ParsedObjectManager.getInstance().currentScope;
 							
 							// Check for all parents
+                            
 							for(int k = j + 1; k < tokens.length; ++k)
 							{
+                                if(templateFound){
+                                    template+=tokens[k];
+                                    if(tokens[k].equals(">")){
+                                        templates--;
+                                        if(templates==0){
+                                            templateFound=false;
+                                            template1=k;
+                                        }
+                                    }
+                                    continue;
+                                }else{
+                                    if(tokens[k].equals("<")){
+                                        template="<";
+                                        templates++;
+                                        templateFound=true;
+                                        template0=k;
+                                        continue;
+                                    }
+                                }
+                                
 								if(tokens[k].equals(",") || tokens[k].equals("{"))
 								{
 									// Search for a possible namespace
@@ -391,7 +410,20 @@ public class ClassAnalyzer extends Analyzer
 									}
 									
 									// Log.d("    ... inherited from " + tokens[k-1]);
-									CppClass pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1], cppNS);
+                                    CppClass pcc;
+                                    if(tokens[i].contentEquals("class")){
+                                        if(template1!=0){
+                                            pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[template0-1]+template, cppNS);
+                                        }else{
+                                            pcc = (CppClass)ParsedObjectManager.getInstance().addClass(tokens[k-1], cppNS);
+                                        }
+                                    }else{
+                                        if(template1!=0){
+                                            pcc = (CppClass)ParsedObjectManager.getInstance().addStruct(tokens[template0-1]+template, cppNS);
+                                        }else
+                                            pcc = (CppClass)ParsedObjectManager.getInstance().addStruct(tokens[k-1], cppNS);    
+                                    }
+                                    
 									pcc.addChild(cc);
 									pcc.nameOfFile = Extractor.currentFile;
 								}
@@ -407,18 +439,23 @@ public class ClassAnalyzer extends Analyzer
 					// If no ancestors were found, create a class with no parents
 					if(!isInheriting)
 					{
-						// Log.d("   ... called " + tokens[tokens.length - 2]);						
+						// Log.d("   ... called " + tokens[tokens.length - 2]);
+                        String name=tokens[tokens.length - 2];
+                        if(tokens[tokens.length - 2].contentEquals(">"))
+                            name=getNameWithTemplate(tokens, 2);
+                        
 						
+                        
 						CppScope cc = null;
                         switch(tokens[i]){
                             case "class":
-                                cc=ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2], ParsedObjectManager.getInstance().currentNamespace);
+                                cc=ParsedObjectManager.getInstance().addClass(name, ParsedObjectManager.getInstance().currentNamespace);
                                 break;
                             case "struct":
-                                cc=ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2]);
+                                cc=ParsedObjectManager.getInstance().addStruct(name, ParsedObjectManager.getInstance().currentNamespace);
                                 break;
                             case "union":
-                                cc=ParsedObjectManager.getInstance().addUnion(tokens[tokens.length - 2]);
+                                cc=ParsedObjectManager.getInstance().addUnion(name);
                                 break;
                         }   
 						cc.nameOfFile = Extractor.currentFile;
@@ -434,4 +471,34 @@ public class ClassAnalyzer extends Analyzer
 		
 		return false;
 	}
+/**
+ * Method returns struct/class name if it contains template. This method is to be
+ * used with classes that don't inherit.
+ * @return 
+ */
+    private String getNameWithTemplate(String[] tokens, int index) {
+        int x=index;
+        int templates=1;
+        String name="";
+        try{
+            while(true){
+                    name=tokens[tokens.length-x]+name;
+                    if(tokens[tokens.length-x].contentEquals("<")){
+                        
+                        templates--;
+                        if(templates==0)
+                            break;
+                    }else if(tokens[tokens.length-x].contentEquals(">")){
+                        templates++;
+                    }
+
+                x++;
+            }
+            name=tokens[tokens.length-x-1]+name;
+        }catch (Exception e){
+                Log.d("Warning: Index out of bounds while parsing template:"+Extractor.currentFile+" line:"+Extractor.lineno+" "+name);
+        }
+        return name;
+        
+    }
 }

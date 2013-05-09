@@ -1,5 +1,7 @@
 package cppStructures;
 
+import cppParser.Extractor;
+import cppParser.ParsedObjectManager;
 import java.util.ArrayList;
 
 import cppParser.utils.Log;
@@ -37,6 +39,10 @@ public class CppScope
 	 */
 	public CppScope(String name)
 	{
+        //Log.d("created scope "+name);
+        /*if(name.contentEquals(">")){
+            throw new Error("> found "+ParsedObjectManager.getInstance().getCurrentFile().getFilename()+ Extractor.lineno);
+        }*/
 		this.name = name;
 		this.children = new ArrayList<CppScope>();
 		this.parents = new ArrayList<CppScope>();

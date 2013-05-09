@@ -184,7 +184,7 @@ public class Extractor
 		dumpScopes();
 		
 		// Dump tree results to a file
-		ResultExporter exp = new ResultExporter(outputDir);
+		ResultExporter exp = new ResultExporter(outputDir, true);
         exp.exportAll();
 		
 		Log.d("Dump done.");
@@ -623,7 +623,7 @@ public class Extractor
 			writer.write("CLASSES\n**************\n");
 			for(CppScope scope : ParsedObjectManager.getInstance().getScopes())
 			{
-				if(scope instanceof CppClass)
+				if(scope instanceof CppClass && scope.type==CppScope.CLASS)
 				{
 					CppClass cppClass = (CppClass)scope;
 					writer.write(cppClass.getName() + "(" + (cppClass.namespace != null ? cppClass.namespace.getName() : "__MAIN__") + ")" + "\n");
