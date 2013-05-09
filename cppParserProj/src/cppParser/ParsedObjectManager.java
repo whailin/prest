@@ -367,10 +367,11 @@ public class ParsedObjectManager
 	 * @param func Function to store
 	 * @param b If 'true', set the new function as the current function
 	 */
-	public void addFunction(CppFunc func, boolean b)
+	public CppFunc addFunction(CppFunc func, boolean b)
 	{
 		func = currentScope.addFunc(func);
 		if(b) currentFunc = func;
+		return func;
 	}
 
 	/**
