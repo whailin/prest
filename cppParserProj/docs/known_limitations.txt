@@ -1,6 +1,7 @@
 Here's a list of known limitations in the C++ parser.
 =====================================================
 
+-------------------------------
 Pre-processor-controller bodies (double sets of curly braces)
 -------------------------------
 void Foo::Bar()
@@ -11,6 +12,27 @@ void Foo::Bar()
     ....
 }
 #endif
+
+Problem:
+The function bodies are not recognized correctly.
+
+Solution:
+Search for conditional compiling directions and analyse the file once per each branch.
+-------------------------------
+
+
+-------------------------------
+Special numeric constants
+-------------------------------
+Hexadecimal: 0x0f
+Exponents: 1.5e-4
+           -5.3E2
+
+Problem:
+Numeric constants get split up in some cases.
+
+Solution:
+Construct numeric constants with more care.
 -------------------------------
 
 
