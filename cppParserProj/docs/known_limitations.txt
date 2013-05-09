@@ -1,0 +1,16 @@
+Here's a list of known limitations in the C++ parser.
+=====================================================
+
+Pre-processor-controller bodies (double sets of curly braces)
+-------------------------------
+void Foo::Bar()
+#ifndef TEST
+{ }
+#else
+{
+    ....
+}
+#endif
+-------------------------------
+
+
