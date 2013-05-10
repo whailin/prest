@@ -16,7 +16,7 @@ public class ObjectOrientedMetrics implements Metrics {
 	}
 	/**
 	 * WMC is calculated with sum of the complexity of methods inside a class. 
-	 * For defining the complexity of a method WMC does not put limit on how it’s 
+	 * For defining the complexity of a method WMC does not put limit on how its 
 	 * calculated so any metric could be used eg. cyclomatic complexity.
 	 */
 	public int calculateWMC(){
@@ -60,7 +60,7 @@ public class ObjectOrientedMetrics implements Metrics {
 	}
 	/**
 	 * LCOM is a number of method pairs with no similarity,|P|, minus number of methods,|Q|. 
-	 * Method pairs are considered to be non-similar if they don’t use a single same instance variable.
+	 * Method pairs are considered to be non-similar if they dont use a single same instance variable.
 	 * LCOM = |P| - |Q|, when |P|>|Q|, otherwise LCOM=0.
 	 * @param nonSimilarMethods P
 	 * @param similarMethods Q
