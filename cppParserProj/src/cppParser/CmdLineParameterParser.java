@@ -11,7 +11,7 @@ import java.io.FileNotFoundException;
  */
 public class CmdLineParameterParser {
     
-            
+    public static boolean includeStructs=false;        
     static String inputDir="", outputDir="";
     static boolean input=false, output=false;
     static boolean dir=false;
@@ -46,6 +46,8 @@ public class CmdLineParameterParser {
                 input=false;
                 output=true;
                 dir=true;
+            }else if(param.equalsIgnoreCase("-includeStructs")){
+                includeStructs=true;
             }else throw new InvalidParameterException("Invalid parameters");
             stringLiteral=false;
         }else{//if dir==true then param should be a directory which is parased here

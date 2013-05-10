@@ -41,9 +41,11 @@ public class Main {
         System.out.println("Instructions");
         System.out.println(
                 "use following parameters: \n"+ 
-                "-parse <input directory/file> -out <output directory>"+
-                "alternatively you can just give input folder as a parameter and "+
-                 "results are put into same folder where the parser is"
+                "-parse <input directory/file> -out <output directory>\n"+
+                "alternatively you can just give input folder as a parameter and \n"+
+                 "results are put into same folder where the parser is\n"
+                + "-includeStructs parameter can be used to include structs in \n"
+                + "addition to classes in the ClassMetrics.csv"
                 );
     }
 
