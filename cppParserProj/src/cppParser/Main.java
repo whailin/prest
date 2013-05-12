@@ -1,5 +1,7 @@
 package cppParser;
 
+import java.io.IOException;
+
 import cppParser.utils.Log;
 
 
@@ -8,7 +10,8 @@ public class Main {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args)
+	{
         Extractor e;
         switch(args.length){
             case 0:
@@ -21,23 +24,29 @@ public class Main {
             default:
                 try{
                     CmdLineParameterParser.parseParameters(args);
-                    System.out.println(CmdLineParameterParser.getInputDir()+" out:"+CmdLineParameterParser.getOutputDir());
-                    e = new Extractor(CmdLineParameterParser.getInputDir(),CmdLineParameterParser.outputDir);
+                    System.out.println(CmdLineParameterParser.getInputDir() + " out: " + CmdLineParameterParser.getOutputDir());
+                    e = new Extractor(CmdLineParameterParser.getInputDir(), CmdLineParameterParser.outputDir);
                     e.process();
                 }catch(Exception ex){
                     ex.printStackTrace();
-                    System.out.println("Error:"+ex.getMessage());
+                    System.out.println("Error: " + ex.getMessage());
                     printInstructions();
                 }
-		// TODO Replace this main function with a call from Prest
-        
         }
-        /*
-		
-		*/
+        
+        if(Log.writer != null)
+        {
+			try {
+				Log.writer.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        }
 	}
     
-    private static void printInstructions(){
+    private static void printInstructions()
+    {
         System.out.println("Instructions");
         System.out.println(
                 "use following parameters: \n"+ 

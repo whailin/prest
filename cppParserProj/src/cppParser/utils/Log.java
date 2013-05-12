@@ -1,5 +1,12 @@
 package cppParser.utils;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import cppParser.FileLoader;
+
 /**
  * Static logger class for writing verbose information
  * during the processing and for "easy silencing".
@@ -11,6 +18,8 @@ public class Log {
 	// If 'true', no output is done
 	public static boolean isSilent = false;
 	public static boolean printErrors = true;
+	public static boolean dumpToFile = true;
+	public static BufferedWriter writer = null;
 	
 	/**
 	 * An empty override of 'd'
@@ -29,6 +38,26 @@ public class Log {
 		if(!isSilent)
 		{
 			System.out.println(s);
+		}
+		
+		// Dump to log.txt if needed
+		if(dumpToFile)
+		{
+			if(writer == null)
+			{
+				try {
+					System.out.println("PATH: " + FileLoader.getTargetPath());
+					writer = new BufferedWriter(new FileWriter(FileLoader.getTargetPath() + File.separator + "log.txt"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			try {
+				writer.write(s + "\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -65,6 +94,26 @@ public class Log {
 		if(printErrors)
 		{
 			System.err.println(s);
+		}
+		
+		// Dump to log.txt if needed
+		if(dumpToFile)
+		{
+			if(writer == null)
+			{
+				try {
+					Log.d("PATH: " + FileLoader.getTargetPath());
+					writer = new BufferedWriter(new FileWriter(FileLoader.getTargetPath() + File.pathSeparator + "log.txt"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			try {
+				writer.write(s + "\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
