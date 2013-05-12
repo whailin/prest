@@ -50,7 +50,7 @@ public class Extractor
 	// Filename or folder to process
 	private String file = "";
     //Directory for the output files;
-    private String outputDir="";
+    private String outputDir = "";
 	
 	// File that is currently being processed
 	public static String currentFile = "";
@@ -186,7 +186,7 @@ public class Extractor
 		dumpScopes();
 		
 		// Dump tree results to a file
-		ResultExporter exp = new ResultExporter(outputDir, CmdLineParameterParser.includeStructs);
+		ResultExporter exp = new ResultExporter(outputDir, CmdLineParameterParser.excludeStructs);
         exp.exportAll();
 		
 		Log.d("Dump done.");

@@ -6,6 +6,7 @@ import cppMetrics.LOCMetrics;
 import cppParser.utils.Log;
 import cppStructures.*;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -22,224 +23,288 @@ public class ResultExporter {
     private static final String separator = ",";
     private String outputDir;
     private BufferedWriter writer;
-    private boolean includeStructs=false;
+    private boolean excludeStructs = false;
     
 
-    public ResultExporter(String outputDir, boolean includeStructs){
-        this.includeStructs=includeStructs;
-        this.outputDir=outputDir;
-        if(!outputDir.isEmpty()){
-            char c=outputDir.charAt(outputDir.length()-1);
-            if(c!='\\' || c!='/')
-                this.outputDir+="\\";
-            
+    public ResultExporter(String outputDir, boolean excludeStructs)
+    {
+        this.excludeStructs = excludeStructs;
+        this.outputDir = outputDir;
+        
+        Log.d("RE: OUT: " + outputDir);
+        
+        if(!outputDir.isEmpty())
+        {
+            char c = outputDir.charAt(outputDir.length() - 1);
+            if(c != '\\' || c != '/')
+            {
+                this.outputDir += "\\";
+            }
+        }
+        else
+        {
+        	this.outputDir = FileLoader.getTargetPath() + File.separator;
+        	Log.d("Fixed out: " + outputDir);
         }
     }
-    public void exportAll(){
-        Log.d("Exporting to "+outputDir);
+    
+    public void exportAll()
+    {
+        Log.d("Exporting to " + outputDir);
         try {
             exportFileMetrics();
             exportFunctionMetrics();
             exportNamespaces();
             exportClassMetrics();
-        } catch (IOException ex) {
-            Log.d("Error:" +ex.getMessage());
-            
+        }
+        catch (IOException ex)
+        {
+            Log.d("Error: " + ex.getMessage());
         }
     }
+    
     //Includes LOC metrics for each file,
-    public void exportFileMetrics()throws IOException{
-        try {
-            writer=new BufferedWriter(new FileWriter(outputDir+"FileMetrics.csv"));
+    public void exportFileMetrics() throws IOException
+    {
+        try
+        {
+            writer = new BufferedWriter(new FileWriter(outputDir + "FileMetrics.csv"));
             writeLOCMetrics(writer);
             writer.close();
             
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Logger.getLogger(ResultExporter.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     //Includes functions/methods and their Halstead and complexity metrics
-    public void exportFunctionMetrics() throws IOException{
-        writer=new BufferedWriter(new FileWriter(outputDir+"FunctionMetrics.csv"));
+    public void exportFunctionMetrics() throws IOException
+    {
+        writer = new BufferedWriter(new FileWriter(outputDir + "FunctionMetrics.csv"));
         writeFunctionMetrics(writer);
         writer.close();
     }
     
     //Known namespaces
-    public void exportNamespaces() throws IOException{
-        writer=new BufferedWriter(new FileWriter(outputDir+"Namespaces.csv"));
+    public void exportNamespaces() throws IOException
+    {
+        writer = new BufferedWriter(new FileWriter(outputDir + "Namespaces.csv"));
         writeNamespaces(writer);
         writer.close();
     }
     
     //Classes and OO Metrics
-    public void exportClassMetrics() throws IOException{
-        writer=new BufferedWriter(new FileWriter(outputDir+"ClassMetrics.csv"));
+    public void exportClassMetrics() throws IOException
+    {
+        writer = new BufferedWriter(new FileWriter(outputDir + "ClassMetrics.csv"));
         writeClassMetrics(writer);
         writer.close();
         
     }
     
-    private void writeLOCMetrics(BufferedWriter writer) throws IOException{
+    private void writeLOCMetrics(BufferedWriter writer) throws IOException
+    {
         
-        List<LOCMetrics> list=ParsedObjectManager.getInstance().getLocMetrics();
-        writer.write("File name"+separator+
-                "Physical LOC"+separator+
-                "Executable LOC"+separator+
-                "Empty Lines"+separator+
+        List<LOCMetrics> list = ParsedObjectManager.getInstance().getLocMetrics();
+        writer.write("File name" + separator +
+                "Physical LOC" + separator +
+                "Executable LOC" + separator +
+                "Empty Lines" + separator +
                 //"commentOnlyLines"+separator+
                 //"commentedCodeLines"+separator+
                 "Comment Lines");
-        for(LOCMetrics l:list){            
+        
+        for(LOCMetrics l : list)
+        {            
             writer.write("\n");
-			writer.write("\""+l.file+"\""+separator 
-                    +(l.codeOnlyLines+l.commentedCodeLines) + ","
-                    +l.logicalLOC+separator
-                    +l.emptyLines+separator
+			writer.write("\"" + l.file + "\"" + separator + 
+                    (l.codeOnlyLines + l.commentedCodeLines) + "," +
+                    l.logicalLOC+separator +
+                    l.emptyLines+separator +
                     //+l.commentLines + separator
                     //+l.commentedCodeLines + separator
-                    +(l.commentLines+l.commentedCodeLines));
+                    (l.commentLines + l.commentedCodeLines));
         }
         writer.write("\n");
         
     }
     
-    private LOCMetrics getProjectLevelLOCMetrics(){
-        LOCMetrics projectLevelMetrics=new LOCMetrics();
-        List<LOCMetrics> list=ParsedObjectManager.getInstance().getLocMetrics();
-        for(LOCMetrics l:list){            
-           
-            projectLevelMetrics.codeOnlyLines+=l.codeOnlyLines;
-            projectLevelMetrics.commentLines+=l.commentLines;
-            projectLevelMetrics.commentedCodeLines+=l.commentedCodeLines;
-            projectLevelMetrics.emptyLines+=l.emptyLines;
-            projectLevelMetrics.logicalLOC+=l.logicalLOC;
+    private LOCMetrics getProjectLevelLOCMetrics()
+    {
+        LOCMetrics projectLevelMetrics = new LOCMetrics();
+        List<LOCMetrics> list = ParsedObjectManager.getInstance().getLocMetrics();
+        for(LOCMetrics l : list)
+        {            
+            projectLevelMetrics.codeOnlyLines += l.codeOnlyLines;
+            projectLevelMetrics.commentLines += l.commentLines;
+            projectLevelMetrics.commentedCodeLines += l.commentedCodeLines;
+            projectLevelMetrics.emptyLines += l.emptyLines;
+            projectLevelMetrics.logicalLOC += l.logicalLOC;
         } 
         return projectLevelMetrics;
     }
 
-    private void writeClassMetrics(BufferedWriter writer) throws IOException{
+    private void writeClassMetrics(BufferedWriter writer) throws IOException
+    {
         writer.write(
-                "File"+separator+
-                "Namespace"+separator+
-                "Class Name"+separator+
-                "Direct parents"+separator+
-                "Children"+separator+
-                "Number of children"+separator+
-                "Depth of Inheritance"+separator+
+                "File " + separator +
+                "Namespace" + separator +
+                "Class Name" + separator +
+                "Direct parents" + separator +
+                "Children" + separator +
+                "Number of children" + separator +
+                "Depth of Inheritance" + separator +
                 "Weighted Methods per Class");
-        if(includeStructs)
-            writer.write(separator+"Type");
-        String parents, children, type="";
-        for(CppScope cc : ParsedObjectManager.getInstance().getScopes()){
-            if(cc instanceof CppClass){
-                if(cc.type==CppScope.STRUCT){
-                    if(includeStructs)
-                        type="struct";
-                    else
-                        continue;
-                }else if(cc.type==CppScope.CLASS)
-                    type="class";
-                CppClass c=(CppClass) cc;
-                String namespace="";
-                CppNamespace ns=c.namespace;
-                while (true){
-                    if(ns!=null){
-                        if(ns.name.contentEquals("__MAIN__")|| ns.name.isEmpty()) break;
-                        else 
-                            namespace=ns.name+"::"+namespace;
-                        ns=ns.namespace;
-                    }else 
-                        break;
-                    
+        if(!excludeStructs)
+        {
+            writer.write(separator + "Type");
+        }
+        
+        String parents, children, type = "";
+        
+        for(CppScope cc : ParsedObjectManager.getInstance().getScopes())
+        {
+            if(cc instanceof CppClass)
+            {
+                if(cc.type == CppScope.STRUCT)
+                {
+                    if(!excludeStructs)
+                    {
+                        type = "struct";
+                    }
+                    else continue;
                 }
+                else if(cc.type == CppScope.CLASS)
+                {
+                    type = "class";
+                }
+                
+                CppClass c = (CppClass) cc;
+                String namespace = "";
+                CppNamespace ns = c.namespace;
+                
+                while (true)
+                {
+                    if(ns != null)
+                    {
+                        if(ns.name.contentEquals("__MAIN__") || ns.name.isEmpty()) break;
+                        else 
+                        {
+                            namespace = ns.name + "::" + namespace;
+                        }
+                        ns = ns.namespace;
+                    }
+                    else break;
+                }
+                
                 if(c.parents.isEmpty())
-                    parents="";
-                else{
-                    int x=0;
-                    parents="\"";
+                {
+                    parents = "";
+                }
+                else
+                {
+                    int x = 0;
+                    parents = "\"";
                     
-                    for (CppScope p:c.parents){
-                        parents+=p.getName();
-                        if(x<(c.parents.size()-1))
-                            parents+=",";
+                    for (CppScope p : c.parents)
+                    {
+                        parents += p.getName();
+                        if(x < (c.parents.size() - 1))
+                        {
+                            parents += ",";
+                        }
                         x++;   
                     }
-                    parents+="\"";
+                    parents += "\"";
                 }
-                if(c.children.isEmpty())
-                    children="";
-                else{
-                    int x=0;
-                    children="\"";
-                    for (CppScope p:c.children){
-                            children+=p.getName();
-                            if(x<(c.children.size()-1))
-                                children+=",";
-                            x++;    
-                    }
-                    children+="\"";
                 
+                if(c.children.isEmpty())
+                {
+                    children = "";
                 }
+                else
+                {
+                    int x = 0;
+                    children = "\"";
+                    for (CppScope p : c.children)
+                    {
+                        children += p.getName();
+                        if(x < (c.children.size() - 1))
+                            children += ",";
+                        x++;    
+                    }
+                    children += "\"";
+                }
+                
                 writer.write("\n");
                 writer.write(
-                        c.nameOfFile+separator+
-                        namespace+separator+
-                        "\""+c.getName()+"\""+separator+
-                        parents+separator+
-                        children+separator+
-                        c.children.size()+separator+
-                        c.getDepthOfInheritance()+separator+
+                        c.nameOfFile + separator +
+                        namespace + separator +
+                        "\"" + c.getName() + "\"" + separator +
+                        parents + separator +
+                        children + separator +
+                        c.children.size() + separator +
+                        c.getDepthOfInheritance() + separator +
                         c.getFunctions().size()
                         );
-                if(includeStructs)writer.write(separator+type);
+                if(!excludeStructs) writer.write(separator + type);
             }
         }
                 
     }
     
-    private void writeProjectLOC(BufferedWriter writer) throws IOException{
-        LOCMetrics l=getProjectLevelLOCMetrics();
+    private void writeProjectLOC(BufferedWriter writer) throws IOException
+    {
+        LOCMetrics l = getProjectLevelLOCMetrics();
         writer.write(
-                "Total Physical LOC"+separator+
-                "Total Executable LOC"+separator+
-                "Total Empty Lines"+separator+
+                "Total Physical LOC" + separator +
+                "Total Executable LOC" + separator +
+                "Total Empty Lines" + separator +
                 //"commentOnlyLines"+separator+
                 //"commentedCodeLines"+separator+
                 "Total Comment Lines");            
             writer.write("\n");
 			writer.write(
-                    +(l.codeOnlyLines+l.commentedCodeLines) + ","
-                    +l.logicalLOC+separator
-                    +l.emptyLines+separator
+                    (l.codeOnlyLines+l.commentedCodeLines) + "," +
+                    l.logicalLOC + separator +
+                    l.emptyLines + separator +
                     //+l.commentLines + separator
                     //+l.commentedCodeLines + separator
-                    +(l.commentLines+l.commentedCodeLines));
+                    (l.commentLines + l.commentedCodeLines));
         
     }
-    private void writeNamespaces(BufferedWriter writer) throws IOException{
-        String parameters="";
+    
+    private void writeNamespaces(BufferedWriter writer) throws IOException
+    {
+        String parameters = "";
         writeProjectLOC(writer);
         writer.write(
                         //"File"+separator+
-                        "\n"+
-                        "Name"+separator+
-                        "Number of Variables"+separator+
+                        "\n" +
+                        "Name" + separator +
+                        "Number of Variables" + separator +
                         "Number of Functions");
                 writer.write("\n");
         
         
-        for(CppScope scope:ParsedObjectManager.getInstance().getScopes()){
-            if(scope.type==CppScope.NAMESPACE){
+        for(CppScope scope : ParsedObjectManager.getInstance().getScopes())
+        {
+            if(scope.type == CppScope.NAMESPACE)
+            {
                 String name;
                 if(scope.name.contains(","))
-                    name="\""+scope.name+"\"";
+                {
+                    name = "\"" + scope.name + "\"";
+                }
                 else
-                    name=scope.name;
+                {
+                    name = scope.name;
+                }
                 writer.write(
                         //scope.nameOfFile+separator+
-                        name+separator+
-                        scope.getMembers().size()+separator+
+                        name + separator +
+                        scope.getMembers().size() + separator +
                         scope.getFunctions().size()
                         );
                 writer.write("\n");
@@ -273,69 +338,71 @@ public class ResultExporter {
         }
     }
 
-    private void writeFunctionMetrics(BufferedWriter writer) throws IOException{
+    private void writeFunctionMetrics(BufferedWriter writer) throws IOException
+    {
         String parameters;
         writer.write(
-                "File"+separator+
-                "Return type"+separator+
-                "Function name"+separator+
-                "Operator count"+separator+
-                "Operand count"+separator+
-                "Unique Operator Count"+separator+
-                "Unique Operand Count"+separator+
-                "Vocabulary"+separator+
-                "Length"+separator+
-                "Volume"+separator+
-                "Difficulty"+separator+
-                "Effort"+separator+
-                "Programming time"+separator+
-                "Deliver Bugs"+separator+
-                "Level"+separator+
-                "Intelligent content"+separator+
-                "Cyclomatic Complexity"+
+                "File" + separator +
+                "Return type" + separator +
+                "Function name" + separator +
+                "Operator count" + separator +
+                "Operand count" + separator +
+                "Unique Operator Count" + separator +
+                "Unique Operand Count" + separator +
+                "Vocabulary" + separator +
+                "Length" + separator +
+                "Volume" + separator +
+                "Difficulty" + separator +
+                "Effort" + separator +
+                "Programming time" + separator +
+                "Deliver Bugs" + separator +
+                "Level" + separator +
+                "Intelligent content" + separator +
+                "Cyclomatic Complexity" +
                 "\n"
                 );
-        for(CppScope scope:ParsedObjectManager.getInstance().getScopes()){
-        for(CppFunc func : scope.getFunctions())
-				{
-                    int i=0;
-					parameters="\"";
-                    for(CppFuncParam param:func.parameters){
-                        parameters+=param.type;
-                        if(i<(func.parameters.size()-1))
-                            parameters+=",";
-                        i++;
+        
+        for(CppScope scope : ParsedObjectManager.getInstance().getScopes())
+        {
+        	for(CppFunc func : scope.getFunctions())
+			{
+                int i = 0;
+				parameters = "\"";
+                for(CppFuncParam param : func.parameters)
+                {
+                    parameters += param.type;
+                    if(i < (func.parameters.size() - 1))
+                    {
+                        parameters += ",";
                     }
-                    parameters+="\"";
-                    if(parameters.contentEquals("\"void\"") || parameters.contentEquals("\"\""))
-                        parameters="";		
-					writer.write(
-                            func.fileOfFunc+separator+
-                            func.getType()+separator+
-                            func.getName()+parameters+separator+
-                            func.getOperatorCount()+separator+
-                            func.getOperandCount()+separator+
-                            func.getUniqueOperatorCount()+separator+
-                            func.getUniqueOperandCount()+separator+
-                            func.getVocabulary()+separator+
-                            func.getLength()+separator+
-                            func.getVolume()+separator+
-                            func.getDifficulty()+separator+
-                            func.getEffort()+separator+
-                            func.getTimeToProgram()+separator+
-                            func.getDeliveredBugs()+separator+
-                            func.getLevel()+separator+
-                            func.getIntContent()+separator+  
-                            func.getCyclomaticComplexity()       
-                            );
-					writer.write("\n");
-					
-					
-					
-				}
+                    i++;
+                }
+                parameters += "\"";
+                if(parameters.contentEquals("\"void\"") || parameters.contentEquals("\"\""))
+                {
+                    parameters = "";
+                }
+				writer.write(
+                        func.fileOfFunc + separator +
+                        func.getType() + separator +
+                        func.getName() + parameters + separator +
+                        func.getOperatorCount() + separator +
+                        func.getOperandCount() + separator +
+                        func.getUniqueOperatorCount() + separator +
+                        func.getUniqueOperandCount() + separator +
+                        func.getVocabulary() + separator +
+                        func.getLength() + separator +
+                        func.getVolume() + separator +
+                        func.getDifficulty() + separator +
+                        func.getEffort() + separator +
+                        func.getTimeToProgram() + separator +
+                        func.getDeliveredBugs() + separator +
+                        func.getLevel() + separator +
+                        func.getIntContent() + separator +  
+                        func.getCyclomaticComplexity()       
+                        );
+				writer.write("\n");
+			}
         }
     }
-
-    
-
 }
