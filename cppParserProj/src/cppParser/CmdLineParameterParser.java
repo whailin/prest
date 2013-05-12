@@ -9,82 +9,120 @@ import java.io.FileNotFoundException;
  *
  * @author Tomi
  */
-public class CmdLineParameterParser {
+public class CmdLineParameterParser
+{
+    public static boolean excludeStructs = false;        
+    static String inputDir = "";
+    static String outputDir = "";
+    static boolean input = false;
+    static boolean output = false;
+    static boolean dir = false;
+    static boolean stringLiteral = false;
     
-    public static boolean includeStructs=false;        
-    static String inputDir="", outputDir="";
-    static boolean input=false, output=false;
-    static boolean dir=false;
-    static boolean stringLiteral=false;
     
-    
-    public static void parseParameters(String[] parameters)throws Exception{
-        for(String s:parameters)
+    public static void parseParameters(String[] parameters) throws Exception
+    {
+        for(String s : parameters)
+        {
             pushParams(s);
-        File f=new File(inputDir);
-        if(!f.exists()) throw new FileNotFoundException("Input file/directory not found("+inputDir+")");
-        f=new File(outputDir);
-        if(!f.exists()){
+        }
+        
+        File f = new File(inputDir);
+        if(!f.exists()) throw new FileNotFoundException("Input file/directory not found (" + inputDir + ")");
+        
+        f = new File(outputDir);
+        
+        if(!f.exists())
+        {
             if(f.mkdirs())
-                System.out.println("Created dir:"+f.getAbsolutePath());
+            {
+                System.out.println("Created dir: " + f.getAbsolutePath());
+            }
             else
-                throw new Exception("Could not write to directory: "+f.getAbsolutePath());
+            {
+                throw new Exception("Could not write to directory: " + f.getAbsolutePath());
+            }
         }
         
     }
     
-    private static void pushParams(String param)throws InvalidParameterException{
-        
-        if(!dir){
-            if(param.equalsIgnoreCase("-parse")){
+    private static void pushParams(String param) throws InvalidParameterException
+    {
+        if(!dir)
+        {
+            if(param.equalsIgnoreCase("-parse"))
+            {
                 if(!inputDir.isEmpty()) throw new InvalidParameterException("Invalid parameters: -parse used more than once");
-                input=true;
-                output=false;
-                dir=true;
-            }else if(param.equalsIgnoreCase("-out")){
+                input = true;
+                output = false;
+                dir = true;
+            }
+            else if(param.equalsIgnoreCase("-out"))
+            {
                 if(!outputDir.isEmpty()) throw new InvalidParameterException("Invalid parameters: -out used more than once");
-                input=false;
-                output=true;
-                dir=true;
-            }else if(param.equalsIgnoreCase("-includeStructs")){
-                includeStructs=true;
-            }else throw new InvalidParameterException("Invalid parameters");
-            stringLiteral=false;
-        }else{//if dir==true then param should be a directory which is parased here
+                input = false;
+                output = true;
+                dir = true;
+            }
+            else if(param.equalsIgnoreCase("-excludeStructs"))
+            {
+                excludeStructs = true;
+            }
+            else throw new InvalidParameterException("Invalid parameters");
+            
+            stringLiteral = false;
+        }
+        else
+        {
+        	//if dir==true then param should be a directory which is parased here
             String directory;
-            if(!stringLiteral){
-                if(param.charAt(0)=='\"'){
-                    directory=param;
-                    if(param.charAt(param.length()-1)=='\"')
-                        stringLiteral=false;
+            if(!stringLiteral)
+            {
+                if(param.charAt(0) == '\"')
+                {
+                    directory = param;
+                    if(param.charAt(param.length() - 1) == '\"')
+                    {
+                        stringLiteral = false;
+                    }
                     else
-                        stringLiteral=true;
+                    {
+                        stringLiteral = true;
+                    }
                 }
-                else{
-                    directory=param;
-                    dir=false;
+                else
+                {
+                    directory = param;
+                    dir = false;
                 }
- 
-            }else{
-                if(param.charAt(param.length()-1)=='\"'){
-                        stringLiteral=false;
-                        dir=false;
+            }
+            else
+            {
+                if(param.charAt(param.length() - 1) == '\"')
+                {
+                        stringLiteral = false;
+                        dir = false;
                 }
-                directory=param;
+                directory = param;
             }
             if(input)
-                inputDir+=directory;
+            {
+                inputDir += directory;
+            }
             else
-                outputDir+=directory;
+            {
+                outputDir += directory;
+            }
         }
-        
-        
-        
     }
-    public static String getOutputDir(){
+    
+    public static String getOutputDir()
+    {
         return outputDir;
     }
-    public static String getInputDir(){
+    
+    public static String getInputDir()
+    {
         return inputDir;
     }
 }
