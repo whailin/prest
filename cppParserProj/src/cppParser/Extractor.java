@@ -105,6 +105,9 @@ public class Extractor
 	 */
 	public void process()
 	{
+		// Setup the file loader and load files
+		FileLoader fileLoader = new FileLoader(this.file);
+		
 		Log.d("Processing started.");
 		
 		// Setup the hashsets for stringtools
@@ -118,8 +121,7 @@ public class Extractor
 		sentenceAnalyzer = new SentenceAnalyzer();
 		prepassAnalyzer = new PreprocessorPass();
 		
-		// Setup the file loader and load files
-		FileLoader fileLoader = new FileLoader(this.file);
+		
 		
 		Log.d("Files sorted in " + (double)(System.currentTimeMillis() - startTime) / 1000.0 + " s.");
 		Log.d("Found " + fileLoader.getFiles().size() + " files.");

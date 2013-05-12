@@ -20,6 +20,12 @@ public class FileLoader {
 	// If 'true', files are sorted in "headers first, sources last" order
 	private boolean shouldSort = true;
 	
+	private static String targetPath = "";
+	public static String getTargetPath()
+	{
+		return targetPath;
+	}
+	
 	// The original path to the file / folder
 	// private String path = "";
 	
@@ -41,16 +47,17 @@ public class FileLoader {
 	 */
 	public FileLoader(String path)
 	{
-		// this.path = path;
 		File f = new File(path);
-		
-		//Log.d("f exists: " + f.exists());
 		
 		if(f.isDirectory())
 		{
 			files = getFilesFrom(path);
-		}else{
+			FileLoader.targetPath = f.getPath();
+		}
+		else
+		{
 			files.add(path);
+			FileLoader.targetPath = f.getParent();
 		}
 		
 		if(shouldSort)
