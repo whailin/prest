@@ -463,7 +463,10 @@ public class Extractor
 		char c;
 		while((c = (char)reader.read()) != '\n' && c != '\r' && c != (char)-1)
 		{
-            if(currentPass == Pass.MAINPASS) plocCounter.push(c);
+            if(currentPass == Pass.MAINPASS)
+            {
+            	plocCounter.push(c);
+            }
             line += c;
         }
 		// lineno++;
@@ -554,6 +557,13 @@ public class Extractor
 				{
 					writer.write(func.getType() + " " + func.getName() + "()" + " | " + func.fileOfFunc + "\n");
 					writer.write("------------------------\n");
+					writer.write("LOC\n");
+					writer.write("    LLOC: " + func.getLOCMetrics().logicalLOC + "\n");
+					writer.write("    Code-only: " + func.getLOCMetrics().codeOnlyLines + "\n");
+					writer.write("    Comment lines: " + func.getLOCMetrics().commentLines + "\n");
+					writer.write("    Commented code lines: " + func.getLOCMetrics().commentedCodeLines + "\n");
+					writer.write("    Empty lines: " + func.getLOCMetrics().emptyLines + "\n");
+					writer.write("------------------------\n");
 					writer.write("Operands:\n");
 					for(String s : func.getOperands())
 					{
@@ -629,6 +639,14 @@ public class Extractor
 					CppClass cppClass = (CppClass)scope;
 					writer.write(cppClass.getName() + "(" + (cppClass.namespace != null ? cppClass.namespace.getName() : "__MAIN__") + ")" + "\n");
 					
+					writer.write("------------------------\n");
+					writer.write("LOC\n");
+					writer.write("    LLOC: " + cppClass.getLOCMetrics().logicalLOC + "\n");
+					writer.write("    Code-only: " + cppClass.getLOCMetrics().codeOnlyLines + "\n");
+					writer.write("    Comment lines: " + cppClass.getLOCMetrics().commentLines + "\n");
+					writer.write("    Commented code lines: " + cppClass.getLOCMetrics().commentedCodeLines + "\n");
+					writer.write("    Empty lines: " + cppClass.getLOCMetrics().emptyLines + "\n");
+					writer.write("------------------------\n");
 					
 					if(cppClass.parents.size() > 0)
 					{

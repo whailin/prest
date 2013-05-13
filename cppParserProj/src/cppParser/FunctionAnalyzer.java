@@ -163,7 +163,7 @@ public class FunctionAnalyzer extends Analyzer {
 					return false; // TODO Fix this
 				}
 				
-				sentenceAnalyzer.setCurrentScope(scope, false);
+				sentenceAnalyzer.setCurrentScope(scope, true);
 				
 				String funcName = tokens[i-1];
 

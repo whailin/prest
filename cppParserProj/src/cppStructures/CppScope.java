@@ -1,5 +1,6 @@
 package cppStructures;
 
+import cppMetrics.LOCMetrics;
 import cppParser.Extractor;
 import cppParser.ParsedObjectManager;
 import java.util.ArrayList;
@@ -32,6 +33,13 @@ public class CppScope
 	
 	protected ArrayList<MemberVariable> members = new ArrayList<MemberVariable>();
 	protected ArrayList<CppFunc> functions = new ArrayList<CppFunc>();
+	
+	private LOCMetrics locMetrics = new LOCMetrics();
+	
+	public LOCMetrics getLOCMetrics()
+	{
+		return locMetrics;
+	}
 	
 	/**
 	 * Constructs a new scope with the given name

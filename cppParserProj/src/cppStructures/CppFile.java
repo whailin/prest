@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import cppMetrics.LOCMetrics;
 import cppParser.ParsedObjectManager;
 
 /**
@@ -21,6 +22,13 @@ public class CppFile {
 	
 	// List of #defines in the file
 	private ArrayList<CppDefine> defines = null;
+	
+	private LOCMetrics locMetrics = new LOCMetrics();
+	
+	public LOCMetrics getLOCMetrics()
+	{
+		return locMetrics;
+	}
 	
 	/**
 	 * Constructs a new CPP file object
