@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import cppParser.ParsedObjectManager;
+
 /**
  * This class takes tokens from SentenceAnalyzer and counts how many logical lines 
  * of code(aka logical source statements) it can find. This class does not count 
@@ -214,9 +216,25 @@ public class LLOCCounter
     
     public void addLloc() {
         lloc++;
+        if(ParsedObjectManager.getInstance().currentFunc != null)
+        {
+        	ParsedObjectManager.getInstance().currentFunc.getLOCMetrics().logicalLOC++;
+        }
+        if(ParsedObjectManager.getInstance().currentScope != null)
+        {
+        	ParsedObjectManager.getInstance().currentScope.getLOCMetrics().logicalLOC++;
+        }
     }
     public void addLloc(int count){
         lloc+=count;
+        if(ParsedObjectManager.getInstance().currentFunc != null)
+        {
+        	ParsedObjectManager.getInstance().currentFunc.getLOCMetrics().logicalLOC += count;
+        }
+        if(ParsedObjectManager.getInstance().currentScope != null)
+        {
+        	ParsedObjectManager.getInstance().currentScope.getLOCMetrics().logicalLOC += count;
+        }
     }
 
     public int getLloc() {

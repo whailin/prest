@@ -31,8 +31,6 @@ public class ResultExporter {
         this.excludeStructs = excludeStructs;
         this.outputDir = outputDir;
         
-        Log.d("RE: OUT: " + outputDir);
-        
         if(!outputDir.isEmpty())
         {
             char c = outputDir.charAt(outputDir.length() - 1);
@@ -44,7 +42,6 @@ public class ResultExporter {
         else
         {
         	this.outputDir = FileLoader.getTargetPath() + File.separator;
-        	Log.d("Fixed out: " + outputDir);
         }
     }
     
@@ -155,7 +152,13 @@ public class ResultExporter {
                 "Children" + separator +
                 "Number of children" + separator +
                 "Depth of Inheritance" + separator +
-                "Weighted Methods per Class");
+                "Weighted Methods per Class" + separator +
+                "Logical LOC" + separator +
+                "Code only lines" + separator +
+                "Comment lines" + separator + 
+                "Commented code lines" + separator +
+                "Empty lines"
+                );
         if(!excludeStructs)
         {
             writer.write(separator + "Type");
@@ -246,7 +249,12 @@ public class ResultExporter {
                         children + separator +
                         c.children.size() + separator +
                         c.getDepthOfInheritance() + separator +
-                        c.getFunctions().size()
+                        c.getFunctions().size() + separator +
+                        c.getLOCMetrics().logicalLOC + separator +
+                        c.getLOCMetrics().codeOnlyLines + separator +
+                        c.getLOCMetrics().commentLines + separator +
+                        c.getLOCMetrics().commentedCodeLines + separator +
+                        c.getLOCMetrics().emptyLines
                         );
                 if(!excludeStructs) writer.write(separator + type);
             }
@@ -358,7 +366,12 @@ public class ResultExporter {
                 "Deliver Bugs" + separator +
                 "Level" + separator +
                 "Intelligent content" + separator +
-                "Cyclomatic Complexity" +
+                "Cyclomatic Complexity" + separator +
+                "Logical LOC" + separator +
+                "Code only lines" + separator +
+                "Comment lines" + separator + 
+                "Commented code lines" + separator +
+                "Empty lines" +
                 "\n"
                 );
         
@@ -399,7 +412,12 @@ public class ResultExporter {
                         func.getDeliveredBugs() + separator +
                         func.getLevel() + separator +
                         func.getIntContent() + separator +  
-                        func.getCyclomaticComplexity()       
+                        func.getCyclomaticComplexity() + separator +  
+                        func.getLOCMetrics().logicalLOC + separator +  
+                        func.getLOCMetrics().codeOnlyLines + separator +  
+                        func.getLOCMetrics().commentLines + separator +  
+                        func.getLOCMetrics().commentedCodeLines + separator +  
+                        func.getLOCMetrics().emptyLines
                         );
 				writer.write("\n");
 			}

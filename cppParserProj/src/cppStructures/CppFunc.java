@@ -1,5 +1,6 @@
 package cppStructures;
 
+import cppMetrics.LOCMetrics;
 import cppParser.utils.Constants;
 import cppParser.utils.Log;
 import java.util.ArrayList;
@@ -60,6 +61,13 @@ public class CppFunc {
 	private double deliveredBugs = 0.0;
 	private double level = 0.0;
 	private double intContent = 0.0;
+	
+	private LOCMetrics locMetrics = new LOCMetrics();
+	
+	public LOCMetrics getLOCMetrics()
+	{
+		return locMetrics;
+	}
 	
 	/**
 	 * Constructs a new CppFunc with the given return type and name
