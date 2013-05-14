@@ -23,12 +23,14 @@ public class ResultExporter {
     private static final String separator = ",";
     private String outputDir;
     private BufferedWriter writer;
-    private boolean excludeStructs = false;
+    private boolean includeStructs = false;
     
 
-    public ResultExporter(String outputDir, boolean excludeStructs)
+    public ResultExporter(String outputDir, boolean includeStructs)
     {
-        this.excludeStructs = excludeStructs;
+        this.includeStructs = includeStructs;
+        if(includeStructs)Log.d("Including structs");
+        else Log.d("Excluding structs");
         this.outputDir = outputDir;
         
         if(!outputDir.isEmpty())
@@ -36,7 +38,7 @@ public class ResultExporter {
             char c = outputDir.charAt(outputDir.length() - 1);
             if(c != '\\' || c != '/')
             {
-                this.outputDir += "\\";
+                this.outputDir += "/";
             }
         }
         else
@@ -106,7 +108,7 @@ public class ResultExporter {
         List<LOCMetrics> list = ParsedObjectManager.getInstance().getLocMetrics();
         writer.write("File name" + separator +
                 "Physical LOC" + separator +
-                "Executable LOC" + separator +
+                "Logical LOC" + separator +
                 "Empty Lines" + separator +
                 //"commentOnlyLines"+separator+
                 //"commentedCodeLines"+separator+
@@ -153,13 +155,12 @@ public class ResultExporter {
                 "Number of children" + separator +
                 "Depth of Inheritance" + separator +
                 "Weighted Methods per Class" + separator +
+                "Physical LOC" + separator +
                 "Logical LOC" + separator +
-                "Code only lines" + separator +
                 "Comment lines" + separator + 
-                "Commented code lines" + separator +
                 "Empty lines"
                 );
-        if(!excludeStructs)
+        if(includeStructs)
         {
             writer.write(separator + "Type");
         }
@@ -172,7 +173,7 @@ public class ResultExporter {
             {
                 if(cc.type == CppScope.STRUCT)
                 {
-                    if(!excludeStructs)
+                    if(includeStructs)
                     {
                         type = "struct";
                     }
@@ -250,13 +251,12 @@ public class ResultExporter {
                         c.children.size() + separator +
                         c.getDepthOfInheritance() + separator +
                         c.getFunctions().size() + separator +
+                        (c.getLOCMetrics().codeOnlyLines +c.getLOCMetrics().commentedCodeLines)+ separator +
                         c.getLOCMetrics().logicalLOC + separator +
-                        c.getLOCMetrics().codeOnlyLines + separator +
-                        c.getLOCMetrics().commentLines + separator +
-                        c.getLOCMetrics().commentedCodeLines + separator +
+                        (c.getLOCMetrics().commentLines+c.getLOCMetrics().commentedCodeLines) + separator +
                         c.getLOCMetrics().emptyLines
                         );
-                if(!excludeStructs) writer.write(separator + type);
+                if(includeStructs) writer.write(separator + type);
             }
         }
                 
@@ -267,7 +267,7 @@ public class ResultExporter {
         LOCMetrics l = getProjectLevelLOCMetrics();
         writer.write(
                 "Total Physical LOC" + separator +
-                "Total Executable LOC" + separator +
+                "Total Logical LOC" + separator +
                 "Total Empty Lines" + separator +
                 //"commentOnlyLines"+separator+
                 //"commentedCodeLines"+separator+
@@ -276,10 +276,11 @@ public class ResultExporter {
 			writer.write(
                     (l.codeOnlyLines+l.commentedCodeLines) + "," +
                     l.logicalLOC + separator +
-                    l.emptyLines + separator +
+                     (l.commentLines + l.commentedCodeLines)+ separator+
                     //+l.commentLines + separator
                     //+l.commentedCodeLines + separator
-                    (l.commentLines + l.commentedCodeLines));
+                    
+                    l.emptyLines );
         
     }
     
@@ -367,10 +368,11 @@ public class ResultExporter {
                 "Level" + separator +
                 "Intelligent content" + separator +
                 "Cyclomatic Complexity" + separator +
+                "Physical LOC" + separator +
                 "Logical LOC" + separator +
-                "Code only lines" + separator +
+                //"Code only lines" + separator +
                 "Comment lines" + separator + 
-                "Commented code lines" + separator +
+                //"Commented code lines" + separator +
                 "Empty lines" +
                 "\n"
                 );
@@ -412,11 +414,12 @@ public class ResultExporter {
                         func.getDeliveredBugs() + separator +
                         func.getLevel() + separator +
                         func.getIntContent() + separator +  
-                        func.getCyclomaticComplexity() + separator +  
+                        func.getCyclomaticComplexity() + separator + 
+                        (func.getLOCMetrics().commentedCodeLines+ func.getLOCMetrics().codeOnlyLines)+separator+
                         func.getLOCMetrics().logicalLOC + separator +  
-                        func.getLOCMetrics().codeOnlyLines + separator +  
-                        func.getLOCMetrics().commentLines + separator +  
-                        func.getLOCMetrics().commentedCodeLines + separator +  
+                        //func.getLOCMetrics().codeOnlyLines + separator +  
+                        (func.getLOCMetrics().commentedCodeLines+func.getLOCMetrics().commentLines) + separator +  
+                        //func.getLOCMetrics().commentedCodeLines + separator +  
                         func.getLOCMetrics().emptyLines
                         );
 				writer.write("\n");

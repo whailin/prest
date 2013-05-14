@@ -2,6 +2,7 @@
 
 package cppParser;
 
+import cppParser.utils.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -11,7 +12,7 @@ import java.io.FileNotFoundException;
  */
 public class CmdLineParameterParser
 {
-    public static boolean excludeStructs = false;        
+    public static boolean includeStructs = false;        
     static String inputDir = "";
     static String outputDir = "";
     static boolean input = false;
@@ -29,7 +30,11 @@ public class CmdLineParameterParser
         
         File f = new File(inputDir);
         if(!f.exists()) throw new FileNotFoundException("Input file/directory not found (" + inputDir + ")");
-        
+        /*if(outputDir.isEmpty()){
+            Log.d("outputting to "+f.getPath());
+            outputDir=f.getPath();
+                
+        }*/
         f = new File(outputDir);
         
         if(!f.exists())
@@ -64,9 +69,9 @@ public class CmdLineParameterParser
                 output = true;
                 dir = true;
             }
-            else if(param.equalsIgnoreCase("-excludeStructs"))
+            else if(param.equalsIgnoreCase("-includeStructs"))
             {
-                excludeStructs = true;
+                includeStructs = true;
             }
             else throw new InvalidParameterException("Invalid parameters");
             
@@ -105,6 +110,7 @@ public class CmdLineParameterParser
                 }
                 directory = param;
             }
+            directory.replace('\\', '/');
             if(input)
             {
                 inputDir += directory;

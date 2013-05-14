@@ -186,7 +186,7 @@ public class Extractor
 		dumpScopes();
 		
 		// Dump tree results to a file
-		ResultExporter exp = new ResultExporter(outputDir, CmdLineParameterParser.excludeStructs);
+		ResultExporter exp = new ResultExporter(outputDir, CmdLineParameterParser.includeStructs);
         exp.exportAll();
 		
 		Log.d("Dump done.");
