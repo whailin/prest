@@ -111,11 +111,30 @@ public class ResultExporter {
                 "Empty Lines" + separator +
                 //"commentOnlyLines"+separator+
                 //"commentedCodeLines"+separator+
-                "Comment Lines");
+                "Comment Lines"+ separator +
+                "Operators"+separator+
+                "Operands"+separator+
+                "Unique operators"+separator+
+                "Unique operands"+separator+
+                
+                "Calculated length"+separator+
+                "Delivered bugs"+separator+
+                "Vocabulary"+separator+
+                
+                "Volume"+separator+
+                "Difficulty"+separator+
+                "Effort"+separator+
+                "Time to program"+separator+
+                
+                "Level"+separator+
+                "Intelligent content"+separator+
+                "Cyclomatic complexity");
+                        
         
         for(CppFile file : ParsedObjectManager.getInstance().getFiles())
         {        
             LOCMetrics l=file.getLOCMetrics();
+            CppFunc otherMetrics=file.getOtherMetrics();
             writer.write("\n");
 			writer.write("\"" + l.file + "\"" + separator + 
                     (l.codeOnlyLines + l.commentedCodeLines) + "," +
@@ -123,7 +142,25 @@ public class ResultExporter {
                     l.emptyLines+separator +
                     //+l.commentLines + separator
                     //+l.commentedCodeLines + separator
-                    (l.commentLines + l.commentedCodeLines));
+                    (l.commentLines + l.commentedCodeLines)+
+                    otherMetrics.getOperatorCount() + separator +
+                    otherMetrics.getOperandCount() + separator +
+                    otherMetrics.getUniqueOperatorCount() + separator +
+                    otherMetrics.getUniqueOperandCount() + separator +
+                                
+                    otherMetrics.getLength() + separator +
+                    otherMetrics.getDeliveredBugs() + separator +
+                    otherMetrics.getVocabulary() + separator +
+                                
+                    otherMetrics.getVolume() + separator +
+                    otherMetrics.getDifficulty() + separator +
+                    otherMetrics.getEffort() + separator +
+                    otherMetrics.getTimeToProgram() + separator +
+                                
+                    otherMetrics.getLevel() + separator +
+                    otherMetrics.getIntContent() + separator +  
+                    otherMetrics.getCyclomaticComplexity()
+                    );
         }
         writer.write("\n");
         
