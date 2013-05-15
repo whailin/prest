@@ -35,6 +35,28 @@ public class CppScope
 	protected ArrayList<CppFunc> functions = new ArrayList<CppFunc>();
 	
 	private LOCMetrics locMetrics = new LOCMetrics();
+    //Sum of each metric
+    public int sumFuncPLOC;
+    public int sumFuncLLOC;
+    public int sumFuncCommentLines;
+    public int sumFuncEmptyLines;
+    public int sumFuncCC;
+    //Halstead
+    public int sumOperators;
+    public int sumOperands;
+    public int sumUniqueOperators;
+    public int sumUniqueOperands;
+    
+    public int sumVocabulary = 0;
+	public int sumLength = 0;
+	public double sumCalculatedLength = 0.0;
+	public double sumVolume = 0.0;
+	public double sumDifficulty = 0.0;
+	public double sumEffort = 0.0;
+	public double sumTimeToProgram = 0.0;
+	public double sumDeliveredBugs = 0.0;
+	public double sumLevel = 0.0;
+	public double sumIntContent = 0.0;
 	
 	public LOCMetrics getLOCMetrics()
 	{

@@ -71,6 +71,8 @@ public class ParsedObjectManager
     public void addLocMetric(LOCMetrics loc)
     {
         locMetrics.add(loc);
+        currentFile.setLocMetrics(loc);
+        
     }
     
     /**
@@ -181,6 +183,7 @@ public class ParsedObjectManager
 		{
 			if(cf.getFilename().equals(name))
 			{
+                Log.d("File changed to "+name);
 				currentFile = cf;
 				return;
 			}

@@ -2,7 +2,6 @@
 
 package cppParser;
 
-import cppParser.utils.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -31,10 +30,10 @@ public class CmdLineParameterParser
         File f = new File(inputDir);
         if(!f.exists()) throw new FileNotFoundException("Input file/directory not found (" + inputDir + ")");
         /*if(outputDir.isEmpty()){
-            Log.d("outputting to "+f.getPath());
+            //Log.d("outputting to "+f.getPath());
             outputDir=f.getPath();
                 
-        }*/
+        }
         f = new File(outputDir);
         
         if(!f.exists())
@@ -47,7 +46,7 @@ public class CmdLineParameterParser
             {
                 throw new Exception("Could not write to directory: " + f.getAbsolutePath());
             }
-        }
+        }*/
         
     }
     

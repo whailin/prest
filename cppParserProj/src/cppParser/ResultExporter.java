@@ -68,7 +68,7 @@ public class ResultExporter {
         try
         {
             writer = new BufferedWriter(new FileWriter(outputDir + "FileMetrics.csv"));
-            writeLOCMetrics(writer);
+            writeFileMetrics(writer);
             writer.close();
             
         }
@@ -102,10 +102,9 @@ public class ResultExporter {
         
     }
     
-    private void writeLOCMetrics(BufferedWriter writer) throws IOException
+    private void writeFileMetrics(BufferedWriter writer) throws IOException
     {
         
-        List<LOCMetrics> list = ParsedObjectManager.getInstance().getLocMetrics();
         writer.write("File name" + separator +
                 "Physical LOC" + separator +
                 "Logical LOC" + separator +
@@ -114,8 +113,9 @@ public class ResultExporter {
                 //"commentedCodeLines"+separator+
                 "Comment Lines");
         
-        for(LOCMetrics l : list)
-        {            
+        for(CppFile file : ParsedObjectManager.getInstance().getFiles())
+        {        
+            LOCMetrics l=file.getLOCMetrics();
             writer.write("\n");
 			writer.write("\"" + l.file + "\"" + separator + 
                     (l.codeOnlyLines + l.commentedCodeLines) + "," +
@@ -132,9 +132,9 @@ public class ResultExporter {
     private LOCMetrics getProjectLevelLOCMetrics()
     {
         LOCMetrics projectLevelMetrics = new LOCMetrics();
-        List<LOCMetrics> list = ParsedObjectManager.getInstance().getLocMetrics();
-        for(LOCMetrics l : list)
-        {            
+        for(CppFile file: ParsedObjectManager.getInstance().getFiles())
+        {    
+            LOCMetrics l=file.getLOCMetrics();
             projectLevelMetrics.codeOnlyLines += l.codeOnlyLines;
             projectLevelMetrics.commentLines += l.commentLines;
             projectLevelMetrics.commentedCodeLines += l.commentedCodeLines;
@@ -149,17 +149,60 @@ public class ResultExporter {
         writer.write(
                 "File " + separator +
                 "Namespace" + separator +
-                "Class Name" + separator +
+                "Class name" + separator +
                 "Direct parents" + separator +
                 "Children" + separator +
                 "Number of children" + separator +
-                "Depth of Inheritance" + separator +
-                "Weighted Methods per Class" + separator +
+                "Depth of inheritance" + separator +
+                "Weighted methods per class" + separator +
+                
                 "Physical LOC" + separator +
                 "Logical LOC" + separator +
                 "Comment lines" + separator + 
-                "Empty lines"
-                );
+                "Empty lines"+separator+
+                
+                "Sum function PLOC"+separator+
+                "Sum function LLOC"+separator+
+                "Sum function comment lines"+separator+
+                "Sum function empty lines"+separator+
+                "Sum operators"+separator+
+                "Sum operands"+separator+
+                "Sum unique operators"+separator+
+                "Sum unique operands"+separator+
+                "Sum calculated length"+separator+
+                "Sum delivered bugs"+separator+
+                "Sum vocabulary"+separator+
+                "Sum length"+separator+
+                "Sum volume"+separator+
+                "Sum difficulty"+separator+
+                "Sum effort"+separator+
+                "Sum time to program"+separator+
+                "Sum delivered bugs"+separator+
+                "Sum level"+separator+
+                "Sum intelligent content"+separator+
+                "Sum function complexity"+separator+
+                
+                "Average function PLOC"+separator+
+                "Average function LLOC"+separator+
+                "Average function comment lines"+separator+
+                "Average function empty lines"+separator+
+                "Average operators"+separator+
+                "Average operands"+separator+
+                "Average unique operators"+separator+
+                "Average unique operands"+separator+
+                "Average calculated length"+separator+
+                "Average delivered bugs"+separator+
+                "Average vocabulary"+separator+
+                "Average length"+separator+
+                "Average volume"+separator+
+                "Average difficulty"+separator+
+                "Average effort"+separator+
+                "Average time to program"+separator+
+                "Average delivered bugs"+separator+
+                "Average level"+separator+
+                "Average intelligent content"+separator+
+                "Average function complexity"
+        );
         if(includeStructs)
         {
             writer.write(separator + "Type");
@@ -185,62 +228,10 @@ public class ResultExporter {
                 }
                 
                 CppClass c = (CppClass) cc;
-                String namespace = "";
-                CppNamespace ns = c.namespace;
-                
-                while (true)
-                {
-                    if(ns != null)
-                    {
-                        if(ns.name.contentEquals("__MAIN__") || ns.name.isEmpty()) break;
-                        else 
-                        {
-                            namespace = ns.name + "::" + namespace;
-                        }
-                        ns = ns.namespace;
-                    }
-                    else break;
-                }
-                
-                if(c.parents.isEmpty())
-                {
-                    parents = "";
-                }
-                else
-                {
-                    int x = 0;
-                    parents = "\"";
-                    
-                    for (CppScope p : c.parents)
-                    {
-                        parents += p.getName();
-                        if(x < (c.parents.size() - 1))
-                        {
-                            parents += ",";
-                        }
-                        x++;   
-                    }
-                    parents += "\"";
-                }
-                
-                if(c.children.isEmpty())
-                {
-                    children = "";
-                }
-                else
-                {
-                    int x = 0;
-                    children = "\"";
-                    for (CppScope p : c.children)
-                    {
-                        children += p.getName();
-                        if(x < (c.children.size() - 1))
-                            children += ",";
-                        x++;    
-                    }
-                    children += "\"";
-                }
-                
+                String namespace = getNamespace(c);
+                parents=getParents(c);
+                children=getChildren(c);
+                int funcs=c.getFunctions().size();
                 writer.write("\n");
                 writer.write(
                         c.nameOfFile + separator +
@@ -250,11 +241,60 @@ public class ResultExporter {
                         children + separator +
                         c.children.size() + separator +
                         c.getDepthOfInheritance() + separator +
-                        c.getFunctions().size() + separator +
+                        funcs + separator +
                         (c.getLOCMetrics().codeOnlyLines +c.getLOCMetrics().commentedCodeLines)+ separator +
                         c.getLOCMetrics().logicalLOC + separator +
                         (c.getLOCMetrics().commentLines+c.getLOCMetrics().commentedCodeLines) + separator +
-                        c.getLOCMetrics().emptyLines
+                        c.getLOCMetrics().emptyLines + separator +
+                        
+                        c.sumFuncPLOC + separator +
+                        c.sumFuncLLOC + separator +
+                        c.sumFuncCommentLines + separator +
+                        c.sumFuncEmptyLines + separator +
+                
+                        c.sumOperators + separator +
+                        c.sumOperands + separator +
+                        c.sumUniqueOperators + separator +
+                        c.sumUniqueOperands + separator +
+                
+                        c.sumCalculatedLength + separator +
+                        c.sumDeliveredBugs + separator +
+                
+                        c.sumVocabulary + separator +
+                        c.sumLength + separator +
+                        c.sumVolume + separator +
+                        c.sumDifficulty + separator +
+                        c.sumEffort + separator +
+                        c.sumTimeToProgram + separator +
+                        c.sumDeliveredBugs + separator +
+                        c.sumLevel + separator +
+                        c.sumIntContent + separator +
+                        c.sumFuncCC + separator +
+                        ///Averages
+                        ((double)c.sumFuncPLOC/funcs) + separator +
+                        ((double)c.sumFuncLLOC/funcs) + separator +
+                        ((double)c.sumFuncCommentLines /funcs) + separator +
+                        ((double)c.sumFuncEmptyLines /funcs) + separator +
+                
+                        ((double)c.sumOperators/funcs) + separator +
+                        ((double)c.sumOperands /funcs) + separator +
+                        ((double)c.sumUniqueOperators /funcs) + separator +
+                        ((double)c.sumUniqueOperands /funcs) + separator +
+                
+                        ((double)c.sumCalculatedLength /funcs) + separator +
+                        ((double)c.sumDeliveredBugs /funcs) + separator +
+                
+                        (c.sumVocabulary /funcs) + separator +
+                        (c.sumLength /funcs) + separator +
+                        (c.sumVolume /funcs) + separator +
+                        (c.sumDifficulty /funcs) + separator +
+                        (c.sumEffort /funcs) + separator +
+                        (c.sumTimeToProgram /funcs) + separator +
+                        (c.sumDeliveredBugs /funcs) + separator +
+                        (c.sumLevel /funcs) + separator +
+                        (c.sumIntContent /funcs) + separator +
+                        ((double)c.sumFuncCC /funcs)
+
                         );
                 if(includeStructs) writer.write(separator + type);
             }
@@ -286,7 +326,7 @@ public class ResultExporter {
     
     private void writeNamespaces(BufferedWriter writer) throws IOException
     {
-        String parameters = "";
+        //String parameters = "";
         writeProjectLOC(writer);
         writer.write(
                         //"File"+separator+
@@ -425,5 +465,88 @@ public class ResultExporter {
 				writer.write("\n");
 			}
         }
+    }
+/**
+ * Method extracts all parents from given class and
+ * returns them as String which contains eg "parent1, parent2". Quotes are included 
+ * unless class has no parents then empty String is returned
+ * @param c
+ * @return 
+ */
+    private String getParents(CppClass c) {
+                String parents="";
+                if(c.parents.isEmpty())
+                {
+                    parents = "";
+                }
+                else
+                {
+                    int x = 0;
+                    parents = "\"";
+                    
+                    for (CppScope p : c.parents)
+                    {
+                        parents += p.getName();
+                        if(x < (c.parents.size() - 1))
+                        {
+                            parents += ",";
+                        }
+                        x++;   
+                    }
+                    parents += "\"";
+                }
+                return parents;
+    }
+    /**
+     * Gives the namespace as string of given class
+     * @param c
+     * @return 
+     */
+    private String getNamespace(CppClass c) {
+                String namespace="";
+                CppNamespace ns = c.namespace;
+                
+                while (true)
+                {
+                    if(ns != null)
+                    {
+                        if(ns.name.contentEquals("__MAIN__") || ns.name.isEmpty()) break;
+                        else 
+                        {
+                            namespace = ns.name + "::" + namespace;
+                        }
+                        ns = ns.namespace;
+                    }
+                    else break;
+                }
+                if(!namespace.isEmpty())
+                    namespace="\""+namespace+"\"";
+                return namespace;
+    }
+/**
+ * Returns children of parameter c as comma separated string
+ * @param c
+ * @return 
+ */
+    private String getChildren(CppClass c) {
+                String children;
+                if(c.children.isEmpty())
+                {
+                    children = "";
+                }
+                else
+                {
+                    int x = 0;
+                    children = "\"";
+                    for (CppScope p : c.children)
+                    {
+                        children += p.getName();
+                        if(x < (c.children.size() - 1))
+                            children += ",";
+                        x++;    
+                    }
+                    children += "\"";
+                }
+                return children;
     }
 }
