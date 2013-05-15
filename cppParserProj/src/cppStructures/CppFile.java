@@ -24,6 +24,10 @@ public class CppFile {
 	private ArrayList<CppDefine> defines = null;
 	
 	private LOCMetrics locMetrics = new LOCMetrics();
+
+    public void setLocMetrics(LOCMetrics locMetrics) {
+        this.locMetrics = locMetrics;
+    }
 	
 	public LOCMetrics getLOCMetrics()
 	{

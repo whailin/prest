@@ -30,6 +30,8 @@ import java.io.*;
  */
 public class Extractor
 {
+
+    
 	enum Pass
 	{
 		PREPASS,
@@ -176,6 +178,8 @@ public class Extractor
 			sentenceAnalyzer.lastFileProcessed();
 			Log.d("Main pass done.");
 		}
+        sumClassMetrics();
+        sumFileMetrics();
 		
         // Verify that no macro calls are in the operands
         // verifyToFile();
@@ -677,4 +681,57 @@ public class Extractor
 			e.printStackTrace();
 		}
 	}
+    /**
+     * This method sums the metrics that already have been separately calculated for each class. 
+     * To get the averages from these they have to be divided with number of functions
+     * in the scope
+     */
+    private void sumClassMetrics() {
+        //CppFunc helper;
+        for(CppScope s : ParsedObjectManager.getInstance().getScopes())
+        {
+            //helper=new CppFunc("void","helper");
+        	for(CppFunc func : s.getFunctions())
+			{
+                LOCMetrics locMetrics=func.getLOCMetrics();
+                
+                s.sumFuncLLOC+=locMetrics.logicalLOC;
+                s.sumFuncPLOC+=(locMetrics.commentedCodeLines+locMetrics.codeOnlyLines);
+                s.sumFuncCommentLines+=(locMetrics.commentedCodeLines+locMetrics.commentLines);
+                s.sumFuncEmptyLines+=locMetrics.emptyLines;
+                
+                s.sumOperators+=func.getOperatorCount();
+                s.sumOperands+=func.getOperandCount();
+                s.sumUniqueOperators+=func.getUniqueOperatorCount();
+                s.sumUniqueOperands+=func.getUniqueOperandCount();
+                
+                s.sumCalculatedLength+=func.getCalculatedLength();
+                s.sumDeliveredBugs+=func.getDeliveredBugs();
+                
+                s.sumVocabulary+= func.getVocabulary();
+                s.sumLength+=func.getLength();
+                s.sumVolume+=func.getVolume();
+                s.sumDifficulty+=func.getDifficulty();
+                s.sumEffort+=func.getEffort();
+                s.sumTimeToProgram+=func.getTimeToProgram();
+                s.sumDeliveredBugs+=func.getDeliveredBugs();
+                s.sumLevel+=func.getLevel();
+                s.sumIntContent+=func.getIntContent();
+                s.sumFuncCC+=func.getCyclomaticComplexity();
+                        
+            }
+        }
+    }
+    /**
+     * This method sums the metrics that already have been separately calculated for each file. 
+     * To get the averages from these they have to be divided with number of functions
+     * in the scope
+     */
+    private void sumFileMetrics() {
+        //CppFunc helper;
+        for(CppFile s : ParsedObjectManager.getInstance().getFiles())
+        {
+            //helper=new CppFunc("void","helper");
+        }
+    }
 }
