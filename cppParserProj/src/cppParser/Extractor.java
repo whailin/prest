@@ -728,10 +728,27 @@ public class Extractor
      * in the scope
      */
     private void sumFileMetrics() {
-        //CppFunc helper;
-        for(CppFile s : ParsedObjectManager.getInstance().getFiles())
+        CppFunc helper;
+        for(CppFile f : ParsedObjectManager.getInstance().getFiles())
         {
-            //helper=new CppFunc("void","helper");
+            String filename=f.getFilename();
+            helper=new CppFunc("void","helper");
+            int complexity=0;
+            for(CppScope s : ParsedObjectManager.getInstance().getScopes()){
+                for(CppFunc func : s.getFunctions()){
+                    if(func.fileOfFunc.contentEquals(filename)){
+                        for(String op:func.getOperands())
+                            helper.addOperand(op);
+                        for(String op:func.getOperators())
+                            helper.addOperator(op);
+                        helper.getCyclomaticComplexity();
+                        complexity+=func.getCyclomaticComplexity();
+                    }
+                }
+            }
+            helper.setCyclomaticComplexity(complexity);
+            f.setOtherMetrics(helper);
+            
         }
     }
 }

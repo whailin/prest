@@ -24,6 +24,15 @@ public class CppFile {
 	private ArrayList<CppDefine> defines = null;
 	
 	private LOCMetrics locMetrics = new LOCMetrics();
+    private CppFunc otherMetrics=null;//This variable will contain complexity and halstead metrics
+
+    public CppFunc getOtherMetrics() {
+        return otherMetrics;
+    }
+
+    public void setOtherMetrics(CppFunc otherMetrics) {
+        this.otherMetrics = otherMetrics;
+    }
 
     public void setLocMetrics(LOCMetrics locMetrics) {
         this.locMetrics = locMetrics;
