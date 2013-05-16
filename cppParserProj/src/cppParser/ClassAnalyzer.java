@@ -320,20 +320,7 @@ public class ClassAnalyzer extends Analyzer
 				// Log.d("Found "+tokens[i]);
 				if(tokens[tokens.length - 1].equals(";"))
 				{
-					CppScope cc = null;
-                    switch(tokens[i])
-                    {
-                        case "class":
-                            cc = ParsedObjectManager.getInstance().addClass(tokens[tokens.length - 2], ParsedObjectManager.getInstance().currentNamespace);
-                            break;
-                        case "struct":
-                            cc = ParsedObjectManager.getInstance().addStruct(tokens[tokens.length - 2], ParsedObjectManager.getInstance().currentNamespace);
-                            break;
-                        case "union":
-                            cc = ParsedObjectManager.getInstance().addUnion(tokens[tokens.length - 2]);
-                            break;
-                    }
-                    
+					CppScope cc = createScope(tokens[i],tokens[tokens.length - 2]);
 					cc.nameOfFile = Extractor.currentFile;
                     
 					return true;
@@ -443,21 +430,8 @@ public class ClassAnalyzer extends Analyzer
                         String name=tokens[tokens.length - 2];
                         if(tokens[tokens.length - 2].contentEquals(">"))
                             name=getNameWithTemplate(tokens, 2);
-                        
-						
-                        
-						CppScope cc = null;
-                        switch(tokens[i]){
-                            case "class":
-                                cc=ParsedObjectManager.getInstance().addClass(name, ParsedObjectManager.getInstance().currentNamespace);
-                                break;
-                            case "struct":
-                                cc=ParsedObjectManager.getInstance().addStruct(name, ParsedObjectManager.getInstance().currentNamespace);
-                                break;
-                            case "union":
-                                cc=ParsedObjectManager.getInstance().addUnion(name);
-                                break;
-                        }   
+						CppScope cc = createScope(tokens[i],name);
+                         
 						cc.nameOfFile = Extractor.currentFile;
 						cc.braceCount = sentenceAnalyzer.braceCount;
 						// cc.parentScope = ParsedObjectManager.getInstance().currentScope;
@@ -500,5 +474,22 @@ public class ClassAnalyzer extends Analyzer
         }
         return name;
         
+    }
+
+    private CppScope createScope(String type, String name) {
+                    CppScope cc = null;
+                    switch(type)
+                    {
+                        case "class":
+                            cc = ParsedObjectManager.getInstance().addClass(name, ParsedObjectManager.getInstance().currentNamespace);
+                            break;
+                        case "struct":
+                            cc = ParsedObjectManager.getInstance().addStruct(name, ParsedObjectManager.getInstance().currentNamespace);
+                            break;
+                        case "union":
+                            cc = ParsedObjectManager.getInstance().addUnion(name);
+                            break;
+                    }
+                    return cc;
     }
 }
