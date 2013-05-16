@@ -19,7 +19,7 @@ import java.util.List;
 public class FunctionAnalyzer extends Analyzer {
 	
 	// Keywords that increment the cyclomatic complexity
-	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "#ifdef", "and", "or", "xor"};
+	private static final String[] inFuncCCKeywords = {"for", "while", "if", "?", "case", "&&", "||", "^", "#ifdef", "and", "or", "xor" };
 	
 	// Operands found from the sentence that is currently being processed
 	private HashSet<Integer> handledOperatorIndices = new HashSet<Integer>();
