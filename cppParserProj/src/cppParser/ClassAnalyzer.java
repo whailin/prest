@@ -470,6 +470,7 @@ public class ClassAnalyzer extends Analyzer
             }
             name=tokens[tokens.length-x-1]+name;
         }catch (Exception e){
+            //This warning is caused by wrong handling of templates(and possibly arrays in struct/class definitions
                 Log.d("Warning: Index out of bounds while parsing template:"+Extractor.currentFile+" line:"+Extractor.lineno+" "+name);
         }
         return name;

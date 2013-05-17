@@ -79,7 +79,12 @@ public class LLOCCounter
         }
         return false;
     }
-    
+    /**
+     * This method decides how to handle the tokens depending on the mode that was chosen before.
+     * BEGIN is a mode that is selected by default and that mode is selected when a LLOC ends, eg ; is found
+     * @param token
+     * @param next 
+     */
     private void chooseAction(String token, String next) {
         switch(mode){
             case BEGIN:
@@ -128,7 +133,12 @@ public class LLOCCounter
         }
     }
     
-    
+    /**
+     * There are some special cases in C++ that need different kind of handling 
+     * this method does that depending on what the token is.
+     * @param token
+     * @param next 
+     */
     private void handleSpecialCase(String token, String next) {
         switch(token){
             case "for":
@@ -178,7 +188,12 @@ public class LLOCCounter
                 mode = SKIPTOBRACKET;
         }
     }
-    
+    /**
+     * This method counts all statements that are inside parenthesis of a for loop.
+     * Empty statements are not counted and for-each loops are always counted as two llocs
+     * @param token
+     * @param next 
+     */
     private void handleFor(String token, String next) {
         switch(token) {
             case ";":
