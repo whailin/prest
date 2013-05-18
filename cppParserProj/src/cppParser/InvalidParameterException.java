@@ -1,15 +1,20 @@
-
-
 package cppParser;
 
 /**
- *
+ * 
  * @author Tomi
  */
-public class InvalidParameterException extends Exception{
+public class InvalidParameterException extends Exception
+{
 
-    InvalidParameterException(String msg) {
-        super(msg);
-    }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	InvalidParameterException(String msg)
+	{
+		super(msg);
+	}
 
 }

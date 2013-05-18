@@ -1,5 +1,6 @@
 package cppStructures;
 
-public class CppStatement {
+public class CppStatement
+{
 
 }

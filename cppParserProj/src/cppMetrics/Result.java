@@ -1,5 +1,6 @@
 package cppMetrics;
 
-public class Result {
+public class Result
+{
 
 }
