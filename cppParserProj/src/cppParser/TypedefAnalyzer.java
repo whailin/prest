@@ -1,21 +1,26 @@
 package cppParser;
 
-public class TypedefAnalyzer extends Analyzer {
+public class TypedefAnalyzer extends Analyzer
+{
 
-	
-	public TypedefAnalyzer(SentenceAnalyzer sa) {
+	public TypedefAnalyzer(SentenceAnalyzer sa)
+	{
 		super(sa);
-		
+
 	}
-	
+
 	@Override
-	public boolean processSentence(String[] tokens) {
-		for(int i = 0; i < tokens.length; ++i)
+	public boolean processSentence(String[] tokens)
+	{
+		for (int i = 0; i < tokens.length; ++i)
 		{
-			if(tokens[i].equals("typedef")) return true;
-			
+			if (tokens[i].equals("typedef"))
+			{
+				return true;
+			}
+
 		}
 		return false;
 	}
-	
+
 }

@@ -8,19 +8,20 @@ import java.io.IOException;
 import cppParser.FileLoader;
 
 /**
- * Static logger class for writing verbose information
- * during the processing and for "easy silencing".
+ * Static logger class for writing verbose information during the processing and
+ * for "easy silencing".
  * 
  * @author Harri Pellikka
  */
-public class Log {
+public class Log
+{
 
 	// If 'true', no output is done
 	public static boolean isSilent = false;
 	public static boolean printErrors = true;
 	public static boolean dumpToFile = true;
 	public static BufferedWriter writer = null;
-	
+
 	/**
 	 * An empty override of 'd'
 	 */
@@ -28,55 +29,70 @@ public class Log {
 	{
 		d("");
 	}
-	
+
 	/**
 	 * Prints out the given string
-	 * @param s The string to print
+	 * 
+	 * @param s
+	 *            The string to print
 	 */
 	public static void d(String s)
 	{
-		if(!isSilent)
+		if (!isSilent)
 		{
 			System.out.println(s);
 		}
-		
+
 		// Dump to log.txt if needed
-		if(dumpToFile)
+		if (dumpToFile)
 		{
-			if(writer == null)
+			if (writer == null)
 			{
-				try {
+				try
+				{
 					System.out.println("PATH: " + FileLoader.getTargetPath());
-					writer = new BufferedWriter(new FileWriter(FileLoader.getTargetPath() + File.separator + "log.txt"));
-				} catch (IOException e) {
+					writer = new BufferedWriter(new FileWriter(
+							FileLoader.getTargetPath() + File.separator
+									+ "log.txt"));
+				}
+				catch (IOException e)
+				{
 					e.printStackTrace();
 				}
 			}
-			
-			try {
+
+			try
+			{
 				writer.write(s + "\n");
-			} catch (IOException e) {
+			}
+			catch (IOException e)
+			{
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	/**
 	 * Prints out an array of strings
-	 * @param a Array of strings
+	 * 
+	 * @param a
+	 *            Array of strings
 	 */
 	public static void d(String[] a)
 	{
 		String s = "[";
-		for(int i = 0; i < a.length; ++i)
+		for (int i = 0; i < a.length; ++i)
 		{
 			s += a[i];
-			if(i < a.length - 1) s += " ";
+			if (i < (a.length - 1))
+			{
+				s += " ";
+			}
 		}
 		s += "]";
 		d(s);
 	}
-	
+
 	/**
 	 * An empty override of 'e'
 	 */
@@ -84,34 +100,44 @@ public class Log {
 	{
 		e("");
 	}
-	
+
 	/**
 	 * Prints out the given string to the error stream
-	 * @param s String to print
+	 * 
+	 * @param s
+	 *            String to print
 	 */
 	public static void e(String s)
 	{
-		if(printErrors)
+		if (printErrors)
 		{
 			System.err.println(s);
 		}
-		
+
 		// Dump to log.txt if needed
-		if(dumpToFile)
+		if (dumpToFile)
 		{
-			if(writer == null)
+			if (writer == null)
 			{
-				try {
+				try
+				{
 					Log.d("PATH: " + FileLoader.getTargetPath());
-					writer = new BufferedWriter(new FileWriter(FileLoader.getTargetPath() + File.pathSeparator + "log.txt"));
-				} catch (IOException e) {
+					writer = new BufferedWriter(new FileWriter(
+							FileLoader.getTargetPath() + File.pathSeparator
+									+ "log.txt"));
+				}
+				catch (IOException e)
+				{
 					e.printStackTrace();
 				}
 			}
-			
-			try {
+
+			try
+			{
 				writer.write(s + "\n");
-			} catch (IOException e) {
+			}
+			catch (IOException e)
+			{
 				e.printStackTrace();
 			}
 		}
