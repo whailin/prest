@@ -9,11 +9,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Stack;
 
-import cppMetrics.LOCMetrics;
-import cppParser.utils.Log;
-import cppParser.utils.MacroExpander;
-import cppParser.utils.PLOCCounter;
-import cppParser.utils.StringTools;
+import cppParser.utils.*;
 import cppStructures.CppClass;
 import cppStructures.CppFile;
 import cppStructures.CppFunc;

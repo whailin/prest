@@ -1,9 +1,11 @@
-package cppParser.utils;
+package unused;
 
 import java.util.ArrayList;
 
 import cppParser.FunctionAnalyzer;
 import cppParser.ParsedObjectManager;
+import cppParser.utils.Log;
+import cppParser.utils.StringTools;
 import cppStructures.MemberVariable;
 
 /**

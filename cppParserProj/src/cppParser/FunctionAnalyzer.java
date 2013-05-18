@@ -3,10 +3,10 @@ package cppParser;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import cppParser.utils.FunctionFinder;
+import unused.FunctionFinder;
 import cppParser.utils.Log;
 import cppParser.utils.StringTools;
-import cppParser.utils.VarFinder;
+import unused.VarFinder;
 import cppStructures.CppFunc;
 import cppStructures.CppFuncParam;
 import cppStructures.MemberVariable;

@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import cppMetrics.LOCMetrics;
 import cppParser.ParsedObjectManager;
+import cppParser.utils.LOCMetrics;
 
 /**
  * Represents a CPP file

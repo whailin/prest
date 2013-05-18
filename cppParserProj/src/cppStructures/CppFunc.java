@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import cppMetrics.LOCMetrics;
-import cppParser.utils.Constants;
+import unused.Constants;
+import cppParser.utils.LOCMetrics;
 
 /**
  * CppFunc.java Represents a C++ function. Keeps track of the function's data

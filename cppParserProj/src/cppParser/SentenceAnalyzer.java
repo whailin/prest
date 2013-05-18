@@ -2,8 +2,8 @@ package cppParser;
 
 import java.util.ArrayList;
 
-import cppMetrics.LOCMetrics;
 import cppParser.utils.LLOCCounter;
+import cppParser.utils.LOCMetrics;
 import cppParser.utils.MacroExpander;
 import cppParser.utils.StringTools;
 import cppStructures.CppNamespace;
