@@ -2,7 +2,7 @@ package cppStructures;
 
 import java.util.ArrayList;
 
-import cppMetrics.LOCMetrics;
+import cppParser.utils.LOCMetrics;
 import cppParser.utils.Log;
 
 /**

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cppMetrics.LOCMetrics;
+import cppParser.utils.LOCMetrics;
 import cppParser.utils.Log;
 import cppStructures.CppClass;
 import cppStructures.CppFile;

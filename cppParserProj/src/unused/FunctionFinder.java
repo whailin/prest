@@ -1,13 +1,11 @@
-package cppParser.utils;
+package unused;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import cppParser.FunctionAnalyzer;
 import cppParser.ParsedObjectManager;
-import cppParser.utils.parameter.FunctionCallToken;
-import cppParser.utils.parameter.ParameterToken;
-import cppParser.utils.parameter.StringToken;
+import cppParser.utils.StringTools;
 import cppStructures.CppFunc;
 
 /**

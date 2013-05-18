@@ -3,7 +3,7 @@ package cppParser;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import cppMetrics.LOCMetrics;
+import cppParser.utils.LOCMetrics;
 import cppParser.utils.Log;
 import cppStructures.CppClass;
 import cppStructures.CppFile;
