@@ -10,6 +10,7 @@ Contents
 2.1. Function parameters
 
 3. Cyclomatic complexity
+4. LOC metrics
 
 
 1. Operators
@@ -189,4 +190,7 @@ for(string str: names){} //This line contains two executable locs
 -Each preprocessor directive increases the count by one.
 Example:
 #include <iostream>
+
+Metric counting is done after macro expansion.
+
 
